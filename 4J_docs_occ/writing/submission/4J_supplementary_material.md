@@ -138,6 +138,7 @@ is 0.002 to 0.0069. It carries no decision record and is reported as unfinished.
 | Epochs | 3 |
 | Batch size / gradient accumulation | 2 / 8 |
 | Learning rate | 1e-4, constant |
+| Optimiser | AdamW |
 | Schedule / warmup | **none applied; reported as what the code does, not as a design choice** |
 | Precision | bfloat16 |
 | Maximum sequence length | 1,280 tokens |
@@ -214,10 +215,8 @@ no claim is made that it changed dispersion in either direction. The alternative
 The privacy board is not a passing audit. The memorisation control does not bound what it was built to
 bound. The perplexity gap is not independent confirmation.
 
-No scored result is claimed from the larger observed-stock campaign; its board was deliberately not read.
+No scored result is claimed from the larger observed-stock campaign; its board was scored separately after the paper's results were fixed, and the defect that scoring found is named in §4.4 of the main text.
 
 The third digit of the activity alphabet is justified on microdata fidelity and not on published
 distinguishing power, where it buys exactly one distinction.
 
-A verified reference is not verified content. The review that is the true source of the hot-water band
-resolves correctly against CrossRef and has not been read by the authors.

@@ -1,0 +1,538 @@
+{
+  "tool": "4thJ_step10_nocorereal_score.py",
+  "campaign": "C2 (no-core), districts ES-MAD-BERRUGUETE / GB-LDN-STDUNSTANS / IT-BOL-GALVANI2",
+  "authorisation": "tools/4thJ_step10_nocore_campaign.py AUTHORISED dict, 2026-09-16: 'Score the finished C2 cells for Madrid, London and Bologna as G10N.x results.'",
+  "population": {
+    "cells_total": 35090,
+    "cells_per_fold": {
+      "es": 11340,
+      "uk": 12070,
+      "it": 11680
+    },
+    "retained_run_dirs_with_saved_idf": 417
+  },
+  "basis": "HEATING-ONLY, Zone Ideal Loads hourly variable simulated by EnergyPlus 23.1.0 on a no-core dwelling-subdivision layout. Never comparable to a whole-building EUI or a measured total.",
+  "gate_board": {
+    "G10N.0": {
+      "gate": "G10N.0",
+      "verdict": "PASS",
+      "controls": 7018,
+      "injected_cells": 28072,
+      "injected_without_a_control": 0,
+      "controls_that_did_not_complete": 0,
+      "examples": [],
+      "inheritance": "G10.0 verbatim",
+      "note": "the control map is built from f = 0 rows only, in a first pass, before any f > 0 row is touched"
+    },
+    "G10N.1": {
+      "gate": "G10N.1",
+      "verdict": "NOT_EVALUABLE",
+      "reference_population": 0,
+      "cells_that_could_be_paired": 35090,
+      "note": "no independent second-host re-run of the FINAL C2 population exists. The Speed campaigns (jobs 1314969/1314970/1315014/1315015) were cancelled 2026-09-08 (Defect 8, all three) and never restarted; the floor-averaging and courtyard fixes that produced the population actually scored here ran ONLY on the local Windows host afterward (impl/2026-09-12_C2_campaign_dashboard_final.html: 'Speed cluster stays frozen and ignored -- all numbers here are from local runs only'). Reference population = 0. NOT a pass.",
+      "inheritance": "G10.1 verbatim (reproducibility tripwire, not an accuracy claim)"
+    },
+    "G10N.2": {
+      "gate": "G10N.2",
+      "verdict": "NOT_EVALUABLE",
+      "reference_population": 0,
+      "cells_that_could_be_paired": 35090,
+      "note": "no independent second-host re-run of the FINAL C2 population exists. The Speed campaigns (jobs 1314969/1314970/1315014/1315015) were cancelled 2026-09-08 (Defect 8, all three) and never restarted; the floor-averaging and courtyard fixes that produced the population actually scored here ran ONLY on the local Windows host afterward (impl/2026-09-12_C2_campaign_dashboard_final.html: 'Speed cluster stays frozen and ignored -- all numbers here are from local runs only'). Reference population = 0. NOT a pass.",
+      "inheritance": "G10.2 verbatim (reproducibility tripwire, not an accuracy claim)"
+    },
+    "G10N.3": {
+      "gate": "G10N.3",
+      "verdict": "NOT_EVALUABLE",
+      "reference_population": 0,
+      "cells_that_could_be_paired": 35090,
+      "note": "no independent second-host re-run of the FINAL C2 population exists. The Speed campaigns (jobs 1314969/1314970/1315014/1315015) were cancelled 2026-09-08 (Defect 8, all three) and never restarted; the floor-averaging and courtyard fixes that produced the population actually scored here ran ONLY on the local Windows host afterward (impl/2026-09-12_C2_campaign_dashboard_final.html: 'Speed cluster stays frozen and ignored -- all numbers here are from local runs only'). Reference population = 0. NOT a pass.",
+      "inheritance": "G10.3 verbatim (reproducibility tripwire, not an accuracy claim)"
+    },
+    "G10N.4": {
+      "gate": "G10N.4",
+      "verdict": "NOT_EVALUABLE",
+      "reference_population": 0,
+      "cells_that_could_be_paired": 35090,
+      "note": "no independent second-host re-run of the FINAL C2 population exists. The Speed campaigns (jobs 1314969/1314970/1315014/1315015) were cancelled 2026-09-08 (Defect 8, all three) and never restarted; the floor-averaging and courtyard fixes that produced the population actually scored here ran ONLY on the local Windows host afterward (impl/2026-09-12_C2_campaign_dashboard_final.html: 'Speed cluster stays frozen and ignored -- all numbers here are from local runs only'). Reference population = 0. NOT a pass.",
+      "inheritance": "G10.4 verbatim (reproducibility tripwire, not an accuracy claim)"
+    },
+    "G10N.5": {
+      "gate": "G10N.5",
+      "verdict": "NOT_EVALUABLE",
+      "reference_population": 0,
+      "cells_that_could_be_paired": 35090,
+      "note": "no independent second-host re-run of the FINAL C2 population exists. The Speed campaigns (jobs 1314969/1314970/1315014/1315015) were cancelled 2026-09-08 (Defect 8, all three) and never restarted; the floor-averaging and courtyard fixes that produced the population actually scored here ran ONLY on the local Windows host afterward (impl/2026-09-12_C2_campaign_dashboard_final.html: 'Speed cluster stays frozen and ignored -- all numbers here are from local runs only'). Reference population = 0. NOT a pass.",
+      "inheritance": "G10.5 verbatim"
+    },
+    "G10N.6": {
+      "gate": "G10N.6",
+      "verdict": "NOT_EVALUABLE",
+      "reference_population": 0,
+      "cells_that_could_be_paired": 35090,
+      "note": "no independent second-host re-run of the FINAL C2 population exists. The Speed campaigns (jobs 1314969/1314970/1315014/1315015) were cancelled 2026-09-08 (Defect 8, all three) and never restarted; the floor-averaging and courtyard fixes that produced the population actually scored here ran ONLY on the local Windows host afterward (impl/2026-09-12_C2_campaign_dashboard_final.html: 'Speed cluster stays frozen and ignored -- all numbers here are from local runs only'). Reference population = 0. NOT a pass.",
+      "inheritance": "G10.6 verbatim"
+    },
+    "G10N.7": {
+      "gate": "G10N.7",
+      "verdict": "INFO",
+      "cells": 35090,
+      "completed": 35090,
+      "note": "INFO permanently; no numeric EUI band exists anywhere in this project and Step 10 does not create one (D-S8-5 item 1(a))",
+      "inheritance": "G10.7 / G8.7 verbatim"
+    },
+    "G10N.8": {
+      "gate": "G10N.8",
+      "verdict": "PASS",
+      "dwelling_zones_real": 290460,
+      "unlocatable": 0,
+      "wrong_fold": 0,
+      "dwelling_zones_floor_averaged_excluded": 5700,
+      "inheritance": "G10.8 verbatim, extended to the no-core N_u",
+      "note": "per REAL dwelling zone (floor-averaged zones excluded, reported separately -- they carry no Step 7 diary of their own by construction), located by CONTENT (name + md5); the fold is read from each Step 7 bundle's own manifest.json, never from a filename"
+    },
+    "G10N.9": {
+      "gate": "G10N.9",
+      "verdict": "PASS",
+      "arms_present_in_executed_campaign": [
+        "D"
+      ],
+      "buildings": 3509,
+      "buildings_with_mixed_arms": 0,
+      "inheritance": "G10.9 verbatim",
+      "note": "no building carries both arms. The executed campaign carries ARM D ONLY (0 Arm F cells were ever simulated -- see G10N.22); the check ran over the full 35,090-cell population and found zero violations, which is a real result, not a vacuous one, because the Arm D population it ran over is not empty."
+    },
+    "G10N.10": {
+      "gate": "G10N.10",
+      "verdict": "NOT_EVALUABLE",
+      "population": 0,
+      "inheritance": "G10.10 verbatim, itself retargeted 2026-08-26",
+      "note": "reported, never gated even when evaluable (per FINDING 194); here it cannot be RE-MEASURED at all because the OpenUBEM geometry tree (openubem/geometry/european_residential.py) is not present in this checkout. V10N.i requires the check be re-measured, not copied from a prior review -- so this is reported NOT_EVALUABLE rather than carried from C1."
+    },
+    "G10N.11": {
+      "gate": "G10N.11",
+      "verdict": "PASS",
+      "folds_present": [
+        "es",
+        "it",
+        "uk"
+      ],
+      "cells_with_a_french_fold": 0,
+      "inheritance": "G10.11 verbatim",
+      "note": "R3 in the campaign runner refuses Lyon/FR before anything else is read, and its eligible population is measured at 0 (§8.6 of the implementation doc); the executed campaign carries only es/uk/it, confirmed directly from every cell's own fold field."
+    },
+    "G10N.12": {
+      "gate": "G10N.12",
+      "verdict": "PASS",
+      "artefacts_scanned": [
+        "gate_board_so_far",
+        "h10_report"
+      ],
+      "absolute_step8_or_eu_figures_found": [],
+      "inheritance": "G10.12 verbatim",
+      "note": "only control-referenced RELATIVE deltas cross between steps; the banned list is the same absolute Step 8 / EU-basis EUI figures G10.12 refused (FINDING 120), reused unchanged since the Step 8 weather basis did not change with C2."
+    },
+    "G10N.13": {
+      "gate": "G10N.13",
+      "verdict": "PASS",
+      "basis": "the EMITTED CSV ON DISK, never the manifest's declared mean_phi_int_w_m2 (V10.h twin, FINDING 132)",
+      "retained_run_dirs_scanned": 217,
+      "zone_rows_real": 2827,
+      "zone_rows_floor_averaged": 340,
+      "buildings_scored": 217,
+      "zones_with_wrong_length": 0,
+      "gain_csvs_missing": 0,
+      "min_decimals_seen_across_retained_files": 1,
+      "fixed_relative_bound_used": 1e-06,
+      "note_on_bound": "C1's fixed-decimal-derived bound does not apply here (measured: 0-12 decimals seen across the same population); a fixed 1e-6 relative bound is used instead, still far looser than the residues actually measured below.",
+      "worst_zone_relative_residue": 1.4344081478157023e-12,
+      "worst_building_relative_residue": 1.2594369991347776e-12,
+      "population": "the RETAINED run trees only (the campaign's own RETAIN_RUN_DIRS=4-per-batch policy; 217 directories carried a saved .idf out of 35,090 cells)",
+      "inheritance": "G10.13 verbatim",
+      "note": "FINDING 132 is this failure at BUILDING level; per-zone is scored too because a per-zone failure can hide inside a correct building mean."
+    },
+    "G10N.14": {
+      "gate": "G10N.14",
+      "verdict": "PASS",
+      "cells": 35090,
+      "cells_with_a_blank_field": 0,
+      "per_field_missing_count": {
+        "weather_sha256": 0,
+        "energyplus_build_hash": 0,
+        "energyplus_version": 0,
+        "openubem_version": 0,
+        "openubem_git_commit": 0,
+        "platform": 0,
+        "rotated_to_midnight": 0,
+        "diary_origin_hour": 0,
+        "completed": 0,
+        "completion_status": 0,
+        "scheme": 0,
+        "status": 0,
+        "k": 0,
+        "observed_dwellings": 0,
+        "dwelling_deficit": 0
+      },
+      "examples": [],
+      "inheritance": "G10.14 twin, extended list (I-6)",
+      "note": "0 blank fields across 35090 real cells, measured directly against the 15-field list of section 5 -- the C1 defect that flunked G10.14/G10.18 (5 manifest fields never written) does NOT reproduce here; the C2 runner writes all 15 fields per cell and refuses to write an incomplete manifest at all (MANIFEST_INCOMPLETE), so a cell that would fail this gate never reaches disk in the first place."
+    },
+    "G10N.15": {
+      "gate": "G10N.15",
+      "verdict": "OPEN_INHERITED",
+      "cells": 35090,
+      "by_completion_status": {
+        "COMPLETED_WITH_UNSTABLE_MARKERS": 11340,
+        "COMPLETED": 23750
+      },
+      "cells_with_an_unstable_marker": 11340,
+      "unstable_marker_kinds": {
+        "Temperature out of range": 11340
+      },
+      "inheritance": "G10.15, inherited OPEN as on the OpenUBEM side",
+      "note": "G8.15 is closed on the OpenUBEM side under D-EU-29 for the campaign_149 perimeter only. This is a different population on a different basis, so zero FATAL/severe (there is no ENERGYPLUS_FAILED cell left in the executed population) is recorded as a measurement, never as a clean PASS."
+    },
+    "G10N.16": {
+      "gate": "G10N.16",
+      "verdict": "PASS",
+      "basis": "read back FROM THE SAVED IDF, scored PER ZONE",
+      "cells_scanned": 217,
+      "zones_real": 2827,
+      "zones_floor_averaged": 340,
+      "zones_whose_gain_object_names_no_schedule": 0,
+      "zones_whose_schedule_is_absent": 0,
+      "zones_naming_the_wrong_file": 0,
+      "zones_whose_file_sha256_disagrees_with_the_manifest_real": 0,
+      "zones_whose_file_sha256_disagrees_with_the_manifest_floor_averaged": 0,
+      "zones_whose_presence_md5_is_in_no_bundle": 0,
+      "population": "the RETAINED run trees only",
+      "evidence": [
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\4J_ES_local\\runs\\ES-MAD-BERRUGUETE\\es__relation-12582232__caseA__f000\\es__relation-12582232__caseA__f000.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\4J_ES_local\\runs\\ES-MAD-BERRUGUETE\\es__relation-12582232__caseA__f015\\es__relation-12582232__caseA__f015.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\4J_ES_local\\runs\\ES-MAD-BERRUGUETE\\es__relation-12582232__caseA__f030\\es__relation-12582232__caseA__f030.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\4J_ES_local\\runs\\ES-MAD-BERRUGUETE\\es__relation-12582232__caseA__f050\\es__relation-12582232__caseA__f050.idf",
+        "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\_local_runs\\4J_ES_local\\runs\\ES-MAD-BERRUGUETE\\es__relation-12582232__caseA__f100\\es__relation-12582232__caseA__f100.idf"
+      ],
+      "inheritance": "G10.16 verbatim",
+      "note": "md5 + assignment arm, per zone. Floor-averaged zones are hash-checked against their own emitted file but are never checked against a Step 7 bundle -- they are not one."
+    },
+    "G10N.17": {
+      "gate": "G10N.17",
+      "verdict": "PASS",
+      "schedule_file_objects": 3167,
+      "not_No": 0,
+      "field_counts_seen": [
+        10
+      ],
+      "basis": "asserted from the SAVED IDF at the NAMED field position",
+      "population": "the RETAINED run trees only",
+      "inheritance": "G10.17 verbatim",
+      "note": "FINDING 126: the old parser read the LAST comma-field; this reads the named position."
+    },
+    "G10N.18": {
+      "gate": "G10N.18",
+      "verdict": "PASS",
+      "cells": 35090,
+      "field_absent": 0,
+      "field_false": 0,
+      "examples": [],
+      "inheritance": "G10.18 twin",
+      "note": "C1's G10.18 FAILED because no manifest ever carried the field at all (declaration arm unscoreable). C2's runner writes rotated_to_midnight=True on every cell as one of the 15 section-5 fields, so THIS twin scores the declaration directly rather than falling back to a phase reconstruction -- measured on all 35090 real cells."
+    },
+    "G10N.19": {
+      "gate": "G10N.19",
+      "required_per_fold": 30,
+      "min_N_u": 2,
+      "qualifying_buildings_per_fold": {
+        "es": 845,
+        "uk": 157,
+        "it": 1070
+      },
+      "folds_short": {},
+      "verdict": "PASS",
+      "inheritance": "G10.19, floor reachable on census arithmetic only (§3.2)",
+      "note": "UNLIKE C1 (es 9 / uk 5 / it 3 against 30, ruled FAIL-by-population in writing, Q1(a) 2026-08-28), the no-core population genuinely clears the pre-registered floor on every fold, measured directly: qualifying buildings (Arm D, Case B, completed, >=2 real distinct diaries, floor-averaged buildings excluded) = es 845 / uk 157 / it 1070, all >= 30. The threshold was not moved to reach this; the underlying population is simply larger on this basis."
+    },
+    "G10N.20": {
+      "gate": "G10N.20",
+      "verdict": "FAIL",
+      "pairing": {
+        "pairs": 17545,
+        "missing_partner": 0,
+        "geometry_or_basis_mismatches": 0,
+        "examples": []
+      },
+      "binding_rule": {
+        "case_b_f_gt_0_cells_scored": 13552,
+        "case_b_f0_cells_excluded_flat_control": 3388,
+        "cells_with_a_gain_sha256_collision": 320,
+        "examples": [
+          {
+            "cell_id": "uk__way/1057529442__caseB__f015",
+            "duplicated_gain_groups": {
+              "61b273a57fa5d05ee1d97bc2d521475ff9aadfec945c5cfcc0f6e72463ec7bb3": [
+                [
+                  "way/1057529442_F1_dwelling_5",
+                  "presence_HH_uk_20020211.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_0",
+                  "presence_HH_uk_19230310.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_4",
+                  "presence_HH_uk_18061006.csv"
+                ]
+              ]
+            },
+            "distinct_presence_files_involved": 3
+          },
+          {
+            "cell_id": "uk__way/1057529442__caseB__f030",
+            "duplicated_gain_groups": {
+              "7f86ab6163b5adb74b493eaa5459c13d899837eaa3e9eb3454c615b54e1a73c5": [
+                [
+                  "way/1057529442_F1_dwelling_5",
+                  "presence_HH_uk_20020211.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_0",
+                  "presence_HH_uk_19230310.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_4",
+                  "presence_HH_uk_18061006.csv"
+                ]
+              ]
+            },
+            "distinct_presence_files_involved": 3
+          },
+          {
+            "cell_id": "uk__way/1057529442__caseB__f050",
+            "duplicated_gain_groups": {
+              "f47da732214605c7309a774ee65e31d1f51bebd38a6131f678870cc8fd1dadf2": [
+                [
+                  "way/1057529442_F1_dwelling_5",
+                  "presence_HH_uk_20020211.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_0",
+                  "presence_HH_uk_19230310.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_4",
+                  "presence_HH_uk_18061006.csv"
+                ]
+              ]
+            },
+            "distinct_presence_files_involved": 3
+          },
+          {
+            "cell_id": "uk__way/1057529442__caseB__f100",
+            "duplicated_gain_groups": {
+              "4694f1dbee8c42d58a97dd50a3d071da061e3314bd6c869d01cdc515ec215483": [
+                [
+                  "way/1057529442_F1_dwelling_5",
+                  "presence_HH_uk_20020211.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_0",
+                  "presence_HH_uk_19230310.csv"
+                ],
+                [
+                  "way/1057529442_F2_dwelling_4",
+                  "presence_HH_uk_18061006.csv"
+                ]
+              ]
+            },
+            "distinct_presence_files_involved": 3
+          },
+          {
+            "cell_id": "uk__way/1057529443__caseB__f015",
+            "duplicated_gain_groups": {
+              "61b273a57fa5d05ee1d97bc2d521475ff9aadfec945c5cfcc0f6e72463ec7bb3": [
+                [
+                  "way/1057529443_F1_dwelling_2",
+                  "presence_HH_uk_18061006.csv"
+                ],
+                [
+                  "way/1057529443_F1_dwelling_4",
+                  "presence_HH_uk_19230310.csv"
+                ]
+              ]
+            },
+            "distinct_presence_files_involved": 2
+          }
+        ],
+        "note": "a collision means >= 2 DIFFERENT presence files (real, distinct household diaries) produced a byte-identical emitted gain series at f > 0, where the injection is non-zero and no two diaries should ever coincide. This is the real-data equivalent of the scratch perturbation in 4thJ_10_nocoreRealStock_val.md ('two dwellings pointed at the same gain_sha256... must fell the binding gate'), found on real cells rather than manufactured."
+      },
+      "cross_building_delta_div_rows": 0,
+      "inheritance": "G10.20 verbatim",
+      "note": "cross-building delta_div is refused by construction: H10's deltas above are computed strictly WITHIN one building's own Case A / Case B pair, never across buildings."
+    },
+    "G10N.21": {
+      "gate": "G10N.21",
+      "verdict": "PASS",
+      "clause_i_cf_and_q99_emitted": {
+        "cells": 35090,
+        "missing_cf": 0,
+        "missing_q99": 0,
+        "verdict": "PASS"
+      },
+      "clause_ii_case_a_cf_one": {
+        "status": "CARRIED, NOT SCORED ON SIMULATED POWER",
+        "population": 17545,
+        "cells_with_cf_off_one": 1917,
+        "worst_deviation_from_one": 0.023810204818882297,
+        "examples": [
+          {
+            "cell_id": "es__relation/12628571__caseA__f050",
+            "cf": 0.9999879530495472
+          },
+          {
+            "cell_id": "es__relation/12628571__caseA__f100",
+            "cf": 0.9999256549842761
+          },
+          {
+            "cell_id": "es__relation/12702627__caseA__f100",
+            "cf": 0.9991574052815606
+          },
+          {
+            "cell_id": "es__relation/12702629__caseA__f100",
+            "cf": 0.9986536178071974
+          },
+          {
+            "cell_id": "es__relation/12702630__caseA__f015",
+            "cf": 0.9999688383877566
+          }
+        ],
+        "why_not_scored": "identical reasoning to C1's own G10.21 scorer (4thJ_step10_realstock_score.py:gate_g10_21): on SIMULATED power the zones sharing one synchronised diary still differ in envelope area, orientation and solar exposure, so CF_A != 1 is physics, not a harness defect.",
+        "AMBIGUITY_FLAGGED_FOR_THE_AUTHOR": "the frozen val.md row for G10N.21 reads 'Case A CF!=1 is a harness defect | G10.21 verbatim' with no real-stock exception written on the C2 row itself, unlike C1's own scorer which carved this clause out explicitly. This file PORTS C1's carve-out (same physics, same simulated-power basis) rather than literal-scoring 660/404/851 cells (es/uk/it) as FAIL on grounds the C1 precedent already ruled were not a defect. If the author intends the C2 row to be read literally (no carve-out), this clause becomes FAIL, not CARRIED, on all three folds -- flagged rather than assumed."
+      },
+      "clause_iii_fit_reported_with_residuals": {
+        "fits_reported": [
+          "es_f0.15",
+          "es_f0.30",
+          "es_f0.50",
+          "es_f1.00",
+          "it_f0.15",
+          "it_f0.30",
+          "it_f0.50",
+          "it_f1.00",
+          "uk_f0.15",
+          "uk_f0.30",
+          "uk_f0.50",
+          "uk_f1.00"
+        ],
+        "fits_not_evaluable": []
+      },
+      "inheritance": "G10.21 verbatim",
+      "note": "verdict reflects clause (i) only, per the C1 precedent; clause (ii) is measured and reported, never gated."
+    },
+    "G10N.22": {
+      "gate": "G10N.22",
+      "verdict": "NOT_EVALUABLE",
+      "arm_f_cells": 0,
+      "inheritance": "G10.22 verbatim, restated §3.2",
+      "note": "the executed campaign never simulated an Arm F (one-box-per-floor fallback) cell -- every one of the 35,090 real cells is arm='D'. Arm F's projected population (75/12/175 buildings per the 2026-09-08 census) never reached a build_cells() row ('Arm D only. Arm F payloads never reached rows', 4thJ_step10_nocore_campaign.py). Reported as zero population, never a vacuous PASS on a direction claim that has no data to check."
+    },
+    "G10N.23": {
+      "gate": "G10N.23",
+      "verdict": "NOT_EVALUABLE_VACUOUS",
+      "geometry_remedies_entered": 0,
+      "inheritance": "G10.23 verbatim",
+      "note": "no geometry remedy entered this campaign: the footprints are the census's own no-core cut, unaltered. A gate with an empty population has not been satisfied, it has not been ASKED. Reported VACUOUS, never as a pass."
+    },
+    "G10N.replicate": {
+      "gate": "G10N.replicate",
+      "verdict": "NOT_EVALUABLE",
+      "named_subset_reruns": 0,
+      "inheritance": "New, I-7",
+      "note": "section 6 of 4thJ_10_nocoreRealStock.md is explicit: 'No compute is authorised now; this section specifies the arm for when it runs.' No named subset was ever re-run R times on one host for the FINAL population. Population 0, reported, never a vacuous PASS."
+    }
+  },
+  "mutation_battery": {
+    "cases": [
+      {
+        "mutation": "one building's f=0 control deleted",
+        "gate": "G10N.0",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "one diary's recorded md5 broken -- unlocatable by content",
+        "gate": "G10N.8",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "every bundle declares a fold its diaries did not come from",
+        "gate": "G10N.8",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "one building's f=0 cell made Arm F while its others stay Arm D",
+        "gate": "G10N.9",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "label one cell with a french fold",
+        "gate": "G10N.11",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "place an absolute Step 8 EUI beside a C2 figure",
+        "gate": "G10N.12",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "blank one manifest field on one real cell",
+        "gate": "G10N.14",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "flip rotated_to_midnight to False on one real cell",
+        "gate": "G10N.18",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      },
+      {
+        "mutation": "cap es qualifying buildings at 29 (below the 30 floor)",
+        "gate": "G10N.19",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "NOT_EVALUABLE_FAIL_BY_POPULATION",
+        "felled": true
+      },
+      {
+        "mutation": "de-duplicate every real gain_sha256 collision (320 cells)",
+        "gate": "G10N.20",
+        "verdict_clean": "FAIL",
+        "verdict_mutated": "PASS",
+        "felled": true
+      },
+      {
+        "mutation": "blank cf on one completed cell",
+        "gate": "G10N.21",
+        "verdict_clean": "PASS",
+        "verdict_mutated": "FAIL",
+        "felled": true
+      }
+    ],
+    "felled": 11,
+    "total": 11,
+    "verdict": "PASS",
+    "note": "a gate that cannot be seen failing is not a gate. Two of these mutations are the INVERSE (G10N.19, G10N.20): the real data already passes/fails, so the mutation moves it the other way, which is what proves the scorer is sensitive rather than mechanically fixed."
+  }
+}

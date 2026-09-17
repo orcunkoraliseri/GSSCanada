@@ -1,3 +1,585 @@
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-17, last+294) — SUPERSEDES last+293 BELOW
+
+Author is stepping away and asked this prompt be updated to return to later. Nothing changed since
+last+293 — this is a checkpoint, not new work. State unchanged: manuscript, supplement and docx are
+fully closed (Fuentes note removed from all three spots, docx rebuilt clean, self-checks pass).
+Nothing owed by an agent. Two items remain for the author only, unchanged from last+293:
+
+## Left to the author (only the author can do these)
+
+- Abstract is **517 words**; Energy and Buildings' guide-for-authors page returned HTTP 403 to the
+  checker, so the journal's word limit is UNVERIFIED. If it is 250 words (common Elsevier default),
+  the abstract needs halving — an author decision on style.
+- Optional: subsections are H3 under H1 (no H2 level); harmless in Word, not changed.
+- One consistency question, not resolved: the paper says the `C2` campaign is 35,290 cells
+  (11,510 / 11,710 / 12,070) and §7.10 says 840 Madrid cells did not complete; the scorer's population
+  is 35,090 completed cells (es 11,340 / uk 12,070 / it 11,680). 35,290 − 35,090 = 200, not 840.
+  No number in the paper depends on it today, but check before quoting any of the three.
+
+## Still open, no author input needed right now
+
+Nothing.
+
+Next: nothing owed; author decides when to submit.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-17, last+293) — SUPERSEDES last+292 BELOW
+
+Author read Fuentes, Arce & Salom (2018) and said "handled it" — remove the "not read by the author"
+note. Done. Backups at `writing/submission/previous/backups_fuentes_read_20260917/`. Removed from
+three live spots:
+1. Reference list entry (was `... DOI: 10.1016/j.rser.2017.05.229 [not read by the author; see §7.7]`).
+2. §7.7, trailing sentence "One further caution is carried openly: the paper that is the true source
+   of the per-person band has not been read by the author, and the figure inside it remains
+   unverified at the time of writing." — deleted; paragraph now ends at "...permanently informational."
+3. Supplement S5: whole caveat paragraph "A verified reference is not verified content. The review
+   that is the true source of the hot-water band resolves correctly against CrossRef and has not
+   been read by the author." — deleted.
+Confirmed no "not read"/"not been read" string remains in either live file. Docx rebuilt
+(`tools/4thJ_build_submission_docx.sh`); old docx backed up to
+`writing/submission/previous/4J_manuscript_submission.pre_build_2026-09-17_101807.docx`; self-checks
+clean (8 captions, 0 pandoc-auto, superscript present).
+
+## Left to the author (only the author can do these)
+
+- Abstract is **517 words**; Energy and Buildings' guide-for-authors page returned HTTP 403 to the
+  checker, so the journal's word limit is UNVERIFIED. If it is 250 words (common Elsevier default),
+  the abstract needs halving — an author decision on style.
+- Optional: subsections are H3 under H1 (no H2 level); harmless in Word, not changed.
+- One consistency question, not resolved: the paper says the `C2` campaign is 35,290 cells
+  (11,510 / 11,710 / 12,070) and §7.10 says 840 Madrid cells did not complete; the scorer's population
+  is 35,090 completed cells (es 11,340 / uk 12,070 / it 11,680). 35,290 − 35,090 = 200, not 840.
+  No number in the paper depends on it today, but check before quoting any of the three.
+
+## Still open, no author input needed right now
+
+Nothing.
+
+Next: nothing owed; author decides when to submit.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-17, last+292) — SUPERSEDES last+291 BELOW
+
+Author said the paper is ready to submit and asked for one last check-and-polish pass over the
+manuscript, the docx and the supplement, with no questions asked, and for this prompt to be updated
+after. Done. Tracker status unchanged: fully closed, nothing owed except the author's own submit act.
+The tracker page was republished with the same corrections (same link, read live first, not re-created).
+
+## What the polish pass found and fixed (all in `writing/submission/`, backups in `previous/polish_pre_2026-09-17/`)
+
+Four number-level defects, each re-derived from the source table before touching the text:
+
+1. **"Two to six times" was never true.** Table 3's own ratios (model MAE / null MAE) are 3.70, 3.91,
+   3.75, 2.70, 3.15, **1.15**, 3.19, 2.45, 2.31. Nothing reaches six and one cell is 1.15. The phrase
+   came from `Step6_docs/4thJ_06_transfer.md` line ~2953 (asserted, never computed) and was copied
+   into the cross-step analysis, the deep-research prompts and nine places in the paper (abstract,
+   §1.5, §5.1, §6.1, §6.7, §7.2, §8 twice). Paper now says **1.1 to 3.9** everywhere; §5.1 spells
+   it out as "2.3 to 3.9 in eight of nine cells, 1.15 in the ninth". Internal records that still say
+   2–6 (Step 6 doc, `writing/4thJ_crossStep_analysis.md` line 67, `DeepResearchPrompts/README.md`)
+   were left as records and NOT edited. Never quote 2–6 again.
+2. **Laundry ratio sentence (§5.9)** implied 0.776 / 0.179 / 0.092 = minutes ÷ 27,036. They are not
+   (2,462/27,036 = 0.091). Per `Step9_docs/4thJ_09_enduseLoads.md` ~line 708 they are the calibrated
+   modelled/published washing-machine CYCLE ratios. Sentence rewritten to say so.
+3. **"166-percentage-point spread" (§5.11)** for +136.6 / −29.6 / −36.7 is an arithmetic slip carried
+   from Step 8 `FINDING 121` (it used Spain minus Britain). Max minus min is **173**. Fixed in the paper;
+   Step 8 doc left as a record.
+4. **`C2` board "never executed / deliberately not read"** (§4.4, §4.5, §7.10, S5) was false since
+   2026-09-16, when the board was scored under the author's separate authorisation. Rewritten as: scored
+   separately after this paper's results were fixed; scoring found a defect still to be engineered out
+   (dwellings with different diaries producing byte-identical gain series, no count given); no scored
+   result from it is claimed. This respects the 2026-09-17 ruling (no `C2` number quoted) while no
+   longer stating something untrue. §4.4's "only open items" sentence now includes that defect.
+
+Editorial fixes, all mechanical: Highlights 1 and 2 were 95 and 116 characters, over Elsevier's
+85-character limit, now 84 and 83; "md5-locked" → "hash-locked"; HETUS, UKTUS, MAPE, TMYx and LoRA
+defined at first use; every reference-list entry now has an in-text citation (before, only Deville &
+Särndal and Lovelace et al. were cited parenthetically; CREST/Richardson 2010, Widén, Pflugradt,
+Lombardi/RAMP, Jordan & Vajen, Fuentes, Loga 2012/2016, Crawley, Hu/LoRA, Shokri, Beckman, Sullivan &
+Gershuny, INE, ISTAT and the author's own 2026 paper were listed but never cited); Table 1's "Author's
+prior line" row now names Iseri et al. (2026); single-author voice made consistent ("we/our" → "the
+author"/"this study"; S5 said "authors"); three verbatim duplicate paragraphs trimmed to
+back-references (§3.5 circularity → §6.3; §6.2 Markov comparator → §5.5; §5.9 secondary-field
+paragraph → §3.9); "60 degree" → "60 °C"; one sentence added at the top of §2 glossing Britain =
+United Kingdom fold (survey covers the UK, TABULA rows cover England only); Table 8 spread row given
+% units; the italic internal audit note under "# References" (mentioning "Step 9 pipeline citation
+checks") REMOVED from the submission file — it was project jargon a reviewer would see; the
+"[not read by the author; see §7.7]" flag on Fuentes is kept as the author's choice; Osman & Ouf given
+volume 196, 107785; S2 model card gained "Optimiser | AdamW" (§3.3 names it, the card did not).
+
+Word count 18,664 → 18,693 (dedup offset by citations and the new sentences).
+
+## Docx rebuilt
+
+`tools/4thJ_build_submission_docx.sh` (defaults). Old docx auto-backed-up to
+`writing/submission/previous/4J_manuscript_submission.pre_build_2026-09-17_072222.docx`. Self-checks:
+8 caption paragraphs, 0 pandoc-auto, superscript author marker present. The supplement is markdown
+only (no docx build exists for it; unchanged situation).
+
+## Left to the author (only the author can do these)
+
+- Read Fuentes, Arce & Salom (2018) and then delete the "[not read by the author]" flag in the
+  reference list and the matching sentence at the end of §7.7 and in S5. Citing an unread paper in a
+  submission is the one thing a reviewer will find odd that no agent can fix.
+- Abstract is **517 words** (structured, six labelled parts). Energy and Buildings' guide-for-authors
+  page returned HTTP 403 to the checker, so the journal's limit is UNVERIFIED. If it is 250 words
+  (common Elsevier default), the abstract needs halving; that is an author decision on style.
+- Optional: subsections are H3 under H1 (no H2 level); harmless in Word, not changed.
+- One consistency question, not resolved: the paper says the `C2` campaign is 35,290 cells
+  (11,510 / 11,710 / 12,070) and §7.10 says 840 Madrid cells did not complete; the scorer's population
+  is 35,090 completed cells (es 11,340 / uk 12,070 / it 11,680). 35,290 − 35,090 = 200, not 840.
+  No number in the paper depends on it today, but check before quoting any of the three.
+
+## Still open, no author input needed right now
+
+Nothing.
+
+Next: nothing owed; author decides when to submit.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-17, last+291) — SUPERSEDES last+290 BELOW
+
+Author asked for the manuscript's references to be independently re-verified (not just trusting the
+2026-09-16 audit note already in the file). Done. Tracker status is unchanged — still fully closed,
+still nothing owed except the author's own submit decision. This entry only records the reference fix.
+
+## What was done
+
+Every entry in `writing/submission/4J_manuscript_submission.md` References section (24 entries,
+line ~1409-1492) was checked fresh against CrossRef (`api.crossref.org/works/<DOI>`) and DataCite
+(`api.datacite.org/dois/<DOI>`) for DOI'd entries, and web search for the handful with no DOI
+(Eurostat x2, INE, ISTAT, Jordan & Vajen, Pflugradt). 22 of 24 matched exactly. Two did not:
+
+1. **Lombardi et al.** — manuscript said "(2020)" with no volume/pages. Real record: *Energy*, 2019,
+   vol. 177, pp. 433-444, DOI `10.1016/j.energy.2019.04.097`. Fixed in the markdown.
+2. **Sullivan & Gershuny (UK Time Use Survey, SN 8128)** — manuscript said "4th Edition" but the cited
+   DOI (`10.5255/UKDA-SN-8128-1`) resolves (via DataCite) to the **1st Edition** record, publication
+   year 2023 (year was already correct). Fixed in the markdown — "4th" changed to "1st".
+
+Both fixes applied directly to `writing/submission/4J_manuscript_submission.md`. The Fuentes et al.
+2018 review (the one flagged in the file as "not read by the author") checked out fine — DOI resolves
+to the right paper; only the reading, not the citation, remains outstanding (see §7.7 in the text).
+
+## Docx rebuilt
+
+Ran `tools/4thJ_build_submission_docx.sh` (no args — defaults) to regenerate
+`writing/submission/4J_manuscript_submission.docx` from the corrected markdown, so the Word file the
+author would actually submit matches. Old docx auto-backed-up by the script to
+`writing/submission/previous/4J_manuscript_submission.pre_build_2026-09-17_070459.docx`. Script's own
+self-checks passed: 8 caption paragraphs (0 pandoc-auto-generated, as required), superscript author
+marker present. No other content changed by the rebuild — only the two reference fields above.
+
+## Still open, no author input needed right now
+
+Nothing. Reference list is now independently verified end to end. Tracker (sections A-D) still fully
+closed per last+290 below.
+
+Next: nothing owed; author decides when to submit.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-17, last+290) — SUPERSEDES last+289 BELOW
+
+Author is back and asked to hand off to a new session. **Everything on the tracker board is now
+closed.** The only thing left is the author's own decision to submit the manuscript.
+
+## What happened since last+289
+
+Author answered all three outstanding items together (batched question, per standing instruction):
+1. **Figure 1 cards 10/11: close.** Done — chip changed `open` → `validated` in the frozen spec
+   (`writing/submission/figures/Prompts_Images/4thJ_pipeline_steps_figure.md`, new 2026-09-17 dated
+   banner), the generator script (`writing/submission/figures/scripts/generate_fig01_pipeline.py`,
+   `CARDS` tuple), and the installed image (regenerated clean, no overflow, 4440x1620). All three
+   held-back cards (6, 10, 11) are now `validated`. Backups of all three files kept in
+   `writing/submission/figures/archive/backups_cards1011_close_20260917/` and the matching
+   `Prompts_Images/previous/` folder.
+2. **`G10N.21` clause (ii): keep the `C1` real-stock carve-out.** Confirmed — the scorer's ported
+   behavior stays as built, not re-scored literally.
+3. **`G10N.20`'s 320 collision cells: exclude from any manuscript number**, until an engineering fix.
+   Checked 2026-09-17: no `C2`/`G10N` number is currently quoted anywhere in
+   `writing/submission/4J_manuscript_submission.md`, so this is a forward rule, not a live correction.
+
+Both scoring-rule rulings recorded in `Step10_docs/4thJ_10_nocoreRealStock_val.md` (backed up first to
+`archive/backups_c2_scoring_ruling_20260917/`).
+
+Tracker republished reflecting full closure: https://claude.ai/code/artifact/a67bbbe7-2dc2-4bcf-977f-cb64a9e1589a
+
+## What the `C2` score actually says (real, run 2026-09-16 against 35,090 real cells)
+
+12 `G10N.x` gates PASS, 1 genuinely FAILs on real data (`G10N.20` — 320 UK/Italy cells where two
+different households' diaries collide to an identical result, a real measured quirk, not a broken
+check), 1 INFO, 1 inherited-open, 9 NOT_EVALUABLE (no population — the cancelled Speed re-run and the
+never-run Arm F). Mutation battery 11/11 felled. Scorer: `tools/4thJ_step10_nocorereal_score.py`.
+
+## Still open, no author input needed right now
+
+Nothing. Every checklist item on the tracker (sections A–D) is done.
+
+## What is NOT done (not a gap — simply outside this project's remaining scope)
+
+- The manuscript's own text does not currently quote any `C2`/`G10N.x` number (checked directly). If a
+  future session is asked to ADD such a number to the manuscript, it must exclude the 320 collision
+  cells per the ruling above — do not quote a raw, unadjusted `C2` count or fit.
+- Submitting the manuscript to the venue (Energy and Buildings) is the author's own action, not
+  something this project queue tracks or should attempt to automate.
+
+Next: nothing owed; author decides when to submit.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+289) — SUPERSEDES last+288 BELOW
+
+Author still asleep. The `G10N.x` scorer finished. This is the real result — read it, don't re-derive or guess.
+
+## What the scorer found (real run, not a stub)
+
+Built `tools/4thJ_step10_nocorereal_score.py`, ran it against the actual finished campaign: 35,090 real cells outside the repo tree (`_local_runs/4J_{ES,UK,IT}_local/out/`), not the stale 1,427-cell Bologna-only subset that was sitting in `Step10_docs/outputs_step10_nocore/` — that would have been a wrong headline number if used.
+
+24 `G10N.x` gates + replicate check:
+- **12 PASS** (including the per-fold sample floor, which clears easily — this population is much bigger than the closed campaign's)
+- **1 real FAIL** — `G10N.20`: 320 cells (UK 120, IT 200) where two different households' diaries hash to an identical result. Measured on real data, not a contrived mutation.
+- 1 INFO, 1 inherited-open, 9 NOT_EVALUABLE (population never run: the cancelled Speed re-run, and Arm F which was never executed — 100% of cells are Arm D)
+- Mutation battery: 11/11 felled.
+
+Files created/modified, backed up first: `tools/4thJ_step10_nocorereal_score.py` (new), `Step10_docs/4thJ_10_nocoreRealStock_val.md` + `4thJ_10_nocoreRealStock.md` (pure appends), backups in `archive/backups_g10n_scoring_20260916/`.
+
+Tracker republished with these real numbers: https://claude.ai/code/artifact/a67bbbe7-2dc2-4bcf-977f-cb64a9e1589a
+
+## Waiting on the author — one batched question, not asked yet (author asleep)
+
+Three related items, to be asked together per the author's standing instruction ("ask me everything at once"):
+1. **Figure 1 cards 10/11** — the spec's lock condition (`C2` run and scored) is now met. Close them, or leave open?
+2. **`G10N.21` clause (ii)`** — literal scoring would FAIL 1,917/17,545 Case A cells (worst deviation 0.0238) on a physics difference (envelope/orientation/solar per zone) the closed campaign's own scorer carved out. I ported that carve-out rather than literal-scoring it. Confirm the carve-out is right, or literal-score it?
+3. **The 320 `G10N.20` collision cells** — exclude them from any number quoted in the manuscript pending an engineering fix, or leave them in?
+
+Do not answer any of these on my own judgment — all three depend on how the author wants the paper to characterize a real, newly-found defect in the campaign.
+
+## Still open, no author input needed right now
+
+Nothing else. Everything not listed above is done.
+
+Next: ask the author all three questions together the moment they're back; do not act on 10/11 or the manuscript's `C2` numbers before that.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+288) — SUPERSEDES last+287 BELOW
+
+Author is asleep, said to keep updating this prompt whenever needed. No new author input since last+287; two background tasks finished, one is still running.
+
+## What happened
+
+- Figure 1 card 6 (transfer test) closed. Author confirmed it. Chip changed open to validated in three places: the frozen spec (`writing/submission/figures/Prompts_Images/4thJ_pipeline_steps_figure.md`), the generator script (`writing/submission/figures/scripts/generate_fig01_pipeline.py`), and the installed image (`writing/submission/figures/HETUS_LLM_Pipeline_Steps.png`, regenerated clean, no text overflow, old files backed up to `writing/submission/figures/archive/backups_card6_close_20260916/` and the matching Prompts_Images backup folder). Cards 10 and 11 were NOT touched — the spec locks them open until campaign `C2` is run and scored, and that scoring is not done yet. Do not move 10/11 on any future instruction that doesn't also say scoring is complete.
+- The leftover low-priority venue-vetting check finished (`RL33` claims B08-B12, B14-B18, the ones behind journals that were ruled OUT). Some of those claims were found overstated or wrong (Data-Centric Engineering does use EnergyPlus, contrary to what was claimed; Machine Learning Science and Technology's scope is broader than claimed; no live CRKN-Springer fee agreement actually exists). None of this reverses any exclusion or touches the venue pick (Energy and Buildings, already confirmed by the author). Written up in `DeepResearchPrompts/VETTING_RL33.md`, backup at `DeepResearchPrompts/archive/backups_B08-B18_recheck_20260916/`.
+- Manuscript tracker republished reflecting both of the above: https://claude.ai/code/artifact/a67bbbe7-2dc2-4bcf-977f-cb64a9e1589a
+
+## Still running
+
+- **`G10N.x` scorer for campaign `C2` — dispatched, not back yet.** This is the one real thing left. When it finishes: read its actual verdicts (do not guess or presume any gate's result), update the tracker and the manuscript's Step 10 section with the real numbers, then bring the author cards 10 and 11 together in one ask (their answer depends on what scoring shows).
+
+## Still open, no author input needed right now
+
+- Nothing. Every item that does not depend on the scorer finishing is done.
+
+## Waiting on the author (only after the scorer returns)
+
+- One decision: close or keep open Figure 1 cards 10 and 11, now that `C2` has a real score.
+
+Next: read the scorer agent's report the moment it lands, act on the real numbers, then ask about cards 10/11.
+
+---
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+287) — SUPERSEDES last+286 BELOW**
+
+Author pushed back on the "ask one at a time" pattern ("ask me what i need to answer... lets finish the steps... ask me all and finish the progress") — all remaining open questions were gathered and asked together in one shot, not sequentially, and every answer was acted on in the same session.
+
+## What this session found and fixed
+
+- **Venue confirmed by the author: Energy and Buildings (primary), Building and Environment (secondary).** No further action needed on this — it is settled everywhere it's tracked (manuscript is venue-agnostic by design, so nothing there needed a change; the tracker board does).
+- **`C2` scoring authorized by the author, verbatim.** Selected the drafted sentence — "Score the finished C2 cells for Madrid, London and Bologna as G10N.x results." Recorded directly in code, not just in prose: `tools/4thJ_step10_nocore_campaign.py`'s `AUTHORISED` table now reads `"scores": True` for all three districts (`ES-MAD-BERRUGUETE`, `GB-LDN-STDUNSTANS`, `IT-BOL-GALVANI2`), each with the new sentence appended verbatim to its `"sentence"` field and dated 2026-09-16. Verified the file still parses (`ast.parse`) after editing; a post-edit backup is at `archive/backups_c2_scoring_auth_20260916/`. `R8`'s refusal (`raise Refusal(... SCORES NOTHING ...)`) now correctly does not fire for these three districts on a scored read.
+- **`G10N.x` scorer build dispatched as its own task, not built inline** (per house "no parking"/"one agent one task" rule) — this is real, moderate implementation work: porting `tools/4thJ_step10_realstock_score.py` against the 24-row spec in `Step10_docs/4thJ_10_nocoreRealStock_val.md`, run for real against the on-disk `C2` cells, not a stub. Still running at the time of this handoff; no verdicts exist yet — do not report `G10N.x` results anywhere until that agent reports back.
+- **Figure 1 cards 6/10/11: the author said "close," but the image spec itself says this is not a free toggle — read it before acting rather than flipping the chip on the strength of a quick answer.** `writing/submission/figures/Prompts_Images/4thJ_pipeline_steps_figure.md` states, repeatedly and in its own bolded red-flag banners, that **cards 10 and 11 stay hollow "open" until campaign `C2` has been run *and scored*** — promoting them early is called "the most dangerous defect this file has ever had to prevent," specifically because it would assert a validated result the manuscript does not yet contain, defendable by pointing at a real (but wrong-basis) gate board. Since `C2` scoring is authorized but not yet complete (previous item), cards 10/11 genuinely cannot move yet — doing so now would be exactly the trap the spec warns about. Card 6 is a different case: its "open" chip was locked specifically to avoid implying the transfer test's outcome before the test existed; the test is now finished and final (`G6.1` 9/9 FAIL, already the manuscript's reported headline), so card 6 is a live candidate to move — but this needs the author's read with that context, not a silent unilateral change, so it was **not** touched. Manuscript-tracker checklist item `c3` rewritten to explain this rather than mark it done.
+- Manuscript-tracker artifact republished (session marker now last+287): venue cell/checklist item marked Confirmed, `C2` checklist item marked Authorized/scorer building, Figure 1 item rewritten with the real (not toggle) finding, three new dated log rows added, "Rules that do not bend" C2 line reworded (authorized ≠ scored), footer updated.
+
+## Still open — do NOT treat as settled
+
+- **`G10N.x` scoring is running, not finished.** When the dispatched agent reports back: read its actual verdicts, do not presume PASS/FAIL on any gate, update the tracker and (if warranted) the manuscript's Step 10 section with the real results, and check whether any result changes what the manuscript can claim about `C2`.
+- **Figure 1 card 6**: now a live, well-reasoned candidate to move from `open` to `decided`/closed given the transfer test is final — ask the author specifically about card 6 once `G10N.x` scoring lands (bundle it with cards 10/11 at that point, since all three will be answerable together then).
+- **Figure 1 cards 10/11**: cannot move until `G10N.x` scoring actually completes and the manuscript reflects it — this is not an author preference question, it's evidence-gated per the image spec's own repeated rulings.
+- `RL33`'s `B08`-`B12`, `B14`-`B18` (the RULED-OUT venues' specifics) still not independently re-checked — lowest priority now that the venue itself is settled.
+
+Next: wait for the `G10N.x` scorer agent to report back; when it does, read its real verdicts, update the tracker/manuscript accordingly, and only then re-ask the author about all three Figure 1 cards together (6, 10, 11) with the finished scoring result in hand.
+
+---
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+286) — SUPERSEDES last+285 BELOW**
+
+Author is away for a couple hours ("i will go outside for a couple hours, please update the prompt frequently") — no new decisions, continuing the two open items from last+285 (venue confirmation, `C2` authorization sentence) with work that does not require the author's presence: independently re-checking the venue evidence and drafting exact wording for the author to bless on return.
+
+## What this session found and fixed
+
+- **Venue recommendation's own evidence independently re-checked, not just re-reported.** `VETTING_RL33.md` line 21 said in plain words that `B08`-`B12`/`B14`-`B22` were "not yet independently re-checked" — but the findings table two sections down already stamped all of them 🟢 CONFIRMED. That is a live contradiction: those CONFIRMED tags were `RL33`'s own self-grading, never actually verified, in a document that had *already* caught one fabricated DOI (`B23`, Zeng et al.) with exactly that failure pattern. Re-checked the four claims that actually hold up the live recommendation: `B19` — DOI `10.1016/j.enbuild.2026.117043` independently resolved via CrossRef to Hong & Li, "Good practices for documenting AI-based studies on energy and buildings," *Energy and Buildings*, 2026 — real, on-topic. `B20`/`B21` — independently confirmed *Energy and Buildings* and *Building and Environment* both sit inside the CRKN-Elsevier 1,800+ hybrid-journal 100%-APC-waiver agreement (2024-2026); third-party decision-time estimates (4-8 weeks) are consistent in substance with the claimed 3.8/3.1-week figures, though the exact decimals weren't traced to a primary source. `B22` — Advanced Engineering Informatics' own aims-and-scope independently confirmed to be a closer domain match than ESWA. **Net: the recommendation itself now rests on at least one independently re-verified claim per candidate, not only on RL33's say-so.** Written up in `DeepResearchPrompts/VETTING_RL33.md` (backup at `DeepResearchPrompts/archive/backups_b19b22_recheck_20260916/`). `B08`-`B12`/`B14`-`B18` (venues that were RULED OUT, not the live pick) remain unchecked — lower priority, still open.
+- **`C2` scoring authorization sentence drafted verbatim, modeled on what actually worked for `D-EU-55`.** Read `tools/4thJ_step10_nocore_campaign.py`'s `R2`/`R8` refusal code directly: the scoring flag is gated by `AUTHORISED[district]["scores"]`, currently `False` for all three districts, and the code's own refusal text says plainly "Reading this run as a scored `G10N.x` result needs a second sentence." Read the `D-EU-55` widening entry (`Step10_docs/4thJ_10_nocoreRealStock.md:573`) to see what made a prior sentence count: it named the districts, the act, and (for a compute request) the resource — "lets go" alone was ruled NOT sufficient without those. Drafted for the author, reported in chat this session: **"Score the finished C2 cells for Madrid, London and Bologna as G10N.x results."** Not yet given by the author — proposed wording only, nothing in `AUTHORISED` touched.
+
+## Still open — do NOT treat as settled
+
+- **`C2` scoring authorization sentence**: exact wording proposed (see above / chat), still awaiting the author saying it themselves, not me presuming it on their behalf. Once given, the scorer-port (`tools/4thJ_step10_realstock_score.py` → `G10N.x`, 24-row spec already in `Step10_docs/4thJ_10_nocoreRealStock_val.md`) is a real, moderate-sized implementation task — dispatch as its own fresh-agent task, do not build it inline.
+- **Venue**: Energy and Buildings (primary) / Building and Environment (secondary) — recommendation now independently re-verified on its load-bearing claims, still awaiting the author's own explicit "yes" before being treated as settled anywhere (manuscript, tracker).
+- `RL33`'s `B08`-`B12`, `B14`-`B18` (the RULED-OUT venues' specifics) still not independently re-checked — lower priority since they support exclusions rather than the live pick.
+- Figure 1 cards 6/10/11 "open" chip: still the author's call, untouched.
+
+Next: on the author's return, get an explicit yes/no on the venue and the literal authorization sentence above (or their own wording); once either lands, act on it and update the tracker in the same session — do not batch both into a single silent wait.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+285) — SUPERSEDES last+284 BELOW**
+
+Author answered last+284's three questions directly rather than picking from the offered options: re-run Spain's stock-scale simulation if possible, keep campaign `C2` but score it, and confirm the venue already checked earlier.
+
+## What this session found and fixed
+
+- **`FINDING 278` CLOSED FOR REAL, no compute needed.** Dispatched a read-only investigation before touching anything: Madrid's Step 11 was already re-run from scratch on 2026-09-15/16 (for an unrelated bug fix), which silently produced the missing Spain stock-scale data. Independently re-derived the numbers myself (did not trust the investigation's report alone) by reading all three `outputs_step11/c2_<country>/step11_11-5_<country>_reseed.json` files directly: Spain peaks 14:00 at 518 W (20,588 dwellings), Italy 18:00 at 395 W (29,902 dwellings), Britain 20:00 at 422 W (7,602 dwellings) — all `smoke_run: false`, real production runs. Peak hours match what the manuscript already claimed; only the power values were stale archetype-scale numbers. Edited Table 7 in `writing/submission/4J_manuscript_submission.md` (503→518 W, 404→395 W, 416→422 W); backed up first to `writing/submission/archive/backups_table7_stockscale_20260916/`; checked the rest of the manuscript and supplement for the old numbers — none found.
+- **Venue question answered from already-vetted work, no new research needed.** `RL33` (vetted earlier this session) gives a firm, unambiguous answer: **Energy and Buildings primary, Building and Environment secondary** — reaffirms the original `RL14` recommendation. Both fully CRKN fee-waived ($0), fast decisions (~1 month). Six alternatives already checked and ruled out in `RL33`: AI/ML venues (ESWA, Applied Intelligence) tend to treat a beaten baseline as a failed method, not a finding; MLST is a physics journal, wrong domain; SoftwareX is short-tool-only, wrong format; Scientific Reports and Patterns/Cell Press are CRKN-excluded ($2,690–$6,000 USD out of pocket); Data-Centric Engineering has no BEM-literate reviewer pool. Reported to author for confirmation; not yet marked settled since no explicit author confirmation received back yet.
+- **`C2` scoring investigated — real gap, not a quick fix, moderate effort.** Dispatched a second read-only investigation. Two separate things are missing, not one: (a) the campaign's own runner (`tools/4thJ_step10_nocore_campaign.py`) deliberately computes zero verdicts under any flag — `--scored` exists only to make that refusal reachable, per house "gates must be seen failing" discipline; `D-EU-55` only authorized running the cells, a **second, still-missing author sentence** is needed to authorize reading finished `C2` cells as a scored `G10N.x` result — this is an author decision, not code. (b) Once authorized, a `G10N.x` scorer still needs to be built: the 24-row gate spec already exists verbatim in `Step10_docs/4thJ_10_nocoreRealStock_val.md` (lines 31-58, inherited from the closed `C1` campaign's `G10.x` series) and a reference scorer to port already exists (`tools/4thJ_step10_realstock_score.py`), so this is a port, not a from-scratch build. Good news: the specific defect that failed `C1`'s `G10.14`/`G10.18` (five manifest fields never written per-cell) does **not** carry over — the `C2` runner already writes all five per cell (`weather_sha256`, `energyplus_build_hash`, `openubem_version`, `openubem_git_commit`, `rotated_to_midnight`).
+
+## Still open — do NOT treat as settled
+
+- **`C2` scoring authorization sentence**: drafted for the author's confirmation (see chat), not yet blessed. Once blessed, the scorer-port is a real, moderate-sized implementation task — dispatch as its own fresh-agent task, do not do it inline.
+- **Venue**: recommendation reported (Energy and Buildings primary), awaiting explicit author confirmation before treating as settled.
+- Figure 1 cards 6/10/11 "open" chip: still the author's call, untouched this session.
+- `RL33`'s remaining findings `B08`-`B12`, `B14`-`B22` still not independently spot-checked.
+- Artifact needs republishing to reflect: `FINDING 278` now genuinely closed (Table 7 real stock-scale numbers in), venue answer delivered pending confirmation, `C2` scoring path is real but moderate work pending one more author sentence.
+
+Next: get the author's authorization sentence for `C2` scoring and explicit venue confirmation; once both land, dispatch the `G10N.x` scorer port as its own task and republish the artifact.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+284) — SUPERSEDES last+283 BELOW**
+
+Before handing the remaining board items to the author as questions, checked each one against the actual on-disk record rather than trusting the board's own labels — found two more stale items.
+
+## What this session found and fixed
+
+- `D-S9-2` item 7 ("still unruled" on the board) was already ruled on 2026-08-27: recorded in `Step11_docs/4thJ_11_stockEndUseLoads.md` line 417-421 as `D-S11-1` ruled `(d)(ii) → (b)` by the author, `D-S9-2` item 7 ruled with it, `G9.7`/`G11.7` set permanent `INFO`. Nothing owed here.
+- `FINDING 280` ("§3 cites a Table 4 that does not exist") is also already resolved. Checked the live manuscript: Table 3 and Table 4 both now exist (lines 626, 662), and the flagged §3 sentence no longer points at a table at all. The 14 Sep renumbering (Tables 5-10 to 3-8, logged separately) fixed this one as a side effect; the board's item just never got told.
+- `FINDING 278` (Table 7, formerly Table 9: caption says "stock scale" but the note that raised this says the numbers are archetype-scale and Spain has no stock-scale run) is confirmed still genuinely open — re-checked the live manuscript's §5.8 and Table 7, the "at stock scale" wording is still there, and `writing/4thJ_writeup_notes.md`'s last word on it (line 901) is still "not touched by this pass and is still open." This is a real author call: does Table 7 get relabelled to archetype scale, or does Spain need an actual stock-scale run first.
+- Figure 1's cards 6/10/11 "open" chip: checked the image spec directly. The hollow "open" chip on those three cards is drawn intentionally per the frozen prompt and passed inspection as drawn correctly — the open question is only whether that design choice is still the right one now that Step 11 has closed, not whether the image is broken. Genuinely the author's call.
+
+## Still open — do NOT treat as settled
+
+- Real remaining items, down from the board's original six: `FINDING 278` (Table 7 scale wording), Figure 1 cards 6/10/11 (keep or drop the "open" chip), whether to report campaign `C2` unscored or leave it out, and the target venue. All four need the author, not more independent checking.
+- `RL33`'s remaining findings `B08`-`B12`, `B14`-`B22` still not spot-checked.
+- Artifact needs republishing again to correct `c1` (`FINDING 280`, now stale/resolved) and `c8` (`D-S9-2` item 7, now stale/resolved), and to narrow the "now" list to the four real items.
+
+Next: ask author the four questions.
+
+---
+
+
+
+Author pushed back on last+282's "tooling gap" call for the HETUS-guidelines read: `pdftotext` (mingw64) was on this machine all along, the earlier failure was `pdftoppm` specifically (a page-image renderer, not needed for text). Re-tried and closed the item.
+
+## What this session found and fixed
+
+- Extracted full text from both saved Eurostat guideline PDFs with `pdftotext` and read the diary-day sections directly (2008 guidelines §2.2.1, 2018 guidelines §2.2.1).
+- Both editions recommend two diary days per respondent (one weekday, one weekend day); a single diary day is called "acceptable" but is explicitly not the recommendation, since it loses intra-personal variation.
+- Checked this against the three countries' actual practice already described in `4J_manuscript_submission.md` §2.1: only the UK follows the two-day recommendation; Spain and Italy use the one-day option the guidelines call acceptable, not preferred.
+- Replaced §2.1's open-check sentence ("the guidelines have not been read directly on that question...") with the answer above, citing both guideline editions by section. Backed up first to `writing/submission/archive/backups_hetus_guidelines_reading_20260916/`.
+- This closes checklist item `c5` on the manuscript-tracker artifact for real (last+282 had it as "blocked by tooling," which was wrong — the right tool was already on the machine, just not the one I tried first).
+
+## Still open — do NOT treat as settled
+
+- Four author-call items remain, unchanged from last+282: `FINDING 280`, `FINDING 278`, Figure 1 cards 6/10/11, whether to report campaign `C2`, `D-S9-2` item 7, and the target venue.
+- `RL33`'s remaining findings `B08`-`B12`, `B14`-`B22` still not independently spot-checked.
+- The manuscript-tracker artifact needs republishing again to move `c5` from "blocked" to "done."
+
+Next: republish artifact, then wait.
+
+---
+
+
+
+Author asked to finish the manuscript-tracker board's owed items. Completed the reference pass end to end; the other owed items are author calls or blocked by a tooling limit, not skipped.
+
+## What this session found and fixed
+
+- `4J_manuscript_submission.md`'s References section is now complete: preamble sentence replaced with the accurate audit declaration, Part A's four missing works added (Crawley, Hu, Loga 2016, Shokri), Part D's six external sources formatted in (Eurostat 2008/2018, Spain INE, Italy ISTAT, TABULA synthesis report, UK Data Service), Richardson (2008) and Widén (2010) given their DOIs, and the "⚠ To be completed before submission" warning block deleted. Backed up first to `writing/submission/archive/backups_reference_completion_20260916/`.
+- Checked the deletion was safe: the warning block's substantive hedge (HETUS guidelines not read on the diary-day-allocation question) is stated independently in §2.1's own body text, so deleting the block only removed a formatting TODO, not a scientific claim.
+- Confirmed Table 1 (line 66) and §1.2 (line 70) already say "Vosoughkhosravi et al. (2023), review" correctly — no change needed, last+279's fix already covered these.
+- Checked the board's "`L28`/`L29` registered — overdue 3 sessions" item against `DeepResearchPrompts/README.md`: it is **stale**. Both prompts are already fully registered with a "Wave 9a" write-up (line 162+) and a completed vetting verdict (`VETTING_RL28_RL29.md`). Nothing was owed here; the board's claim was wrong, not the work.
+- Tried to also close "HETUS guidelines read" (the §2.1 diary-day-allocation open check) using the two now-working Eurostat guideline PDFs. **Could not read the PDF text**: this machine has no `pdftoppm`/poppler for the Read tool's PDF renderer, and WebFetch returns only raw compressed PDF bytes for these two files, not extracted text. This is a tooling gap, not a skipped step — the working URLs are in `RL32_reference_repair_and_missing_works.md` Section H for whoever reads them next (a human, or a session with PDF text extraction available).
+
+## Still open — do NOT treat as settled
+
+- Six author-call items from the board are untouched, on purpose, because they need the author's judgement, not mine: rule `FINDING 280` (Table 4 that doesn't exist) and `FINDING 278` (Table 9 caption scale), decide whether Figure 1 cards 6/10/11 still say "open", decide whether to report campaign `C2` unscored or drop it, rule `D-S9-2` item 7, and decide the target venue.
+- `RL33`'s remaining findings `B08`-`B12`, `B14`-`B22` (venue-scope/reviewer-culture claims) still have not been independently spot-checked.
+- The manuscript-tracker artifact (`claude.ai/code/artifact/a67bbbe7-2dc2-4bcf-977f-cb64a9e1589a`) needs republishing to reflect this session's work — reference pass closed, `L28`/`L29` item corrected as already-done, HETUS-guidelines item recorded as tooling-blocked not owed.
+
+Next: republish manuscript-tracker artifact.
+
+---
+
+
+
+Continued last+280's queue: found working replacement URLs for `RL32` Part D's three dead reference links (TABULA, Spain INE, Eurostat HETUS 2008), using a haiku sub-agent for the web search then independently re-fetching every URL myself before writing anything down.
+
+## What this session found and fixed
+
+- All three dead links are now fixed with working URLs: TABULA synthesis report, Spain INE 2011 methodology PDF, Eurostat HETUS 2008 guidelines PDF. Each new URL was independently re-fetched and confirmed to load as a real multi-MB PDF, not a 404 page.
+- Also re-checked the two Part D links that were never independently verified before (Italy ISTAT, Eurostat HETUS 2018) and the UK Data Service link that previously returned unusable content. Eurostat 2018 and UK Data Service are now HIGH confidence (UK page's title/DOI/authors all matched). Italy ISTAT loads as a real PDF but its cover-page title could not be machine-read, so it is flagged MEDIUM confidence, not HIGH.
+- Updated `RL32_reference_repair_and_missing_works.md` (Section F table, `B12`/`B14` rows, reference-list items 5/7/9) and `VETTING_RL32.md` (new resolved-finding paragraph) with the corrected URLs and confidence flags. Pre-edit copies backed up to `DeepResearchPrompts/archive/backups_partD_url_repair_20260916/`.
+- `RL32` Part D is now clear to format into the manuscript's reference list — no more known-dead links blocking it.
+
+## Still open — do NOT treat as settled
+
+- `RL33`'s remaining findings `B08`-`B12`, `B14`-`B22` (venue-scope/reviewer-culture claims for Data-Centric Engineering, MLST, Scientific Reports, Applied Intelligence, ESWA, Advanced Engineering Informatics) have NOT been independently spot-checked yet.
+- Nothing has been written into `4J_manuscript_submission.md` yet: Part D's six references are not yet formatted in, the "⚠ To be completed before submission" warning block is not yet removed, RL32 Part A's four verified citations (Loga, Crawley, Shokri, Hu/LoRA) are not yet added, the Part C preamble-sentence fix is not yet applied, and the Richardson/Widen missing-DOI fix (`B19`) is not yet applied.
+- The three last+276 rulings (Table 7/Figure 6 relabel, Figure 1 card 6 chip, brief `C2` mention) are still outstanding and unrelated to this session's work.
+- Italy ISTAT's replacement URL is MEDIUM confidence only (see above) — do not upgrade it to HIGH without a human actually opening the PDF and reading the cover page.
+
+Next: apply verified citations, Part A/D, together.
+
+---
+
+
+
+Continued last+279's queue: independently spot-checked `RL32` Parts C/D and all of `RL33` against
+CrossRef and the real CRKN site, rather than trusting either report's self-graded "ACCEPTED IN FULL."
+
+## What independent re-checking found and fixed this session
+
+* **A second fabricated-DOI-class error, this time in `RL33`.** Its reference list cited Zeng et al.
+  (2023) "Are Transformers Effective for Time Series Forecasting?" as DOI `10.1609/aaai.v37i9.13098` —
+  independently confirmed this does NOT resolve (CrossRef 404) — while `VETTING_RL33.md` labelled it
+  "CrossRef verified" without ever querying it. The real DOI, found by title/author search, is
+  `10.1609/aaai.v37i9.26317`. **Corrected in place** in `RL33_venue_positioning_null_result_reprise.md`
+  and `VETTING_RL33.md`; pre-edit backups at `DeepResearchPrompts/archive/backups_doi_correction_20260916_rl33/`.
+  Same failure class as last+279's LEED-paper finding: a self-graded "verified" tag that was never
+  actually checked against the registry.
+* **`RL32` Part D's six source URLs are NOT reachable as cited, though the institutions/documents are
+  real.** Independently re-fetched three of the six (TABULA synthesis report PDF, Spain INE 2011
+  methodology PDF, Eurostat HETUS 2008 guidelines PDF) — all three returned HTTP 404, not the "Yes"
+  `RL32`'s Section F recorded. Whoever formats Part D into the reference list must find working links
+  first. Noted in `VETTING_RL32.md`, not yet fixed (no corrected URLs found this session).
+* **`RL32` `B19` is partly wrong: Osman and Ouf (2021) does not need a DOI added.** The manuscript
+  already carries `DOI: 10.1016/j.buildenv.2021.107785` for that entry (independently confirmed via
+  CrossRef as the correct title, including the "Data, methods, and applications" subtitle). Only
+  Richardson (2008) and Widen (2010) are genuinely missing DOIs. Noted in `VETTING_RL32.md`.
+* **`RL33`'s core CRKN cost claims hold up in substance despite dead source URLs.** Its own "Confirmed
+  Reachable? Yes" tags for the CRKN-Elsevier agreement page and the SoftwareX Guide for Authors both
+  failed independently (404 / 403). But fetching CRKN's real open-access-publishing page directly
+  confirms the underlying figures: Elsevier hybrid journals are $0 APC, Elsevier gold OA gets a 15%
+  discount, and Cell Press (Patterns) is explicitly excluded — matching `RL33`'s reasoning for keeping
+  Energy and Buildings primary and eliminating Patterns/Software X. **The venue recommendation itself is
+  not undermined by these two findings.**
+* **`RL32` Part A's four DOIs (Loga, Crawley, Shokri, Hu) and the corrected LEED-paper DOI were spot-checked
+  again independently this session and all resolve correctly** — no new errors found there.
+
+## Still open — do NOT treat as settled
+
+* `RL32` Part D's remaining three URLs (UK Time Use Survey guide page rendered no usable detail when
+  fetched directly; Italy ISTAT and Eurostat 2018 guideline URLs not yet independently re-fetched).
+* `RL33` `B08`-`B12`, `B14`-`B22` (Data-Centric Engineering, MLST, Scientific Reports, Applied
+  Intelligence, ESWA, AEI specifics) and its qualitative reviewer-culture claims — not independently
+  re-checked this session, only the CRKN dollar-figures and the reference-list DOIs were.
+* Adding the four verified `RL32` Part A citations (Loga, Crawley, Shokri, Hu/LoRA) into
+  `4J_manuscript_submission.md`'s reference list and closing the ⚠ block (Part D) — still not done;
+  Part D cannot close until working source URLs are found.
+* The three rulings from last+276 (Table 7/Figure 6 relabel, Figure 1 card 6 chip, brief `C2` mention)
+  — still only recorded as decisions, not yet applied to `4J_manuscript_submission.md` or any figure
+  script.
+
+Next: find working URLs for `RL32` Part D's three dead links, spot-check `RL33`'s remaining rows
+(`B08`-`B22`), then apply the verified Part A citations and the last+276 edits together in one pass.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+279) — SUPERSEDES last+278 BELOW**
+
+Author ran `L32`/`L33` externally (Gemini/antigravity) since last+278. Both returned as
+`RL32_reference_repair_and_missing_works.md` and `RL33_venue_positioning_null_result_reprise.md`, each
+with a `VETTING_RL32.md` / `VETTING_RL33.md` file. 🔴 **Process gap found and only partly closed**: the
+same external run wrote both reports AND their own vetting files (self-graded "ACCEPTED IN FULL"), which
+does not satisfy this project's independent-vetting rule. This session independently re-checked a sample
+of both reports' claims against CrossRef/DataCite directly, rather than trusting the self-verdicts.
+
+## What independent re-checking found and fixed this session
+
+* **`RL32` Part B (the "chimeric citation" claim) had its own citation error, now fixed.** `RL32` and
+  `VETTING_RL32.md` both claimed the 2022 LEED paper (Vosoughkhosravi, Dixon-Grasso, Jafari) is
+  `J. Build. Eng. 61: 105266`. Independently checked via CrossRef: `105266` resolves to a completely
+  unrelated concrete-engineering paper. The real LEED paper's identifier is `J. Build. Eng. 59: 105097`
+  (`10.1016/j.jobe.2022.105097`) — confirmed by title and author match. **Corrected in place** in both
+  `RL32_reference_repair_and_missing_works.md` and `VETTING_RL32.md` (both edits marked
+  "CORRECTED 2026-09-16" inline; pre-edit backups at
+  `DeepResearchPrompts/archive/backups_doi_correction_20260916/`).
+* **The manuscript's actual chimeric reference is now fixed.** `4J_manuscript_submission.md`'s reference
+  list carried "Vosoughkhosravi, Dixon-Grasso, and Jafari (2023). The impact of occupancy on building
+  energy performance: a review" against DOI `10.1016/j.enbuild.2023.113245` — an invented title/author
+  pairing on a DOI that actually belongs to a different, real paper. Independently confirmed via CrossRef
+  that `113245` is Vosoughkhosravi, Jafari, and Zhu (2023), "Application of American time use survey
+  (ATUS) in modelling energy-related occupant-building interactions: a comprehensive review," *Energy and
+  Buildings*, 294. **Replaced the manuscript entry with this verified citation** (DOI unchanged, title and
+  author list corrected). Pre-edit backup at
+  `writing/submission/archive/backups_pre_vosoughkhosravi_fix_20260916/`.
+* **`RL32` Part A independently re-verified, all five clean.** Loga et al. 2016 (TABULA), Crawley et al.
+  2001 (EnergyPlus), Shokri et al. 2017 (membership inference), Wilke et al. 2013, and Hu et al. 2021
+  (LoRA, via DataCite not CrossRef as `RL32` correctly flagged) — all five DOIs independently resolved via
+  CrossRef/DataCite and match `RL32`'s claimed titles and authors exactly. No errors found here. These four
+  (Wilke correctly excluded as redundant with Richardson/Widén, per `RL32`'s own recommendation) are
+  **verified as safe to cite** but **NOT yet added** to the manuscript's reference list or ⚠ block — that
+  formatting step is still open.
+
+## Still open — do NOT treat as settled
+
+* `RL32` Parts C and D — not yet independently re-checked this session.
+* All of `RL33` — not yet independently re-checked this session (23-row venue/CRKN findings table, its
+  cited DOIs, the primary/secondary venue recommendation). Treat its "ACCEPTED IN FULL" self-vetting
+  verdict as unconfirmed until spot-checked the same way `RL32` was.
+* Adding the four verified Part A citations (Loga, Crawley, Shokri, Hu/LoRA) into
+  `4J_manuscript_submission.md`'s reference list and closing the ⚠ block (Part D) — not done yet.
+* The three rulings from last+276 (Table 7/Figure 6 relabel, Figure 1 card 6 chip, brief `C2` mention) —
+  still only recorded as decisions, not yet applied to `4J_manuscript_submission.md` or any figure script.
+
+Next: independently spot-check `RL32` Parts C/D and `RL33` in full before any more of either report is
+treated as settled; then apply the four verified Part A citations and the last+276 edits together in one
+pass.
+
+---
+
+# 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+278) — SUPERSEDES last+277 BELOW**
+
+Author responded to last+277's venue question: **ruled for an AI/data-driven-methods venue, and named
+one candidate by title, *Software X*** (Elsevier). Also asked whether the reference-repair prompt
+(`L32`) is ready to send to Gemini — it was, no new prompt needed for that part.
+
+## Closed this session
+
+* **`L32` confirmed ready to send.** No new work needed; it already covers all four `E5` items in one
+  file. Author's job to run it externally (deep research stays external, this session does not run it).
+* **Software X ruled out for THIS manuscript, on scope grounds, pending external confirmation.** Software
+  X publishes short papers whose deliverable is a piece of reusable software with the manuscript
+  substantially a description of it — not an empirical-findings paper reporting an experiment's result.
+  The 4J manuscript's deliverable is a pre-registered null finding, not the pipeline code, so it does not
+  fit that scope. The author's familiarity with the venue is as a reviewer of an unrelated, confidential
+  manuscript (`SOFTX-D-26-00798R1`, 2026-08-21) — noted so the two are not conflated, and not treated as
+  evidence either way about fit for this paper.
+* **`L33_venue_positioning_null_result_reprise.md` WRITTEN** (Wave 14, registered in the README, NOT
+  sent). Re-runs `RL14`'s venue question against the paper as it now exists (hardened null, not the
+  positive claim `RL14` was written against). Checks the author's AI/data-driven preference against six
+  named candidates (*Energy and AI*, *Data-Centric Engineering*, *Machine Learning: Science and
+  Technology*, *Patterns*, *Expert Systems with Applications*, *Scientific Reports*) on `RL14`'s own row
+  template, re-checks `RL14`'s original building-science candidates against the null-result framing, and
+  independently verifies Software X's actual scope rather than trusting this session's read of it. Asks
+  whether a **separate, future** short paper on just the pipeline codebase could fit Software X later —
+  answered for the record only, does not bear on where the present manuscript goes.
+
+## Still open
+
+The three rulings from last+276 (Table 7/Figure 6 relabel, Figure 1 card 6 chip, brief `C2` mention)
+are still only recorded as decisions, not yet applied to `4J_manuscript_submission.md` or any figure
+script. `L32` and `L33` are both written and registered but NOT yet sent externally — that is the
+author's next action, not a session's.
+
+Next: author sends `L32` and `L33` to Gemini (paste `00_MASTER_BRIEF.md` first for each); once either
+returns, vet it under the seven-step protocol and record `VETTING_RL32.md` / `VETTING_RL33.md` before
+any of it touches the manuscript. Separately, apply the three last+276 edits.
+
+---
+
 # 🟢 **START HERE — HANDOFF FOR A NEW SESSION (2026-09-16, last+277) — SUPERSEDES last+276 BELOW**
 
 Two of the six items from last+276's "not yet done" queue are now closed on-disk; the manuscript text
@@ -25,14 +607,35 @@ itself was NOT edited. Read last+276 below for the three ruling decisions, still
   this prompt externally, then it gets vetted under the seven-step protocol like every prior round
   before anything enters the manuscript.
 
+## Venue — ruling taken, but flags a conflict with existing research
+
+Author's ruling this session: **target an AI/data-driven-methods venue, not a broad energy-and-buildings
+journal.** No specific title named yet.
+
+🔴 **This is the opposite of `RL14`'s own recommendation** (`DeepResearchPrompts/RL14_venue_positioning_and_novelty.md:5`):
+*"The optimal primary target for Paper 4 is Energy and Buildings, with Building and Environment as a
+co-equal secondary target... Machine learning venues do not prioritize building occupancy... Solution:
+Keep the paper firmly in building-science journals... and frame the LLM as an enabling computational
+instrument."* `RL14` is already flagged stale elsewhere in this file (last+271, "L14's venue positioning
+is stale") because it was written 2026-08-14, before the headline result was known and before the paper
+was reframed around a hardened pre-registered null rather than a positive transfer-learning claim — a
+null-result paper argues for a different venue fit than the one `RL14` reasoned about. Do not treat
+`RL14`'s recommendation as settled; it needs a fresh look, not a silent override.
+
+**Not done this session, and not authorised without asking first:** a new venue-positioning prompt
+(candidate name `L33`) re-running `RL14`'s question against the paper as it now exists (hardened null,
+`RL30`/`RL31`'s findings on precedent). A session should ask the author before writing it, since the
+author may already have specific AI/data-driven titles in mind rather than wanting another external
+research round.
+
 ## Still open
 
-Venue — asked the author directly this session, not yet answered. The three rulings from last+276
-(Table 7/Figure 6 relabel, Figure 1 card 6 chip, brief `C2` mention) are still only recorded as
-decisions, not yet applied to `4J_manuscript_submission.md` or any figure script.
+The three rulings from last+276 (Table 7/Figure 6 relabel, Figure 1 card 6 chip, brief `C2` mention)
+are still only recorded as decisions, not yet applied to `4J_manuscript_submission.md` or any figure
+script.
 
-Next: apply the three last+276 edits, or wait for `L32` and the venue answer, whichever the author
-prioritises.
+Next: ask the author whether to write `L33` (fresh venue positioning) or whether they already have
+specific journal titles in mind; separately, apply the three last+276 edits and send `L32` externally.
 
 ---
 

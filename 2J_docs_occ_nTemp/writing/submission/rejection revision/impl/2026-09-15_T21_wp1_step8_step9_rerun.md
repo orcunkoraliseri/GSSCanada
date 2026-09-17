@@ -364,6 +364,46 @@ before. Manager: nothing new to decide — T20's 1328375 chain is still the only
   or newly introduced by T18's own staging/monkeypatch work — out of scope to investigate further, flagged
   to the manager as-is.
 
+## Ledger (2026-09-17, t21_check.sh selftest --out fix)
+- **JobID 1328428 (`t21_check`) FAILED, exit 1:0, in under 1 second** — `t21_check.sh:41` called
+  `t21_check.py --selftest --t21-root ... --code-root ...` without `--out`, but `t21_check.py:346`
+  declares `ap.add_argument("--out", required=True)` at the top-level parser, so argparse exited 2
+  ("the following arguments are required: --out") before any selftest logic ran; the selftest itself
+  never reads `args.out` (writes into its own self-created `out/_selftest/` dir, lines 354-356), so the
+  flag is unused there and a placeholder path is correct. Job-script bug only; `t21_check.py` not
+  touched. Superseded by **JobID 1329216** below.
+- **JobID 1329216** — fix applied to `t21_check.sh:41` only (added
+  `--out "$T21_ROOT/out/_selftest/unused_selftest_out.csv"` to the selftest invocation), scp'd down,
+  edited locally with the Edit tool (no heredoc), scp'd back up, read back in full from Speed to confirm.
+  Resubmitted `sbatch t21_check.sh` (no `--dependency` — all three campaign arrays 1328422/1328425/1328426
+  and the A4 job 1328427 are already COMPLETED, exit 0:0). `squeue -j 1329216` immediately after: `R`
+  (running) on node `speed-32`. Not waited on further.
+
+## Verified
+- Read back the full staged `t21_check.sh` from Speed after the scp-up: line 41 now reads
+  `"$PYTHON" "$CHECK" --selftest --t21-root "$T21_ROOT" --code-root "$CODE_ROOT" --out "$T21_ROOT/out/_selftest/unused_selftest_out.csv"`.
+  SBATCH block unchanged: `--partition=ps`, `--time=7-00:00:00`, `--cpus-per-task=4`, `--mem=32G`,
+  `--job-name=t21_check`. No other line differs from the pre-fix version (real-check invocation at
+  lines 51-58 and the abort logic at lines 43-48 both byte-for-byte the same as originally staged).
+- `squeue -j 1329216` shows the job in state `R` on `speed-32` immediately after submission.
+
+## Next
+New JobID **1329216** is running. It will write `/speed-scratch/o_iseri/2J_revision/T21/out/t21_check_report.csv`
+on success. Collector (fresh agent, once 1329216 completes — check with `sacct -j 1329216`): read
+`T21/logs/t21_check_1329216.out` for the `[SELFTEST] RESULT: ...` line first (must read PASS before
+trusting anything below it), then the real check's `[A1]`/`[A2 restated]`/`[A2X]`/`[A3]`/`[A4]` summary
+lines, then `T21/out/t21_check_report.csv` itself (small, safe to read in full). Same acceptance
+procedure as the original "Next (phase B submitted)" entry above — nothing else changed by this fix.
+The T21 collector step (queue step 3, per the manager's own workflow) fires once this job finishes.
+
+## WHAT I DID NOT VERIFY (t21_check.sh selftest --out fix, 2026-09-17)
+- Did not wait for or poll 1329216 — submitted and moved on, per the no-parking rule. Whether the
+  selftest now passes past argparse and actually reports `[SELFTEST] RESULT: PASS`, and whether the
+  real check then runs and produces a valid `t21_check_report.csv`, are both unread.
+- Did not re-diagnose or re-read `t21_check.py` beyond the single line (346) and the selftest block
+  (354-356) the manager's diagnosis pointed to — trusted the manager's read that `--out` is genuinely
+  unused in `--selftest` mode; did not trace every code path inside the selftest function myself.
+
 ## Ledger (2026-09-15, smoke 1328403 sample mismatch)
 - **Facts carried in (manager, read from logs).** T21 smoke **1328403** (shared tree
   `/speed-scratch/o_iseri/2J_revision/code_step8/repo`, `--sched-dir T21/sched_activity`, years

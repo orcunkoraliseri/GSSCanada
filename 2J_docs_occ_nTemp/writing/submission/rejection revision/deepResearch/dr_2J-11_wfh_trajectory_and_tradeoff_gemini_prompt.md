@@ -1,4 +1,4 @@
-# Deep-Research Prompt dr_2J-11: work-from-home to 2030, and the home versus office energy trade-off
+# Deep-Research Prompt dr_2J-11 (Gemini version): live-search check of work-from-home to 2030, and the home versus office energy trade-off
 
 > SCOPE GUARD, READ FIRST. Two narrow questions, both answered with **published numbers you opened**.
 > Part A: how much home working exists now and what published sources say about 2030. Part B: when people
@@ -73,4 +73,6 @@ method is broken: stop and say so.
 4. **Positive control result.**
 5. **What I could not find or open**, in the first person, one line each.
 
-Save the return as `dr_2J-11_wfh_trajectory_and_tradeoff_results.md`.
+Save the return as `dr_2J-11_wfh_trajectory_and_tradeoff_gemini_results.md`. A companion no-search
+close-reading pass runs in Fable on our own scenario-construction argument
+(`dr_2J-11_wfh_trajectory_and_tradeoff_fable_prompt.md`) — run both, they check different things.

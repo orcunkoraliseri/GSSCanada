@@ -358,6 +358,56 @@ step8 array>` (T21's own Step-8 array must also be complete, since P1/P3 both re
   not fire until EVERY task of that array exits 0 -- confirmed this is the intended "the array must wait for
   T21's manifests" reading from addendum 2 (all 24 cells' manifests, not just some).
 
+## Verified (2026-09-17, smoke re-verified retrospectively, read-only login-node checks)
+- **Check 1 -- both households simulated.** Two result sets present under the smoke's dedicated output
+  dir: `sample_001_HH130228/2030/` and `sample_002_HH79252/2030/`, each with its own `hourly_meters.csv`
+  and full E+ output set (`eplusout.*`, `Scenario_2030.idf`, etc.). `cell_manifest.csv` in that dir
+  reads `1,130228,...` / `2,79252,...` and `undelivered.csv` has 0 data rows (header only). **PASS.**
+  Evidence: `T29/smoke_out/lambda_0.0/SingleD__Montreal_6A/{cell_manifest.csv,undelivered.csv,
+  sample_001_HH130228/2030/,sample_002_HH79252/2030/}`.
+- **Check 2 -- 8,760 rows each.** `wc -l` run separately on each file: HH130228's
+  `hourly_meters.csv` = **8761 lines**; HH79252's `hourly_meters.csv` = **8761 lines**. Both counts
+  INCLUDE the header row (`head -1` on HH130228's file confirmed the first line is the column header
+  `hour,Electricity:Facility,...`, not a data row) -- so both files have exactly 8,760 data rows.
+  **PASS.** Evidence: `T29/smoke_out/lambda_0.0/SingleD__Montreal_6A/sample_001_HH130228/2030/
+  hourly_meters.csv` (8761 lines), `.../sample_002_HH79252/2030/hourly_meters.csv` (8761 lines).
+- **Check 3 -- household IDs are the REBUILT seed-42 draw (130228, 79252), not the published pair
+  (130322, 80058).** Confirmed both from the directory names (`sample_001_HH130228`,
+  `sample_002_HH79252`) and from `cell_manifest.csv`'s own rows (`1,130228,1,SingleD,Quebec` /
+  `2,79252,2,SingleD,Quebec`). Neither `130322` nor `80058` appears anywhere in this output. **PASS.**
+  Evidence: `T29/smoke_out/lambda_0.0/SingleD__Montreal_6A/cell_manifest.csv`.
+- **Ledger check (SLURM state, read this session, not carried from the task doc's own prior claim).**
+  `sacct -j 1328433 --format=JobID,JobName,State,ExitCode -X`: all 24 tasks (`1328433_0`..`1328433_23`)
+  `COMPLETED`, `ExitCode 0:0` -- confirms 24/24. `squeue -u o_iseri` at the same time shows `1328434`
+  (`t29_revert`) still active: tasks `1328434_20`/`1328434_21` running (`R`), `1328434_[22-23%2]`
+  pending on `JobArrayTaskLimit` -- i.e. tasks 0-19 already finished, 20-21 in flight, 22-23 queued.
+  Not yet complete.
+
+## Next
+The T29 revert-array collector fires when 1328434 (`t29_revert`) finishes (all 24 tasks reach a
+terminal state). At that point, per the "Next (phase B submitted...)" section below: read
+`T29/logs/t29_stage_1328431.out` for md5 before/after PASS lines (if not already read), then each
+array's per-task logs (`T29/logs/t29_partial_*_*.out`, `T29/logs/t29_revert_*_*.out`) for `DONE`/
+`FAILED` and undelivered counts, then run `t29_check.py` (P0-P5, restated P1) as its own sbatch job
+with `--dependency=afterok:1328433:1328434:1328422` (T21's Step-8 array 1328422 must also be complete)
+and read `T29/out/t29_check.json` plus the P2/P3 CSVs. P3/P4/P5 still have not been seen failing on a
+copied fake case (manager addendum) -- do that before trusting their PASS on real output. This task
+did NOT collect 1328433's own array output or run `t29_check.py` -- it only re-verified the smoke.
+
+## WHAT I DID NOT VERIFY (2026-09-17, smoke re-verification)
+- Did not read 1328433's (`t29_partial`) own per-cell output or manifests -- only confirmed via
+  `sacct` that all 24 of its tasks exited 0:0. Whether its 24 cells' own household draws also match
+  T21's manifests (P1, across all cells) is the collector's job, not checked here.
+- Did not read any of 1328434's completed-so-far task output (tasks 0-19) -- only confirmed via
+  `squeue` that it is still mid-flight, not that its finished tasks succeeded.
+- Did not read `T29/logs/t29_stage_1328431.out` (md5 before/after) or `T29/logs/t29_smoke_1328432.out`
+  (the smoke's own stdout log) this session -- verification here was done directly against the smoke's
+  output directory on disk, not its log file.
+- Did not run `t29_check.py` -- per the manager's ruling this task only verifies and reports; the
+  collector run is a separate, later task once 1328434 completes.
+- Per the manager's 2026-09-17 ruling, no `scancel` was issued and none was warranted (all three
+  checks passed).
+
 ## Next (phase B submitted, fixed-manifest wrapper)
 Collector (fresh agent, once 1328431/1328432/1328433/1328434 all complete, in that dependency order): **first
 read the smoke** (`T29/logs/t29_smoke_1328432.out`) -- confirm both households (130228, 79252) were simulated,

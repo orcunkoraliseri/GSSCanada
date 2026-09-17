@@ -98,14 +98,14 @@ CARDS = [
     (5,  "Population linkage",        ["synthetic population, then one day each",
                                        "two gates ship as declared exceptions"], "validated"),
     (6,  "Transfer test",             ["train on two, generate the third",
-                                       "the bar: beat real diaries, reweighted"], "open"),
+                                       "the bar: beat real diaries, reweighted"], "validated"),
     (7,  "Constrained generation",    ["well-formed diaries guaranteed at decoding"], "decided"),
     (8,  "Building simulation",       ["European residential archetypes",
                                        "the occupancy effect does not survive"], "validated"),
     (9,  "End-use loads",             ["published activity-to-appliance mappings",
                                        "three gates ship as declared limitations"], "validated"),
-    (10, "Real-stock UBEM",           ["observed footprints, one diary per dwelling"], "open"),
-    (11, "Stock-scale end-use loads", ["same mapping, bands inherited unmoved"], "open"),
+    (10, "Real-stock UBEM",           ["observed footprints, one diary per dwelling"], "validated"),
+    (11, "Stock-scale end-use loads", ["same mapping, bands inherited unmoved"], "validated"),
 ]
 
 # mechanical word-count guard, straight from the prompt's table

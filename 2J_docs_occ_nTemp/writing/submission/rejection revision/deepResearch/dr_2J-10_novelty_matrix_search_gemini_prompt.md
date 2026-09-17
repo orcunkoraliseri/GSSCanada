@@ -1,4 +1,4 @@
-# Deep-Research Prompt dr_2J-10: systematic search that tries to BREAK our novelty table
+# Deep-Research Prompt dr_2J-10 (Gemini version): live-search systematic search that tries to BREAK our novelty table
 
 > SCOPE GUARD, READ FIRST. This is an **adversarial search**. Our paper claims that no published study
 > combines six features (listed below). Your job is to find the study that proves us wrong. A study that
@@ -88,4 +88,6 @@ broken: stop and say so.
 6. **Search log:** databases and query strings, number of hits screened, number opened.
 7. **What I could not open**, in the first person, one line each.
 
-Save the return as `dr_2J-10_novelty_matrix_search_results.md`.
+Save the return as `dr_2J-10_novelty_matrix_search_gemini_results.md`. A companion no-search close-reading
+pass runs in Fable on our own novelty argument (`dr_2J-10_novelty_matrix_search_fable_prompt.md`) — run
+both, they check different things.

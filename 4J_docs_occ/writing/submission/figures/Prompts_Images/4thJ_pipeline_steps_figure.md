@@ -137,6 +137,43 @@ and again on 🔴 **2026-09-07** (cards 10 and 11 only — see the 2026-09-07 ba
 > `Step7_docs`: OPEN with work items 7.4, 7.5 and 7.6 outstanding), so nothing was moved — **but
 > that is a spot check, not an audit. Do not promote any card 0 to 9 on the strength of this banner.**
 
+> 🔴 **REVISED 2026-09-16. Card 6 moves from `open` to `validated`. Cards 10 and 11 are UNCHANGED
+> and stay `open` — do not touch them on the strength of this banner.**
+>
+> **Why card 6 moves.** `validated` means built, and its gate battery ran and was seen to fail on
+> purpose before it was trusted (Section 4's own definition, 2026-08-19). Step 6's gate
+> (`G6.1`) has now done exactly that: all three folds are trained, generated and scored, the
+> pre-registered comparison ran, and it failed 9 of 9 as designed — that is the manuscript's own
+> reported headline, not a shortfall. The author confirmed closing this card 2026-09-16.
+> **Why cards 10 and 11 do not move with it.** Both are explicitly gated on campaign `C2` being
+> run *and scored* (see the 2026-09-07 banner above, "THE TRAP"). `C2` scoring is authorized and in
+> progress but not complete — no `G10N.x` verdict exists yet. Moving either now would be exactly the
+> defect that banner exists to prevent. Re-ask once scoring lands.
+>
+> **What changed:** Section 4's table row for card 6 (chip only), Section 11's `circle 6` line,
+> and `writing/submission/figures/scripts/generate_fig01_pipeline.py`'s `CARDS` tuple (chip
+> `"open"` → `"validated"` for card 6 only). The image was regenerated from the updated script.
+> No body-line text changed on any card.
+
+> 🔴 **REVISED 2026-09-17. Cards 10 and 11 move from `open` to `validated`.** This is the closure the
+> 2026-09-07 "THE TRAP" banner was written to gate, not to forbid forever: campaign `C2` has now been
+> both run and scored. 35,090 real cells across Madrid, London and Bologna were scored 2026-09-16
+> against the 24-row `G10N.x` spec — 12 gates pass, 1 genuinely fails on real data (`G10N.20`, a small
+> group of cells where two different households' diaries happen to produce an identical result), and a
+> mutation battery of 11/11 felled proves the check itself works, not just that it was run. That is
+> exactly what `validated` means (Section 4, 2026-08-19): built, and shown to survive a gate battery
+> that was seen to fail on purpose before it was trusted. The author reviewed this real score and
+> confirmed closing both cards 2026-09-17, along with two related scoring-rule calls: `G10N.21`'s
+> real-stock physics carve-out is kept (matches the earlier campaign's own scorer), and the 320
+> `G10N.20` collision cells are excluded from any count quoted in the manuscript until the underlying
+> cause is fixed.
+>
+> **What changed:** Section 4's table rows for cards 10 and 11 (chip only, open line kept for
+> history), Section 11's `circle 10` and `circle 11` lines, and
+> `writing/submission/figures/scripts/generate_fig01_pipeline.py`'s `CARDS` tuple (chip `"open"` →
+> `"validated"` for cards 10 and 11). The image was regenerated from the updated script. No body-line
+> text changed on any card.
+
 ## 0. Read this before generating
 
 > 🔴 **NO NUMBER MAY APPEAR IN THIS IMAGE EXCEPT THE STEP NUMBERS 0 TO 9.**
@@ -275,12 +312,12 @@ The cards, top to bottom, with the exact text each carries:
 | 3 | `Serialisation` | `episode form: duration, activity, location, co-presence` | — | `validated` |
 | 4 | `Fine-tuning` | `open-weight base model, low-rank adapter, one adapter per held-out country` | — | `decided` |
 | 5 | `Population linkage` | `synthetic population first, then one generated day per person` | `two gates fail and ship as a declared exception` | 🔴 `validated` |
-| 6 | `Transfer test` | `train on the other two, generate the held-out one from published marginals` | 🔴 `the reported folds are not yet trained` | `open` |
+| 6 | `Transfer test` | `train on the other two, generate the held-out one from published marginals` | 🔴 `the reported folds are not yet trained` | 🔴 `validated` — **changed 2026-09-16, see banner below; open line retired 2026-09-07, see Section 11** |
 | 7 | `Constrained generation` | `well-formed diaries guaranteed at decoding` | 🔴 `throughput, chaining rule and schedule emission` | `decided` |
 | 8 | `Building simulation` | `European residential archetypes, uninjected control run first` | 🔴 `the occupancy effect does not survive at full injection` | 🔴 `validated` |
 | 9 | `End-use loads` | `published activity-to-appliance mappings, adapted not authored` | 🔴 `three gates ship as declared failures` | 🔴 `validated` |
-| 🔴 10 | `Real-stock UBEM` | 🔴 `observed footprints, dwellings only, one independent diary per dwelling` | 🔴 `the no-core engine does not exist yet` | `open` |
-| 🔴 11 | `Stock-scale end-use loads` | `the same mapping, at the scale its sources were validated at` | 🔴 `the bands are inherited unmoved, not re-set at stock scale` | `open` |
+| 🔴 10 | `Real-stock UBEM` | 🔴 `observed footprints, dwellings only, one independent diary per dwelling` | 🔴 `the no-core engine does not exist yet` | `validated` — **changed 2026-09-17, see banner below; open line retired, engine ran and was scored** |
+| 🔴 11 | `Stock-scale end-use loads` | `the same mapping, at the scale its sources were validated at` | 🔴 `the bands are inherited unmoved, not re-set at stock scale` | `validated` — **changed 2026-09-17, see banner below; open line retired, engine ran and was scored** |
 
 🔴 **CHANGED 2026-08-19 — READ THIS BEFORE COPYING THE TABLE.** Five rows moved and the reasons are
 not cosmetic:
@@ -824,7 +861,7 @@ circle 4, title Fine-tuning, chip decided
 circle 5, title Population linkage, chip validated
   synthetic population, then one day each
   two gates ship as declared exceptions
-circle 6, title Transfer test, chip open
+circle 6, title Transfer test, chip validated
   train on two, generate the third
   the bar: beat real diaries, reweighted
 circle 7, title Constrained generation, chip decided
@@ -835,9 +872,9 @@ circle 8, title Building simulation, chip validated
 circle 9, title End-use loads, chip validated
   published activity-to-appliance mappings
   three gates ship as declared failures
-circle 10, title Real-stock UBEM, chip open
+circle 10, title Real-stock UBEM, chip validated
   observed footprints, one diary per dwelling
-circle 11, title Stock-scale end-use loads, chip open
+circle 11, title Stock-scale end-use loads, chip validated
   same mapping, bands inherited unmoved
 
 WORD COUNTS, SO YOU CAN CHECK THE CARDS MECHANICALLY BEFORE YOU FINISH. Count the words you have

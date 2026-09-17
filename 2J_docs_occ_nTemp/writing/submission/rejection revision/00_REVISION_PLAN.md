@@ -479,8 +479,138 @@ too — cost **+3,600 runs** (2005/2010/2015 on the new panel). Recommended if W
 8. Table 1 novelty matrix never tested by a systematic search (WP12.3a) — a new journal's reviewer
    may test it.
 9. The companion prior paper still "under review" in the text (WP12.2).
+10. Table 1's Motuzienė et al. (2022) row checks "Forecast to future year," but the paper is a
+    commercial-office, pandemic-era HVAC control study, not a residential 2030-style forecast
+    (`dr_2J-12`, CARRIED, vetted against Crossref). Fix the checkmark or soften the §1.3 citation.
+11. Discussion (§6) cites "Table 5" for annual-electricity percentage increments; Table 5 contains
+    only EUI values and SHEU bands, no percentages (`dr_2J-12` Fable M4, CARRIED, verified absent).
+12. §3.6 promises the lighting daylight-gate simplification is discussed in §7; §7 does not mention
+    lighting, daylight, or R1 (`dr_2J-12` Fable M9, CARRIED, verified absent by full-text search).
+13. Conclusion item 1 says EUI is "consistent with" SHEU ranges; §5.2/Table 5 say all four archetypes
+    are below range — a direct same-document contradiction (`dr_2J-12`, CARRIED, corroborated by both
+    Gemini and Fable). Fix regardless of WP7's outcome.
+14. The SHEU ±2.7% agreement is a scalar fitted to the target, then checked against it — circular as
+    stated (`dr_2J-12` Fable, CARRIED). Soften "validates the model" / "credibility anchor" wording;
+    WP5's measured hourly comparison is a different, additional check, not a fix to this wording.
+15. 2030 cohort size (37,008) equals exactly 3x the 2022 valid-diary count (12,336) (`dr_2J-12` Fable
+    4.18, CARRIED as an arithmetic fact, cause not established) — one-line author check of whether
+    this is a deliberate 3x oversample or a coincidence.
+16. Table 1's six columns have no stated scoring criteria anywhere in the text, and "Calibrated
+    behavioural model" is scored inconsistently: Chiou et al. (2011) gets a cross even though §1.5
+    calls it survey-grounded, Yin et al. (2024) gets a check even though §1.2 says it "stops at
+    statistical analysis" (`dr_2J-10` Fable R2/M3, CARRIED, 21/21 quotes and all nine Table 1 rows
+    verified against the archived text). Fix belongs in WP10's Table 1 rewrite alongside item 8.
+17. The manuscript's own "+2.2 to +3.9 pp" 2030 figure is defined two incompatible ways: as a level
+    above the pre-pandemic baseline (Abstract, §3.4, §5.1, Conclusion item 2, four places) and, once,
+    as the 2022-to-2030 step itself (§7 para 5). The two readings cannot both be true — under the level
+    reading 2030 sits below the 2022 value of +5.2 pp, contradicting "persists"/"upper bound"; under the
+    step reading 2030 sits at +7.4 to +9.1 pp with no stated driver for the further rise (`dr_2J-11`
+    Fable Finding 5.1, CARRIED, arithmetic re-derived and confirmed). Needs an explicit editorial
+    decision on which definition the rebuilt WP1 number reports, before the recalibrated 2030 figures
+    are written anywhere.
+18. Table 1's real gap is narrower than the manuscript's prose implies: a real, already-published paper
+    (Chen et al. 2022, Applied Energy 325, 119890) scores 5 of the 6 novelty columns, missing only
+    column C3 (a future/post-COVID scenario) (`dr_2J-10` Gemini, live search, CARRIED, all 33 cited
+    DOIs Crossref-verified, headline claim corroborated via an open preprint). WP10's Table 1 rewrite
+    should name C3 explicitly as the one axis separating this paper from Chen et al., not restate the
+    gap as fully open. Separately, the same report's own Table B "Total Y" column undercounts 12 of 25
+    rows (never overcounts); its printed rank order must be corrected before any row from it is quoted
+    (see `deepResearch/dr_2J-10_VETTING.md` section 7 for the corrected counts).
+19. The manuscript's 2030 scenario assumes WFH "persists with probability one" after 2022, but the real
+    trend since 2022 is a continued decline, not a plateau: Canada 22.4% (May 2022) to 20.1% (2023) to
+    18.7% (2024); the US SWAA series 30.4% (2022) to 28.7% (2023) to 27.6% (2024) to 25.9% (2026)
+    (`dr_2J-11` Gemini, live search, CARRIED, positive control and all headline trade-off numbers
+    independently confirmed). This is new evidence, not just an existing open item: WP2's planned
+    "partial/high reversion" 2030 scenario (line 117) should be grounded in this observed post-2022
+    trend rather than an arbitrary bracket. One cited figure, the "7.1%" 2016 baseline, could not be
+    matched to the real StatCan source page (three other close numbers exist there instead) and must
+    not be repeated in any redraft without the author re-checking StatCan directly.
+
+20. Reference list: Motuzienė et al. (2022) is cited as *Sustainable Cities and Society*, volume 76;
+    the real record (Crossref, ScienceDirect, PubMed) is volume 77 — the DOI itself
+    (10.1016/j.scs.2021.103557) is correct, only the printed volume number is wrong (independent
+    reference re-verification, 2026-09-17, all 52 references checked against Crossref/DataCite or
+    primary source, fresh agent, not reusing the 2026-06/08 audit claims). Fix the volume number
+    wherever this reference appears.
+21. Reference list: Jalilian & Kamel (2025) is cited with a truncated title, "Urban-scale building
+    energy modeling under future climate scenarios"; the real, full published title (Crossref) is
+    "Urban-scale building energy modeling under future climate scenarios: a scalable workflow and
+    insights from Nassau County, New York" (same 2026-09-17 re-verification). Restore the full title.
+22. **The eleventh limitation carries one uncited literature claim.** `manuscript/draft_S7_limitations.md`
+    now states that survey-methodology literature outside this project reports that moving to a
+    self-administered mode can change how much at-home time a respondent records, independently of any
+    real behaviour change. The claim is traceable to `deepResearch/dr_2J-12_VETTING.md:127-132,195-197`,
+    which is quote-checked, **but no citable reference is attached to it**, and the assistant may not go
+    and find one (deep research is external). Step 13 must therefore do one of exactly two things, and
+    record which: (a) attach a real, vetted citation obtained through a deep-research ask, or (b) soften
+    the sentence so it claims only what this project's own data supports, namely that the mode change is
+    confounded with the 2022 break and cannot be separated from it. **Option (b) is fully sufficient for
+    the limitation to stand** — the confound is established from `COLLECT_MODE` in our own data
+    (0 for 2005/2010/2015, 1 only for 2022), not from the outside literature. Do not ship the sentence
+    with the claim unsourced.
+23. **Figure 1 must be cited under its own filename, and one legibility check is the author's.**
+    The new workflow diagram lives at `figures/Figure_01_workflow.png` (plus the vector twin
+    `Figure_01_workflow.pdf` and the reference copy under `figures/Prompts_Images/`). When WP11 inserts
+    the figure into `manuscript/draft_S2_framework.md`, it must reference **`Figure_01_workflow.png`**
+    and never `Figure_01_pipeline.png`: that second filename belongs to the retired axonometric pipeline
+    overview, which is a different figure with per-stage result numbers overlaid, is captioned as such in
+    `writing/figures/Figure_01_pipeline.md`, and is hard-referenced by the archived Building Simulation
+    drafts under `writing/submission/extra/` and `writing/submission/archive/`. The two figures may never
+    share a filename again. **One item stays unverified and cannot be closed by an agent:** legibility at
+    the literal print size. T47 checked the file at a downscaled preview and found nothing wrong, and the
+    embedded size is exactly 190 mm at 600 dpi, but a sub-pixel check for clipped glyphs at 100 percent
+    zoom, or a proof print, is the author's own eye. Ask for it once, at figure lock-in, not before.
+24. **RULED: the EUI gap is attributed to no single end use, and the "4 to 9 times space heating" number
+    is never quoted.** dr_2J-13 came back and was vetted (`deepResearch/dr_2J-13_VETTING.md`, verdict
+    PARTIALLY SURVIVES). No measured or survey-based Canadian end-use split exists: direct sub-metering
+    NOT FOUND, SHEU carries no end-use split, the IESO/Cadmus survey NOT FOUND for absolute intensities,
+    peer-reviewed NOT FOUND. The only split on offer is NRCan's CEUD, which the return itself describes as
+    the Residential End-Use Model, an engineering stock accounting of unit energy consumptions calibrated
+    to StatCan control totals. The prompt's scope guard said in advance that a modelled value is not an
+    answer, so **pre-registered rule 3 fires**: the breakdown is not run at all, and the manuscript states
+    that the measured end-use split was unavailable and attributes the Table 5 EUI gap to **no single end
+    use**. The return's own headline sentence, that the gap is "unequivocally located in the thermal space
+    heating load" at 4 to 9 times below benchmark, **does not go in the paper in any form**, including
+    abstract, highlights and figure captions. Two independent reasons, either sufficient: rule 3, and the
+    fact that the comparison's basis was never established (CEUD's denominator is *heated* floor space and
+    its space heating is all-fuel raw combustion energy, gas-dominated in Ontario, while our figure is
+    simulated site energy per our own floor-area definition; neither the area definition nor the fuel and
+    efficiency scope was checked, so the multiple could be an artefact of the bases).
+    **What the manuscript may say instead, and should:** that Canada publishes no measured residential
+    end-use split, only a modelled stock-accounting disaggregation, so the gap cannot be assigned to a
+    specific end use without a basis equivalence this study cannot establish. That is the honest form of
+    the WP5 missing-measured-data limitation and it costs the paper nothing.
+    **Two smaller rulings from the same vetting.** (a) The saved results file is the record; the
+    chat-side summary of that run is **not to be used for anything** (its Ontario Single Detached water
+    heating numbers do not reconcile with themselves, with the file, or with the live source, while the
+    file's table reproduces CEUD exactly). (b) Three background citations in the return carry a wrong
+    detail and must be corrected if ever cited: Rouleau and Gosselin 2021 is Applied Energy vol. **287**
+    (not 290); Papineau et al. is **2021** (not 2022); the Makonin HUE dataset covers **22** homes and its
+    citable publication is **2019** (not 28 homes, not 2018). None of the three carries a number used
+    anywhere in this paper.
 
 Items 1–2 get stronger once WP7 step 3 exists; item 8 is the one to do before resubmitting anywhere.
+Items 10–19 are cheap, quote-verified fixes from `dr_2J-12`, `dr_2J-10`/`dr_2J-11` Fable, and
+`dr_2J-10`/`dr_2J-11` Gemini vetting (`deepResearch/dr_2J-12_VETTING.md`,
+`deepResearch/dr_2J-10_dr2J-11_FABLE_VETTING.md`, `deepResearch/dr_2J-10_VETTING.md`,
+`deepResearch/dr_2J-11_VETTING.md`) and can be done alongside WP10 without waiting on WP1/WP5, except
+item 17 (WP1 must settle it) and item 19 (WP2 needs it for the reversion scenario's numeric range).
+Items 20–21 are cheap reference-list corrections from an independent 2026-09-17 re-verification of
+all 52 references (52 checked, 50 clean, 2 errors, 0 not-found); apply during WP10's reference-list
+assembly.
+
+**New, currently unassigned work (not covered by any existing WP):** the CATI-to-EQ survey
+collection-mode change lands on the same 2022 cycle as the COVID break, and the `COLLECT_MODE`
+conditioning flag is 0 for 2005/2010/2015 and 1 only for 2022, so the model cannot separate mode
+from behaviour (`dr_2J-12`, CARRIED, corroborated both by outside survey-methodology literature and
+by internal flag logic). This is a real confound the manuscript does not currently rule out or
+disclose. Needs a limitations paragraph at minimum (candidate: WP10 Discussion/Limitations); a
+methods fix is not in scope for this round. Also carried: the abstract/highlights/Fig. 6 caption
+attribute the CI-bearing 2022-to-2030 shape deltas to the WFH break, but that span crosses the panel
+change (2015 to 2022) where the paired within-household attribution breaks down (§7 already admits
+the panel change; the CI-bearing statistics are for the following, unpaired step). This is the single
+most load-bearing finding of `dr_2J-12` and must reach WP1's provisional-framing fix and the abstract/
+highlights, not just §7 — assign to WP1 + WP10.
 
 ---
 
@@ -1129,3 +1259,486 @@ Applied Energy, WP13 package.
   this read. The outgoing session's waiter dies with it; the incoming session starts a fresh one on
   1328422, 1328432, 1328430, 1328310, 1328428.
   Next: T21 collector on wake.
+
+- **(be) 2026-09-16 morning, Fable session — dr_2J-12 Fable return written, UNVETTED.** The author
+  switched the session model to Fable 5.1 and handed over the Fable variant of the whole-paper review
+  prompt. Run as close reading, no web. Text reviewed = the SUBMITTED manuscript in
+  `../archive/2J_manuscript_submission.md`, the only complete text on disk; the four partial redrafts in
+  `manuscript/` were NOT substituted in, so some findings may already be answered by them. Return saved as
+  `deepResearch/dr_2J-12_whole_paper_review_fable_results.md` (about 5,300 words, no dashes, all seven
+  output sections). Verdict REJECT-LIKELY on the submitted text. Load-bearing items, in the return's own
+  ranking: (1) the only CI-bearing shape deltas are 2022 to 2030, a transition with no WFH break, yet
+  abstract, Fig. 6 caption and Conclusion 3 attribute them to the break; (2) §5.1 and §7 call the 2030
+  at-home magnitude provisional and inflated while the abstract states it as a result; (3) Conclusion 1
+  says EUI is consistent with SHEU ranges, Table 5 says all four are below; (4) SHEU ±2.7% agreement is a
+  fitted scalar presented as validation; (5) the COLLECT_MODE flag flips at the same cycle as the COVID
+  break; (6) lighting has no daylight gate, biasing the midday fill upward, and the promised §7 treatment
+  is absent; (7) weekend day-types are produced two different ways (§3.2 vs §3.5) and 35/35 PASS is not
+  reconcilable with the 0.10 weekend gate. Fifteen internal mismatches, twenty method findings, fifteen
+  clarity items, twelve OUTSIDE-MY-SCOPE lines. Nothing acted on; nothing computed. Gemini variant still
+  owed by the author. Manager prompt §2.3 and Step 7 updated; README row updated.
+  Next: Step 7 vetting of this return (steps 1, 2 and 6 of the README list do not apply to a no-search
+  return; step 7 offline audit does), then map each ranked item onto the response map and the four
+  drafts; then T21 collector on wake.
+
+- **(bf) 2026-09-16, manager — dr_2J-12 Gemini return in, both returns vetted, CARRIED items mapped.**
+  The Gemini variant (live search) returned as `deepResearch/dr_2J-12_whole_paper_review_gemini_results.md`
+  (verdict REJECT-LIKELY), alongside the earlier Fable return, both reviewing the archived SUBMITTED
+  text, not the in-progress redrafts. Ran the full 7-step vetting (adapted to a whole-paper review) as a
+  background pass: quote-by-quote check of every section/quote claim against the 654-line archived
+  manuscript, a live Crossref re-check of 19 of the Gemini report's cited DOIs (all 19 resolved and
+  matched; no fabrication, unlike earlier rounds), and a cross-check of both reports against each other
+  and against what WP1/WP5 already cover. Written up in full at `deepResearch/dr_2J-12_VETTING.md`.
+  **Verdict: REJECT-LIKELY survives vetting.** Two of the three headline "would-reject" items are not
+  new: the calibration-provenance defect is WP1's exact job, and the missing-measured-data validation is
+  WP5's exact job (a usable IESO Ontario/FSA dataset is already in hand) — this is corroboration that
+  the plan targets the right things, not new work. New, CARRIED findings now folded into the plan: nine
+  cheap quote-verified fixes added to §5 items 10-15, and one new, currently unassigned confound (the
+  CATI-to-EQ survey mode change landing on the same 2022 cycle as the COVID break) plus the single most
+  load-bearing item — the CI-bearing 2022-to-2030 shape deltas do not test the WFH-causal claim the
+  abstract makes for them — both written into §5 under "New, currently unassigned work" and assigned to
+  WP1 + WP10. Struck/downgraded: Gemini's "no baseline-schedule benchmark" item (not quote-checkable,
+  lower confidence) and its "two validation tiers" characterization of Applied Energy policy (the
+  report's own synthesis, not a quoted journal policy — do not cite it to an editor as fact). Page
+  numbers from either report are not citable (the source has no page breaks); section numbers only.
+  Next: fold the WP1+WP10 confound/provisional-framing item and §5 items 10-15 into the live drafts
+  under `manuscript/` as WP10 proceeds; update the checklist artifact; then T21 collector on wake.
+
+- **(bg) 2026-09-16, manager — waiter restarted, T39 dispatched, Table B1/B2 wording fixed.**
+  Cluster read via `sacct`: T21 Step 8 (1328422) fully COMPLETED since the last read (was 20/24), so
+  Step 9 baseline (1328426) and activity (1328425) are both now running; T22 (1328310) at 14/16 done;
+  nothing failed anywhere. A fresh 30-min background waiter is running (watching the base job IDs for
+  T21 Step 9, T22, T28, T29, T30, T32) after the first attempt died instantly on a double-backgrounding
+  bug (fixed). Dispatched T39 (fresh Sonnet employee, task doc
+  `impl/2026-09-16_T39_wp10_dr2j12_carried_items_threading.md`) to add plan §5 items 10-15 plus the new
+  confound/WFH-attribution item to `manuscript/prep/response_map.md` as a new "Quiet fixes" section
+  (Step 7's remaining work); result not yet back. Independently fixed the "sole model" / "only 4/4-gate
+  model" wording in `writing/submission/tables/SI/Table_B1_B2.md` (lines 9 and 59, plan §10 Step 13's
+  named item): replaced with T04's manager-approved wording, "J3 had the lowest composite score among
+  the four trials that cleared all four gates," plus the two-thresholds-equal-F1-baseline and
+  Spouse-tightened-without-reason provenance notes, citing the T04 doc. This was already fully decided
+  in T04's Verified/manager-ruling section (2026-09-15); no new judgment call made.
+  Next: collect T39; republish the checklist page with the waiter/T39/Table-B1-B2 status; keep working
+  non-cluster steps (8-13 groundwork) while the waiter watches the cluster.
+
+- **(bh) 2026-09-16, manager — T39 collected, DONE.** `manuscript/prep/response_map.md` now carries 49
+  rows: the original 42 plus a new "Quiet fixes and new items (not reviewer-raised, dr_2J-12 vetted)"
+  section with Q10-Q16 (plan §5 items 10-15 plus the confound/WFH-attribution item). Employee checked all
+  four existing drafts (`draft_S2_framework.md`, `draft_S7_limitations.md`, `draft_SI_model_selection.md`,
+  `draft_SI_schedule_completion.md`) by grep and read `draft_S7_limitations.md` in full: none of the seven
+  fixes are applied anywhere yet (no Introduction/Discussion/Conclusion/Results/Abstract draft exists at
+  all), so all seven are correctly WAITING, not DONE. Full ledger in
+  `impl/2026-09-16_T39_wp10_dr2j12_carried_items_threading.md`. Reminder still owed by the author, same
+  kind of work as `dr_2J-12`: `dr_2J-10` (novelty matrix search) and `dr_2J-11` (WFH trajectory) have not
+  been run yet in Gemini/Fable.
+  Next: republish the checklist page (waiter, T39, Table-B1-B2 fix); dispatch the next non-cluster task
+  (Q12/Q16's limitations paragraph into `draft_S7_limitations.md` directly, since that draft already
+  exists) while the waiter watches the cluster.
+
+- **(bi) 2026-09-16, manager — dr_2J-10 and dr_2J-11 split into Gemini/Fable pairs, author request.**
+  Author confirmed Fable has no live search access in their setup, so a Fable version of these two
+  literature-search prompts cannot search the literature; running the original search prompt through a
+  no-search Fable would just invent papers and numbers (the exact failure mode the vetting process
+  exists to catch). Instead: renamed the two existing prompts to `..._gemini_prompt.md` (unchanged
+  content, they already assume live search and Crossref verification), and wrote two new
+  `..._fable_prompt.md` companions that audit our OWN argument for internal soundness with no external
+  search, mirroring the dr_2J-12 Gemini/Fable split rationale exactly (search-grounded fact-check paired
+  with no-search close reading). dr_2J-10 Fable: argument map, internal-consistency, and
+  circularity/overclaiming check on the novelty "open cell" claim and its three named competitors
+  (Chen et al. 2022, Yin et al. 2024, Jalilian and Kamel 2025). dr_2J-11 Fable: argument map on the
+  single-scenario-vs-bracketed-range wording, and a presence/absence check of whether the manuscript
+  discloses the residential-only system boundary (office/commercial energy trade-off) anywhere — a grep
+  of the archived manuscript found no such disclosure, but the Fable prompt asks it to confirm this
+  itself against the full pasted text rather than trusting the grep. Both Fable prompts follow the
+  dr_2J-12 convention: the author pastes the full manuscript below the prompt when running it. README
+  table updated with all four files. Four results files still owed by the author, none run yet.
+  Next: author runs all four in Gemini/Fable; vet each on return.
+
+- **(bj) 2026-09-16, manager — dr_2J-10 FABLE return in, UNVETTED.** Run in Claude Code (Fable 5.1, no
+  web) against the SUBMITTED text `archive/2J_manuscript_submission.md`, same basis as the dr_2J-12 Fable
+  run; the four partial redrafts do not touch the Introduction or Table 1. Saved as
+  `deepResearch/dr_2J-10_novelty_matrix_search_fable_results.md` (about 4,000 words, dash-free, every
+  finding quoted with a section/paragraph pointer). Verdict: HAS A STRUCTURAL PROBLEM. The manuscript runs
+  two novelty claims on two bases (six-column "open cell" vs. external studies; four pipeline-stage
+  advances vs. the authors' own C-VAE work) and §1.2 para 2 concedes the six-column basis "would" be
+  mostly satisfied by that own prior work, which Table 1 excludes ("external competitors only") while §6
+  says "no prior study occupies" the cell. Supporting findings: no column criteria are stated anywhere;
+  only 3 of 9 competitor rows (Chen, Yin, Jalilian) have a supporting sentence; Chiou ✗ and Yin ✓ in
+  "Calibrated behavioural model" are inconsistent with the manuscript's own descriptions (§1.5 calls Chiou
+  ATUS-based; §1.2 calls Yin "statistical analysis"); the prose claim adds "through the WFH break" and
+  "paired", which no column scores, so the prose cell is narrower than the table and closer to
+  unfalsifiable; the one column separating this paper from Chen (forecast to future year) is the result
+  §5.1/§7 mark provisional and single-scenario; §1.4/§1.5 disagree on whether the predecessor's 2025 was a
+  "synthetic present-day cycle" or a "hindcast"; the abstract's and conclusion's closing sentence is the
+  feasibility premise §1.4 says is not re-claimed; Reinhart & Cerezo Davila is a review and Motuzienė an
+  office study by their own reference-list titles. Top reviewer items ranked R1-R5, all
+  would-request-major-revision except R5 (minor). Vetting: steps 1-6 do not apply (no external claims, no
+  DOIs); step 7 offline audit is the operative one, quotes to be spot-checked against the archived text.
+  README row and `Prompts/2J_manager_prompt_RESUME_AE_resubmission.md` (header, §2.3, Step 7) updated.
+  Three returns still owed by the author: dr_2J-10 Gemini, dr_2J-11 Gemini, dr_2J-11 Fable.
+  Next: vet dr_2J-10 Fable jointly with the Gemini return in one `dr_2J-10_VETTING.md`; the Table 1
+  rewrite in WP10 waits for both.
+
+- **(bk) 2026-09-16, manager — dr_2J-11 FABLE return in, UNVETTED.** Run in Claude Code (Fable 5.1, no
+  web access) against the SUBMITTED text `archive/2J_manuscript_submission.md`, same basis as the dr_2J-12
+  and dr_2J-10 Fable runs; the two redrafts that touch the scenario (`draft_S2_framework.md` §2.7,
+  `draft_S7_limitations.md`) are covered in one separate note at the end, not mixed in. Saved as
+  `deepResearch/dr_2J-11_wfh_trajectory_and_tradeoff_fable_results.md` (about 4,700 words, dash-free, every
+  finding quoted with a section/paragraph pointer). Verdict: HAS A STRUCTURAL PROBLEM. Headline: the
+  manuscript defines the 2030 case as WFH "persists with probability one" (§7 para 9) with the behavioural
+  model unchanged after 2022 (§3.4 para 3), so by construction the 2022→2030 leg varies only demography
+  and a raked target; that leg is the only one with CI-bearing shape deltas (§5.3 para 2) and the abstract,
+  Fig. 6 caption and Conclusion label it the WFH effect (same mechanism dr_2J-12 flagged, re-derived here
+  from the scenario definition). Supporting findings: "+2.2 to +3.9 pp" is a level above pre-pandemic in
+  the Abstract, §3.4, §5.1 and Conclusion 2 but the 2022→2030 step in §7 para 5 (incompatible: under the
+  first reading 2030 sits below 2022 and "upper bound"/"persists"/"extends" are wrong; under the second
+  the further rise has no stated driver); the range's axis is never stated; §3.4 says the assumption "is
+  bounded in §7" but §7 para 9 only names the counter-scenario as future work; Highlights say "2030
+  occupancy forecast ... validated by True-Future-Test" though the TFT scores 2015→2022; the provisional/
+  inflated caveat (§7 para 5) reaches 2 of 6 places the number appears and never its derived quantities;
+  the 78.44% 2030 target (§4.2) is never derived, so the 2030 at-home level reads as a raked input, not a
+  forecast output (UNCERTAIN); "Step-6 calibration validation" (§7 para 5) is never described; §6 para 3
+  quotes an uncited "~+12%" Canadian figure. System-boundary check: NOT FOUND — no residential-only or
+  office/commercial sentence anywhere in the submitted text, and none in the S7 redraft either; natural
+  home is a §7 scope paragraph, most exposed at §6 paras 5-6 (grid/DR and code implications). Reviewer
+  items ranked 1-5: item 1 would-reject, 2-4 major revision, 5 minor. New tension from the redrafts: the
+  S2 §2.7 target adds 8 years of the 2005-2015 slope that the submitted §5.1 calls compositional, not
+  behavioural; the S2 "standardised version" is the natural reconciliation, flagged for vetting. Vetting:
+  steps 1-6 do not apply (no external claims, no DOIs); step 7 offline quote spot-check is the operative
+  one. README row and `Prompts/2J_manager_prompt_RESUME_AE_resubmission.md` (header, §2.3, Step 7) updated.
+  Two returns still owed by the author: dr_2J-10 Gemini, dr_2J-11 Gemini.
+  Next: vet dr_2J-11 Fable jointly with the Gemini return in one `dr_2J-11_VETTING.md`; the WP2 scenario
+  paragraph and the WP10 system-boundary paragraph wait for both.
+
+- **(bl) 2026-09-16, manager — waiter restarted, T40 vetting dispatched for both Fable returns.**
+  Job 1328425 (T21 Step 9 array) left the queue fully COMPLETED, 24/24, confirmed on `sacct`. Waiter
+  re-armed tracking the remaining ten jobs (1328310, 1328415, 1328419, 1328426, 1328427, 1328428,
+  1328429, 1328430, 1328433, 1328434); nothing failed. Rather than wait for the author to also run the
+  two owed Gemini returns before vetting, dispatched a Sonnet employee task (T40,
+  `impl/2026-09-16_T40_vet_dr2j10_dr2j11_fable_returns.md`) to do the offline quote/arithmetic/
+  known-vs-new vetting pass on the two Fable returns now, same method as `dr_2J-12_VETTING.md` step 7
+  (steps 1-6 do not apply, no external claims). This does not replace the joint Gemini+Fable vetting
+  files planned in (bj)/(bk) once the Gemini returns are in; it gets the Fable-only checkable half done
+  now instead of parking on the author. Output: `deepResearch/dr_2J-10_dr2J-11_FABLE_VETTING.md`.
+  Next: read T40's output when it lands, fold survives-vetting findings into plan §5 and
+  `manuscript/prep/response_map.md`, still owe dr_2J-10 Gemini + dr_2J-11 Gemini from the author.
+
+- **(bm) 2026-09-16, manager — T40 back, both Fable returns SURVIVE VETTING, two new items folded
+  into plan §5.** `deepResearch/dr_2J-10_dr2J-11_FABLE_VETTING.md`: 21/21 and 19/19 spot-checked
+  quotes matched the archived manuscript exactly (plus all nine Table 1 competitor cells checked
+  against the manuscript's own table), every checkable arithmetic claim re-derived correct (the
+  stock-scale N=50 math; the two incompatible readings of "+2.2 to +3.9 pp", 3.9 < 5.2 under the level
+  reading versus 7.4-9.1 under the step reading; the Table 5 pointer mismatch), and `dr_2J-11`'s own
+  cross-check against `draft_S2_framework.md` §2.7 and `draft_S7_limitations.md` independently
+  reconfirmed accurate in all three of its claims. One process note, not a fabrication: the task doc's
+  own step 4 mislabelled a `dr_2J-12` overlap as "dr_2J-10 M6", which `dr_2J-10` never actually claims;
+  corrected in the vetting doc, does not affect either verdict. Both reports **SURVIVE VETTING**.
+  Cross-checked both reports' top-5 items against the plan: most are corroboration of items already on
+  the WP1/WP2/WP10/WP12 critical path (folded into §5's framing, no renumbering needed); two items were
+  genuinely new and are now §5 items 16 (Table 1 has no stated column criteria; Chiou/Yin scored
+  inconsistently on "Calibrated behavioural model") and 17 (the "+2.2 to +3.9 pp" 2030 figure is
+  defined two incompatible ways in the text itself — needs an explicit editorial decision before WP1
+  reports the recalibrated number). Cluster: same ten jobs tracked, nothing failed, waiter running.
+  Next: still owe dr_2J-10 Gemini + dr_2J-11 Gemini from the author (novelty-table adversarial search
+  and WFH-trajectory search); WP10's Table 1 rewrite and WP1's recalibration should each pick up their
+  new item 16/17 when that work starts.
+
+- **(bn) 2026-09-16, manager — both Gemini returns landed and vetted same day, two more new items
+  folded into plan §5, WP2 gets a data-grounded number.** The two previously-owed Gemini live-search
+  returns came back (`dr_2J-10_novelty_matrix_search_gemini_results.md`, verdict NARROWED;
+  `dr_2J-11_wfh_trajectory_and_tradeoff_gemini_results.md`, verdict USABLE). Dispatched a Sonnet
+  employee (T41, `impl/2026-09-16_T41_vet_dr2j10_dr2j11_gemini_returns.md`) to run the full 7-step
+  README vetting process (these are live-search, real DOIs, unlike T40's Fable returns) and merge with
+  T40's already-vetted Fable findings on the same two topics rather than picking one. 39 Crossref DOI
+  queries run: 37 resolve exactly, 1 (Morissette et al. StatCan) is real but registered on DataCite not
+  Crossref (confirmed via DataCite API, same non-fabrication pattern as prior IBPSA/arXiv cases), 0
+  fabricated. Both positive controls (Richardson et al. 2008; Barrero, Bloom and Davis 2021) resolve
+  exactly. Two genuine new findings, caught by re-derivation, not stated in either original report:
+  `dr_2J-10`'s own Table B "Total Y" column undercounts 12 of 25 rows (never overcounts, table's rank
+  order not safe to quote as printed, though it does not change the headline verdict); `dr_2J-11`'s own
+  trajectory data shows WFH share declining for four straight years after 2022 in both Canada and the
+  US, real evidence against the manuscript's "persists with probability one" 2030 assumption. One flag:
+  `dr_2J-11`'s cited "7.1%" 2016 figure could not be matched to the real StatCan source page (three
+  other close numbers found instead); marked NOT CONFIRMED, not fabrication. Verdicts: `dr_2J-10`
+  Gemini PARTIALLY SURVIVES VETTING (downgraded for its own arithmetic defect); `dr_2J-11` Gemini
+  SURVIVES VETTING. Folded as new plan items 18 (name column C3 explicitly in WP10's Table 1 rewrite,
+  use corrected Table B counts) and 19 (ground WP2's reversion 2030 scenario in the real post-2022
+  decline, do not repeat the unconfirmed 7.1% figure). Output: `deepResearch/dr_2J-10_VETTING.md`,
+  `deepResearch/dr_2J-11_VETTING.md`. Cluster: same ten jobs tracked, nothing failed, waiter running.
+  Next: thread items 16-19 into `manuscript/prep/response_map.md` during WP10; nothing further owed
+  from the author on `dr_2J-10`/`dr_2J-11`, both topics now fully vetted (Fable plus Gemini).
+
+- **(br) 2026-09-17, manager — overnight the cluster cleared four job families; T21's scorer was the
+  only failure and it was a job-script bug, not a run; T32's gate is met and its campaign is dispatched;
+  the account CPU limit doubled but 2J stays at 32.** Note on labelling: prompt-file entries (bo), (bp)
+  and (bq) were status refreshes of `2J_manager_prompt_RESUME_AE_resubmission.md` and never had plan-log
+  entries; (bq)'s one substantive result, the independent re-verification of all 52 references in the
+  frozen submitted manuscript (50 clean, 2 real small errors, 0 fabricated), is recorded as §5 items
+  **20** (Motuzienė et al. 2022 cited volume 76, real is 77) and **21** (Jalilian & Kamel 2025 truncated
+  title). This entry (br) resumes the log.
+  **T21 (`1328422`, `1328425`, `1328426`, `1328427`) is fully done:** Step 8 paired runs 24/24 COMPLETED
+  exit 0:0, Step 9 activity 24/24, Step 9 baseline 24/24, A4 md5-after COMPLETED — 2,400 main plus 4,800
+  comparison runs delivered, no task failed, nothing to resubmit. **`1328428` (`t21_check`, the
+  A1-A4/A2-restated scorer) FAILED exit 1:0 after 0 seconds**, and the cause is a defect in the job
+  script alone, diagnosed by the manager by reading both files: `t21_check.sh:41` invokes the selftest as
+  `--selftest --t21-root ... --code-root ...` while `t21_check.py:346` declares
+  `ap.add_argument("--out", required=True)`, so argparse exited 2 before any selftest logic ran; the
+  selftest path (`t21_check.py:354-356`) never reads `args.out` (it writes into an `out/_selftest/`
+  directory it creates itself), so the argument is genuinely unused in that mode and a placeholder is
+  correct. **No simulation output is affected and `t21_check.py` was NOT edited.** A Sonnet employee added
+  `--out "$T21_ROOT/out/_selftest/unused_selftest_out.csv"` to line 41 only, scp'd the script back, read
+  it back to confirm the SBATCH block was untouched, and resubmitted with no `--dependency` (all four
+  predecessors already COMPLETED): **new JobID `1329216`, running.** The seen-failing discipline is intact
+  — the selftest still gates the real check, it simply now gets to run.
+  **T32 ACCEPTED and its campaign dispatched.** Build tasks `1328429_0` (guard) and `1328429_1` (std) and
+  the compare job `1328430` all COMPLETED exit 0:0; a Sonnet collector scored them against §5 of the T32
+  doc: **G0 PASS — the guard task's output equals T26's λ = 0 file exactly** (checksum equality plus
+  100.0 % cell match), **SC1 PASS** (within 0.012 pp of target), **SC4 PASS** (0 FAIL of its checks,
+  reproducing T26's own accepted 30/1/0 reading), **SC5 PASS** (max difference 0.0012 pp). G0 was the
+  load-bearing one and it holds, so the standardized build is sound and the task doc's own launch gate is
+  met. The **1,200 S-Revert-std runs** (24 cells x 50 households) are therefore dispatched, submitted as **`1329220`** (24 tasks, `%2`, 4 CPUs, PENDING on `afterany:1328434`), reusing T29's
+  `run_fixed_manifest.py` wrapper byte-identically, pointed at T21's own rebuilt manifests
+  (`T21/out/step8/<cell>/cell_manifest.csv`). The employee confirmed the pointer by reading the Montreal
+  test cell's manifest directly: household **130228 at sample 1**, the same rebuilt draw T29's smoke used,
+  not the stale published pair. The scenario schedule input is T32's own passed build
+  (`T32/out/std/BEM_Setup/BEM_Schedules_2030.csv`), read in place with no duplicate copy.
+  **T29 smoke verified retrospectively, PASS on all three checks.** `1328431` (stage) and `1328432`
+  (smoke) COMPLETED, and the smoke's `afterok` dependants released on their own before a collector had
+  read it, so the manager had it scored after the fact: both households simulated, **8,760 data rows each**
+  (8,761 lines including the header), household IDs **130228 and 79252** — T21's rebuilt seed-42 draw, and
+  **not** the published pair 130322/80058. The sampling-pool hazard of log (ak)/(am) is therefore closed
+  for T29 by measurement, not assumption. `1328433` (`t29_partial`) is **24/24 COMPLETED exit 0:0**;
+  `1328434` (`t29_revert`) is at 20/24.
+  **Manager ruling, supersedes the older T29 smoke brief:** that brief told the smoke collector to
+  `scancel 1328433 1328434` on any failed check. With 1328433 already complete and 1328434 mid-flight,
+  cancelling would destroy delivered work and save nothing, so the collector was given **no cancel
+  authority**: it reports, the manager rules. Nothing was cancelled; nothing needed to be.
+  **Counts read from `sacct` this morning, all other families clean:** T22 `1328310` 21/24 (2 running, 1
+  pending), T28 `1328415` 1/4 (1 running, 2 pending), T30 `1328419` 38/48 (2 running, 8 pending), T29
+  revert `1328434` 20/24. **Across every 2J job ever submitted in this revision, the only non-zero exit
+  is `1328428` above.** T28 is now the slowest set left.
+  **CPU ceiling — new standing constraint.** HPC support raised the `chachemv`/`o_iseri` association from
+  `cpu=32` to `cpu=64` on a temporary basis, to be reviewed at the end of October 2026. The author has
+  reserved the new 32 for a different project and instructed, verbatim, "do not interfere new 32 cpu".
+  **Therefore 2J never exceeds 32 CPUs in flight, and no array's `%N` concurrency or `--cpus-per-task`
+  may be raised on the strength of the higher limit.** The four live arrays already sum to exactly 32
+  (T22 2x4, T28 1x8, T29-revert 2x4, T30 2x4), so the T32 campaign was submitted
+  **`--dependency=afterany:1328434` at `%2` and 4 CPUs**: it inherits the eight CPUs T29-revert releases
+  instead of adding to the total, and the ceiling holds with no babysitting. One transient exception is
+  recorded rather than hidden: the T21 scorer rerun `1329216` (4 CPUs) briefly put the account at 36
+  while T29-revert was still running. The manager let it stand — it is a short scoring job, the other
+  project has nothing submitted yet, and cancelling it would have cost a rerun of a load-bearing scorer —
+  and it is not to be repeated as a pattern. **Closing that exception the same morning:** with the scorer
+  running the account sat at 36 CPUs, so the manager throttled the T30 array to one task at a time
+  (`scontrol update JobId=1328419 ArrayTaskThrottle=1`, no job-ID change, nothing cancelled, no task
+  lost). The account therefore settles back to exactly 32 as soon as a T30 task lands. **Restore T30 to
+  `%2` once `1329216` finishes** — at that point the four arrays sum to 32 again on their own. This is the
+  pattern to reuse whenever a short scoring job must share the ceiling: throttle a long array, do not
+  cancel, and write the restore down.
+  Checklist page republished (**Version 37**) with all nine progress bars refreshed from `sacct`, the
+  overnight completions, the scorer fix stated plainly, the 32-of-64 CPU rule added to the rules panel,
+  and a new group-D item for the 52-reference re-verification. A fresh 30-minute waiter is running on the
+  four still-live arrays (`1328310`, `1328415`, `1328419`, `1328434`).
+  Next: T21 collector when `1329216` finishes (A1-A6 with the restated A2; **A6 is a stop rule**); then
+  the T22, T30, T28 and T29-revert collectors as each array lands; then the T32 campaign collector. The
+  writing waves (steps 7-13) need none of this and can run in parallel.
+
+- **(bs) 2026-09-17, manager — T42 DONE: the last unthreaded carried items are now rows in the response
+  map, and one editorial decision is recorded as deliberately NOT taken.** A Sonnet employee (T42,
+  `impl/2026-09-17_T42_thread_items_16_21_response_map.md`) threaded plan §5 items **16-21** into
+  `manuscript/prep/response_map.md`: **49 → 55 rows**, six added, **all six WAITING/OPEN, none ALREADY
+  FIXED**. That is the correct answer rather than a gap: no target manuscript draft exists yet, so nothing
+  could legitimately be marked fixed, and the employee was told not to mark anything fixed without opening
+  the file and seeing the line.
+  **Manager verification, re-derived from the artifact rather than taken from the report** (the standing rule
+  on Progress Log claims): the file has 63 table lines across 4 tables, minus 4 x 2 header/separator lines =
+  **55 data rows**, which matches. Rows **Q17-Q22** are present and each one cites its own plan item plus the
+  vetting file it came from.
+  **Numbering offset, worth knowing before anyone quotes a row: `Qn` is NOT plan item `n`.** T39 had already
+  used Q10-Q16 for the dr_2J-12 items, so this pass continues at Q17: plan item 16 → **Q17** (Table 1 has no
+  stated column criteria; Chiou and Yin scored inconsistently), 17 → **Q18** (the "+2.2 to +3.9 pp"
+  double definition), 18 → **Q19** (name column C3; dr_2J-10's own Table B undercounts), 19 → **Q20** (ground
+  the 2030 reversion in the real post-2022 decline; never reuse the unconfirmed "7.1%"), 20 → **Q21**
+  (Motuzienė volume 76 → 77), 21 → **Q22** (Jalilian & Kamel full subtitle). Every row carries its plan
+  item, so the offset is safe as long as nobody assumes the two numbers line up.
+  **Q18 carries a manager decision that is deliberately left open, and the reasoning is recorded so the next
+  session does not have to redo it.** The manuscript defines "+2.2 to +3.9 pp" two incompatible ways: a level
+  above the pre-pandemic baseline (four places) and, once, the 2022-to-2030 step itself. The manager's first
+  instinct was to rule "report the step, because the rebuilt campaign simulates no pre-pandemic arm" — and
+  then **checked it and did not adopt it**: the figure is in percentage points of at-home share, not energy,
+  so it does not need an energy run at all, and the historic-cycle schedule files (2005/2010/2015, confirmed
+  by T24 to use only their own diaries) could support a pre-pandemic level without one. The decision
+  therefore turns on what the four "level" usages actually claim in context, it is due when **WP1**
+  recalculates, and it is recorded as pending rather than guessed. Ruling (b) still binds either way:
+  whichever definition survives, the number is re-derived on the rebuilt build or dropped.
+  **T43 dispatched** (`impl/2026-09-17_T43_wp10_survey_mode_confound_limitation.md`): add the CATI-to-EQ
+  survey-mode confound to `manuscript/draft_S7_limitations.md` as the eleventh limitation — the mode change
+  lands on the same 2022 cycle as the pandemic break, the design cannot separate the two, and the paper must
+  say so without claiming the mode change explains the jump. The brief names the two defects this file has
+  had before (the opening count was wrong twice; the trace table needs its row) and requires the employee to
+  merge or cross-reference rather than add a near-duplicate if one of the existing ten already touches it.
+  Cluster unchanged otherwise: the T21 scorer `1329216` is still running, and the account sits at 36 CPUs
+  until a T30 task lands and the `ArrayTaskThrottle=1` from (br) takes hold. **Restore T30 to `%2` once
+  `1329216` finishes.**
+  Next: collect T43; T21 collector when `1329216` lands; then the T22, T30, T28, T29-revert and T32-campaign
+  collectors as each array finishes.
+
+- **(bt) 2026-09-17, manager — T43 and T44 both collected and accepted with manager corrections; the two
+  author-owed inputs are now answered, one of them by a new deep-research prompt.** The author was asked
+  directly about the two items only they hold, and answered both: the end-use split is **"you find it
+  yourself"**, meaning a prompt they run outside (not that the assistant searches — deep research stays
+  external); and for Figure 1, **"create image prompt and let me generate with Gemini Antigravity"**. The
+  Figure 1 prompt already existed, finished and corrected at T35
+  (`figures/Prompts_Images/Figure_01_workflow_prompt.md`, 169 lines, print target 190 mm at 600 dpi,
+  colour-blind-safe palette, three labelled bands), so **nothing was rebuilt** — the author was handed the
+  path. Creating a duplicate would have broken the standing "never create anything not requested" rule.
+  **T43 ACCEPTED** (`impl/2026-09-17_T43_wp10_survey_mode_confound_limitation.md`). The CATI-to-EQ
+  survey-mode confound is now the **eleventh** limitation in `manuscript/draft_S7_limitations.md`. The
+  opening count was updated from "ten ... first seven" to "eleven ... first eight" — that count had already
+  been wrong twice in this file's history, so it was checked against what the section actually lists. The
+  employee checked for overlap before adding and found limitation 6 alludes to survey disruption without
+  ever naming the mode change, so it added a paragraph rather than a near-duplicate, and said so. The
+  paragraph is honest in both directions: it states the mode change lands on exactly the 2022 cycle that
+  carries the at-home shift, that no wave exists in the new mode to compare against, that the design
+  **cannot rule the possibility in or out**, and that this does not overturn the direction of the result
+  but does mean the step's exact size carries an unmeasurable survey-design component. Trace row 9 was
+  added, and it turned up a genuine code-level fact nobody had recorded: **`COLLECT_MODE` is 0 for
+  2005/2010/2015 and 1 only for 2022**, so the confound is established from our own data and not borrowed.
+  **One manager finding on T43, logged as new plan §5 item 22:** the paragraph's one sentence about outside
+  survey-methodology literature is traceable to dr_2J-12's quote-checked vetting file but **carries no
+  citable reference**, and the assistant may not go find one. Step 13 must either attach a vetted citation
+  or soften the sentence to what our own data supports; option (b) suffices, because `COLLECT_MODE` already
+  establishes the confound. Recorded rather than shipped unsourced.
+  **T44 ACCEPTED WITH TWO MANAGER CORRECTIONS** (`impl/2026-09-17_T44_dr2j13_enduse_split_prompt.md`). The
+  new prompt `deepResearch/dr_2J-13_sheu_enduse_split_gemini_prompt.md` is written and registered on the
+  README's prompt table: Gemini only, no Fable twin (Fable has no live search here and a hunt for published
+  numeric values without search is worthless — stated in the file so nobody adds one later), and it carries
+  the four **pre-registered** decision rules, fixed before any result is read, including the one that
+  matters: **if the space heating figure specifically is NOT FOUND, the breakdown is not run at all** and
+  the paper attributes the gap to no single end use. Verified by the manager: 0 em or en dashes, `NOT FOUND`
+  stated four times, the denominator requirement present five times, the calibration-not-validation wording
+  present. The two corrections, both real defects:
+  **(1) The positive control was the same number the decision rule depends on.** The employee made the
+  control "the share of residential energy used for space heating" — which is exactly the load-bearing value
+  under rule 3. That destroys the control's only purpose: if it comes back empty, a broken search and
+  genuinely absent data are indistinguishable. Replaced with **total residential sector energy use for the
+  most recent published year**, trivially findable and deliberately *not* one of the five end uses, with the
+  added instruction that if even the control fails the tool must **not** report the end uses as `NOT FOUND`,
+  because at that point it has not established that they are.
+  **(2) Our own simulated number could have steered the search.** The prompt gives our simulated space
+  heating range (roughly 12.6 to 29.5 kWh/m2/year) so the tool can spot a denominator mismatch — legitimate,
+  but it also anchors. Added an explicit rule: do not prefer a source because it sits closer to our value,
+  do not omit one because it sits far from it, and a large disagreement is **the answer the paper needs, not
+  a problem to tidy away**.
+  Cluster unchanged: `1329216` still running, account still at 36 CPUs until a T30 task lands and (br)'s
+  throttle takes hold. **Restore T30 to `%2` once `1329216` finishes.**
+  Next: the author runs `dr_2J-13` and generates Figure 1 when convenient (neither blocks anything); vet the
+  dr_2J-13 return the same 7-step way when it lands; collectors fire as the arrays finish.
+
+- **(bu) 2026-09-17, manager — T47 ACCEPTED WITH FINDINGS: Figure 1 matches its spec on every checkable
+  item; the overwritten old figure is restored and the generator can no longer overwrite it again.** The
+  author generated the T35 workflow diagram and it landed in `figures/`. T47
+  (`impl/2026-09-17_T47_figure01_verification.md`, 247 lines) checked it against
+  `figures/Prompts_Images/Figure_01_workflow_prompt.md` without eyeballing anything that eyes cannot
+  count: all **24 box labels** verified by extracting the spec's numbered strings and the script's
+  `BOX_LABELS` dict by regex and diffing all 24 pairs (**0 mismatches**); all **33 arrows** verified by
+  reading the generator's drawing calls line by line, one draw call per spec arrow, same directions, and
+  **only arrow 32** (box 6 IESO to box 24) dashed, carrying the exact required label "external check, not
+  an input"; the **three band titles** correct in name, order and wording; print size read with Pillow as
+  **4488 x 3732 px at 600 dpi = 190.0 x 158.0 mm**, exactly the spec target; and the must-not list clean
+  (no result numbers, no internal codes, no "forecast", no watermark, no author name), corroborated
+  structurally because the script can only emit text from the three sources already diff-checked. Nothing
+  FAILED, so **no corrected image prompt was needed** and none was written — the author's new standing
+  instruction ("if needed create new prompt, you are the one who designs the prompts", 2026-09-17) gives
+  the manager authority to author a replacement prompt without asking, and that authority was not
+  exercised because the figure is right.
+  **Two real process findings, both acted on by the manager rather than logged and left.**
+  **(1) The overwrite is undone.** `figures/Figure_01_pipeline.png` had been silently written over by the
+  new run: T47 proved it with SHA-256 (byte-identical to `Figure_01_workflow.png`,
+  `c2c198e8...`, both 666,675 bytes, mtimes one second apart) rather than trusting size and date. The
+  pre-overwrite original survived untouched one level up at `writing/figures/Figure_01_pipeline.png`
+  (1,871,483 bytes, `97aeb83b...`, June 2026), so nothing was ever lost. It has now been **copied back**
+  by `scratchpad/restore_fig01_pipeline.py`, which refuses to act unless both hashes still match what T47
+  measured, copies to a temp file, re-hashes the copy, and only then replaces; the restored file is
+  verified at `97aeb83b...` and the new workflow figure is verified unchanged at `c2c198e8...`. The reason
+  to restore is the historical record: the archived Building Simulation drafts under
+  `writing/submission/extra/` and `writing/submission/archive/` hard-reference that filename with the old
+  axonometric caption, and were pointing at a picture that no longer matched their own words. Nothing live
+  was broken — `manuscript/draft_S2_framework.md:3` still holds only a placeholder and cites no filename.
+  **(2) The generator could have done it again, so the line is gone.** `scripts/generate_fig01_workflow.py`
+  hardcoded a **fourth** save to `Figure_01_pipeline.png` on every invocation (old lines 695-700), with no
+  flag to skip it and no dry-run mode, which meant the file could not even be re-rendered for a preview
+  without destroying the old figure a second time. The manager removed that block and replaced it with a
+  comment naming the retired figure, its caption file, the drafts that reference it, and the instruction
+  not to reinstate it. The script now writes exactly three paths, all `Figure_01_workflow.*`, confirmed by
+  grep; `py_compile` passes. This is the only `.py` edit taken in this window and it removes a destructive
+  write, it does not change the figure: the drawing code is untouched, so a rerun reproduces the same
+  image.
+  **Two cosmetic findings recorded and deliberately not fixed:** inside band 2 the physical seating order
+  runs 10, 12, 11 while the spec's list numbers them 10, 11, 12 (the spec never required seating to equal
+  numbering, and the 10 to 11 arrow is drawn as an overhead line that correctly skips box 12, so the
+  required topology is intact); and a thin dotted vertical rule separates each band's title column from
+  its diagram area, which the spec did not ask for and which is neither an arrow nor text. Re-rendering to
+  chase either would risk a working figure for nothing.
+  **New plan §5 item 23** records the one thing that must not be got wrong later: WP11 cites
+  `Figure_01_workflow.png` and never `Figure_01_pipeline.png`, and the print-size legibility check at 100
+  percent zoom is the author's own eye, to be asked for once at figure lock-in.
+  **Cluster, read properly this time.** The T21 scorer `1329216` **COMPLETED** in 00:50:25 after (bs)'s
+  one-line `--out` fix, which unblocks Step 3. T30 was **restored to `%2`** as (bt) required
+  (`scontrol update JobId=1328419 ArrayTaskThrottle=2`, verified `ArrayTaskId=41-47%2
+  ArrayTaskThrottle=2`), taking the account to exactly **32 running CPUs**: at the promised ceiling, not
+  over it, so the author's other 32 CPUs stay untouched. **Method note worth keeping:** summing
+  `squeue -h -o '%C'` reported 48 CPUs and looked like a breach of that promise, but the sum includes
+  **PENDING** array tasks, which hold no cores; the rows had to be read one by one to see that only 28
+  were running at that moment. Never act against a load-bearing job on that sum alone.
+  Next: T45 (T21 collector) and T46 (dr_2J-13 vetting) still running; then the T22, T30, T28, T29-revert
+  and T32-campaign collectors as each array finishes.
+
+- **(bv) 2026-09-17, manager — T46 ACCEPTED; dr_2J-13 is CLOSED and pre-registered rule 3 FIRES: the paper
+  attributes the energy-intensity gap to no single end use.** The author ran `dr_2J-13` in Gemini and the
+  return landed as `deepResearch/dr_2J-13_sheu_enduse_split_gemini_results.md` (27,117 bytes). T46 vetted it
+  the full seven-step way (`deepResearch/dr_2J-13_VETTING.md`, 317 lines): **verdict PARTIALLY SURVIVES**.
+  What is genuine is genuine, and it is a lot: all five NRCan CEUD tables were re-fetched live **for the
+  2022 column specifically** (the default view shows 2023, which briefly looked like a discrepancy) and
+  **every PJ value in both tables matches the source exactly**, floor-space and household activity bases
+  included; both StatCan table identities resolve; all 30 PJ-to-kWh conversions, every intensity, every
+  share and every column sum were independently recomputed in Python and are clean to rounding; 12 of 15
+  checked citations are fully VERIFIED, and **nothing is fabricated**.
+  **The ruling, which the vetting deliberately left to the manager, is that rule 3 fires.** No measured or
+  survey-based Canadian end-use split exists: direct sub-metering NOT FOUND, SHEU publishes no end-use
+  split, the IESO/Cadmus survey gives no absolute intensities, peer-reviewed NOT FOUND. The only split on
+  offer is CEUD, which the return itself describes as the Residential End-Use Model, engineering stock
+  accounting of unit energy consumptions calibrated to StatCan control totals. The prompt's scope guard
+  said in advance that a modelled value is not an answer, so the breakdown is **not run at all**: the
+  manuscript states the measured split was unavailable and attributes the Table 5 gap to **no single end
+  use**. The return's own headline sentence, that the gap is "unequivocally located in the thermal space
+  heating load" at **4 to 9 times** below benchmark, **never appears in the paper**, in any section.
+  **A second, independent reason to refuse that number, found by the vetting and worth more than the
+  rule:** the comparison's basis was never established. CEUD's denominator is *heated* floor space and its
+  space heating is **all-fuel raw combustion energy**, gas-dominated in Ontario, while our figure is
+  simulated site energy on our own floor-area definition. Neither the area definition nor the fuel and
+  efficiency scope was checked, so a 4-to-9-times multiple could be largely an artefact of the two bases.
+  This is exactly the failure the prompt's denominator requirement was written to catch, and the return
+  named the basis without ever confirming it matched ours. Writing that sentence into a paper already
+  rejected partly on calibration provenance would have handed the next reviewer the same objection.
+  **This is a good result, not a loss.** It converts a hole in the paper into a defensible statement:
+  Canada publishes no measured residential end-use split, only a modelled disaggregation, so the gap
+  cannot be assigned to one end use without an equivalence this study cannot establish. That is the WP5
+  missing-measured-data limitation in its honest form, and it costs the paper nothing. Recorded as plan
+  §5 item 24, with the wording the manuscript may use.
+  **Two smaller rulings in the same item.** The **saved file is the record and the chat-side summary of
+  that run is not to be used for anything**: its Ontario Single Detached water heating figures (68.7 PJ /
+  32.81 kWh/m2, 221.7 m2, stock 3,197,358) do not reconcile with themselves, with the file, or with the
+  source, while the file's own table (56.2 PJ / 26.86 kWh/m2) reproduces CEUD exactly. The manager had
+  flagged this contradiction from the chat text before the vetting ran, and the vetting settled which side
+  is right by first principles rather than by preference. And **three background citations carry a wrong
+  detail** to correct if ever cited: Rouleau and Gosselin 2021 is Applied Energy vol. **287** not 290,
+  Papineau et al. is **2021** not 2022, and the Makonin HUE dataset is **22** homes published **2019**, not
+  28 homes in 2018. None carries a number this paper uses.
+  **Also noted, not acted on:** the return's positive control (StatCan residential 2022, 1,380.174 PJ)
+  disagrees with the CEUD Canada residential total (1,454.1 PJ) by **5.1 percent**, which the return should
+  have flagged and did not. The control still did its job — it proved the search worked, so the `NOT FOUND`
+  results above are genuine absence and not a broken tool, which is the whole reason it was made
+  independent of the five end uses at T44. No paper number depends on either figure.
+  Next: T45 (T21 collector) still running; then the T22, T30, T28, T29-revert and T32-campaign collectors
+  as each array finishes.

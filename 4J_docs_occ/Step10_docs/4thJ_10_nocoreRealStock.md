@@ -735,4 +735,17 @@ to make a run pass.** **The author's:** whether the 233 ES and 35 IT buildings a
 Arm F is, or stay **FATAL** as `R5`'s London 12 are — a **basis change, therefore a band change**,
 costing 21% of Madrid. **The author's, unchanged:** whether finished cells may be READ as a scored
 `G10N.x` result — which now waits on the population question, there being no finished cells to read.
+
+### 2026-09-16 — 🟢 THE CAMPAIGN FINISHED (all three districts) AND WAS SCORED AS `G10N.x`
+
+Pointer only; the full account is in the validation companion's own Progress Log
+(`4thJ_10_nocoreRealStock_val.md`, entry "2026-09-16 — THE SUITE IS SCORED IN FULL"), which is now
+the state for this campaign's scoring and is not repeated here. Summary: `AUTHORISED` widened to
+`scores: True` for Madrid/London/Bologna (author's sentence, 2026-09-16); the finished campaign
+(35,090 real cells across `_local_runs/4J_{ES,UK,IT}_local/`) was scored by the new
+`tools/4thJ_step10_nocorereal_score.py`; 12 PASS, 1 FAIL (`G10N.20`, real `gain_sha256` collisions
+on 320 cells, not a scratch artefact), 1 INFO, 1 OPEN_INHERITED, 9 `NOT_EVALUABLE` (zero reference
+population, mostly the cancelled Speed re-run), 1 `NOT_EVALUABLE_VACUOUS`. `G10N.19` clears the
+30-per-fold floor on all three folds (es 845 / uk 157 / it 1070), unlike `C1`. No `AUTHORISED` entry,
+`D-EU-55` text, or anything closed about `C1` was touched.
 **Step 11 items 11.4–11.7 stay PLANNED.**

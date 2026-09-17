@@ -6,7 +6,7 @@
 
 ## Table B1 — Calibrated-J3 Generator Model Card
 
-*Shipped model = J3 + Phase-8B per-(cycle × stratum × slot) marginal raking. Sole 4/4-gate model in 40+ trials.*
+*Shipped model = J3 + Phase-8B per-(cycle × stratum × slot) marginal raking. J3 had the lowest composite score among the four trials that cleared all four gates, out of 40+ trials.*
 
 ### Architecture
 
@@ -56,7 +56,7 @@ The conditioning vector concatenates all variables below (one-hot encoded catego
 | Co-presence max gap | ≤ 5.0 pp | **~2.03 pp** | PASS |
 | Composite score | < 1.045 | **0.6355** | PASS |
 
-**J3 is the only 4/4-gate model across 40+ trials (progressive 2% → 20% → 100% data funnel).**
+**J3 had the lowest composite score among the four trials that cleared all four gates, across 40+ trials tested (progressive 2% → 20% → 100% data funnel). Two of the four thresholds equal the F1 baseline's own scores, and the Spouse co-presence threshold was tightened from 10 pp to 5 pp without a stated reason (see WP9 provenance, `impl/2026-09-15_T04_wp9_threshold_provenance.md`).**
 
 Key negative findings from the search:
 - MDLM-G1 (masked discrete diffusion): best composite (0.559) but 2/4 gates (AT_HOME RMS 7.81 pp; act_JS 0.0529)

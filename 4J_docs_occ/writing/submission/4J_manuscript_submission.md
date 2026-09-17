@@ -2,7 +2,7 @@
 
 ## Abstract
 
-*Context.* Occupancy schedules for building energy models are built from national time-use surveys, and most countries either have no such survey or hold one behind an access agreement, so the field has begun to ask whether a pretrained language model, fine-tuned on the countries that do have diaries, can generate diaries for a country that does not. *Gap.* That question has never been tested against the baseline a practitioner would actually use instead, which is not a naive sampler but a pool of real diaries from neighbouring countries reweighted onto the target country's published demographic margins; published generative work on tabular and mobility data is evaluated on random within-population splits, so the difficulty of the transfer problem has not been measured. *Aim.* This study pre-registers that comparison as its primary hypothesis, freezes it before training, and reports the outcome whichever way it falls. *Methodology.* A harmonised three-country HETUS corpus (Spain, Italy, United Kingdom; one wave each; 73,254 diaries, 2,024,068 episodes) is serialised to text and used to fine-tune one open-weight 7 B backbone with a low-rank adapter under leave-one-country-out: train on two countries, generate the third conditioned only on its published marginals, and score against a donor pool from the same two countries raked by iterative proportional fitting onto those same marginals. Generated diaries are then carried forward through constrained decoding into building energy simulation on TABULA archetypes and into activity-triggered appliance and hot-water loads, at archetype scale and on an observed building stock. *Key quantified results.* The pre-registered transfer bar is not met in nine of nine fold-band cells: the raked donor pool reproduces the held-out country's time budget two to six times better than the fine-tuned model, closest miss 2.70 minutes per day, and five further transfer gates agree. Across the range tested here, from 1.5 to 7.3 billion parameters, with the full-parameter tuning and the second model family each assessed on one fold, more capacity does not close the gap: a 4.7-fold larger backbone moves mean absolute error from 42.05 to 43.14 minutes per day, the wrong way; training all 7,377,965,056 parameters instead of the adapter's 79,953,920 ends at a higher training loss at every epoch; and a second 7 B model family changes nothing any gate resolves. A fictional-country control separates the shortfall into a steering component and an amplitude component: on the reported model the amplitude arm misses its floor in all three folds, at pooled slopes of 0.40 to 0.53 against a floor of 0.80, so the response to an unseen country's marginals is real and delivered at roughly half the required strength; the steering arm, also measured on the reported model, passes at R-squared 0.99 in every fold. Downstream, one appliance set and one calibration driven by three countries' diaries place the stock appliance-electricity peak six hours apart, at 14:00 in Spain, 18:00 in Italy and 20:00 in Britain. *Impact.* The negative result is reported at full strength against a bar that was fixed in advance and never moved; the contribution is the transferable apparatus, the hardened null, and the direction-versus-amplitude diagnostic that locates where conditional generative transfer actually breaks.
+*Context.* Occupancy schedules for building energy models are built from national time-use surveys, and most countries either have no such survey or hold one behind an access agreement, so the field has begun to ask whether a pretrained language model, fine-tuned on the countries that do have diaries, can generate diaries for a country that does not. *Gap.* That question has never been tested against the baseline a practitioner would actually use instead, which is not a naive sampler but a pool of real diaries from neighbouring countries reweighted onto the target country's published demographic margins; published generative work on tabular and mobility data is evaluated on random within-population splits, so the difficulty of the transfer problem has not been measured. *Aim.* This study pre-registers that comparison as its primary hypothesis, freezes it before training, and reports the outcome whichever way it falls. *Methodology.* A three-country corpus from the Harmonised European Time Use Survey (HETUS; Spain, Italy, United Kingdom; one wave each; 73,254 diaries, 2,024,068 episodes) is harmonised onto one alphabet, serialised to text and used to fine-tune one open-weight 7 B backbone with a low-rank adapter under leave-one-country-out: train on two countries, generate the third conditioned only on its published marginals, and score against a donor pool from the same two countries raked by iterative proportional fitting onto those same marginals. Generated diaries are then carried forward through constrained decoding into building energy simulation on TABULA archetypes and into activity-triggered appliance and hot-water loads, at archetype scale and on an observed building stock. *Key quantified results.* The pre-registered transfer bar is not met in nine of nine fold-band cells: the fine-tuned model's time-budget error is 1.1 to 3.9 times the raked donor pool's, closest miss 2.70 minutes per day, and five further transfer gates agree. Across the range tested here, from 1.5 to 7.3 billion parameters, with the full-parameter tuning and the second model family each assessed on one fold, more capacity does not close the gap: a 4.7-fold larger backbone moves mean absolute error from 42.05 to 43.14 minutes per day, the wrong way; training all 7,377,965,056 parameters instead of the adapter's 79,953,920 ends at a higher training loss at every epoch; and a second 7 B model family changes nothing any gate resolves. A fictional-country control separates the shortfall into a steering component and an amplitude component: on the reported model the amplitude arm misses its floor in all three folds, at pooled slopes of 0.40 to 0.53 against a floor of 0.80, so the response to an unseen country's marginals is real and delivered at roughly half the required strength; the steering arm, also measured on the reported model, passes at R-squared 0.99 in every fold. Downstream, one appliance set and one calibration driven by three countries' diaries place the stock appliance-electricity peak six hours apart, at 14:00 in Spain, 18:00 in Italy and 20:00 in Britain. *Impact.* The negative result is reported at full strength against a bar that was fixed in advance and never moved; the contribution is the transferable apparatus, the hardened null, and the direction-versus-amplitude diagnostic that locates where conditional generative transfer actually breaks.
 
 ## Keywords
 
@@ -10,11 +10,11 @@ Time-use survey; Cross-national transfer; Fine-tuned language model; Pre-registe
 
 ## Highlights
 
-- A raked pool of real donor diaries beats a fine-tuned 7 B model in 9 of 9 pre-registered cells.
-- Capacity is not the cause: bigger backbone, 92x trainable parameters and a second family all leave the gap unclosed.
+- Raked real donor diaries beat a fine-tuned 7 B model in 9 of 9 pre-registered cells.
+- Bigger backbone, 92x trainable parameters, second model family: the gap stays open.
 - Amplitude of the conditional response is half what is required, slope 0.40 to 0.53.
 - One appliance model, three countries' diaries, stock peaks six hours apart.
-- The bar was fixed and md5-locked before training and is reported unmoved.
+- The bar was fixed and hash-locked before training and is reported unmoved.
 
 ## Author Information
 
@@ -46,7 +46,7 @@ Ethical approval. This study does not contain any studies with human or animal s
 
 ### 1.1 The Transfer Question, and Why It Is Now Worth Asking
 
-Every survey-driven occupancy model carries an unstated precondition: that the country being modelled has a time-use survey, and that the modeller can get at its microdata. For a large part of the world neither holds. Within Europe the Harmonised European Time Use Survey covers a minority of member states in any given round, waves are a decade apart, and microdata access runs through accreditation agreements that a building-simulation group may not be able to obtain. The practical consequence is familiar to anyone who has built a national stock model outside the handful of well-surveyed countries: the occupancy schedule is imported wholesale from a country that does have diaries, or it is left at a code default, and neither choice is examined again.
+Every survey-driven occupancy model carries an unstated precondition: that the country being modelled has a time-use survey, and that the modeller can get at its microdata. For a large part of the world neither holds. Within Europe the Harmonised European Time Use Survey (HETUS) covers a minority of member states in any given round, waves are a decade apart, and microdata access runs through accreditation agreements that a building-simulation group may not be able to obtain. The practical consequence is familiar to anyone who has built a national stock model outside the handful of well-surveyed countries: the occupancy schedule is imported wholesale from a country that does have diaries, or it is left at a code default, and neither choice is examined again.
 
 Large pretrained language models make a different answer look available. A model that has read a great deal of text about how people in different countries spend their days might, after fine-tuning on the countries that do have diaries, be able to write plausible diaries for a country that does not, steered by nothing more than the demographic tables that every national statistical office publishes. The proposition is attractive precisely because it appears to need no microdata for the target country at all. It is also, as stated, untested in the only form that matters, because the comparison that decides it has not been run.
 
@@ -54,7 +54,7 @@ Large pretrained language models make a different answer look available. A model
 
 A practitioner who cannot obtain diaries for a target country is not choosing between a language model and nothing. The alternative already on the shelf is more than fifty years old and is the standard instrument of survey statistics and spatial microsimulation: take real diaries from countries that do have them, and reweight that donor pool onto the target country's published margins by iterative proportional fitting, so that the synthetic population matches the target on age, sex, employment and household structure while every individual day in it remains a day somebody actually lived. Calibration estimators of this family are design-unbiased and minimise divergence from the donor weights subject to the margins (Deville and Särndal, 1992), and their behaviour in spatial microsimulation is well characterised (Lovelace et al., 2015). A raked donor pool preserves the higher-order structure of real days by construction, because it never generates a day; it only reweights one.
 
-Published generative work does not test against that baseline. Language-model approaches to tabular and sequential microdata are evaluated on random within-population splits, or against generative adversarial and variational baselines trained on the same population, which measures how well a model reproduces a distribution it has seen rather than one it has not. We searched for a like-for-like comparison between a fine-tuned or prompted language model and a demographically raked real-donor pool on a population the generator had never seen, across synthetic population synthesis, activity-based travel demand, human mobility generation, cross-lingual distributional transfer and tabular generation under shift, and did not find one (searched 2026-09-13; see §6.4 for what this absence does and does not license). Table 1 positions the present study against the lineage it belongs to.
+Published generative work does not test against that baseline. Language-model approaches to tabular and sequential microdata are evaluated on random within-population splits, or against generative adversarial and variational baselines trained on the same population, which measures how well a model reproduces a distribution it has seen rather than one it has not. The author searched for a like-for-like comparison between a fine-tuned or prompted language model and a demographically raked real-donor pool on a population the generator had never seen, across synthetic population synthesis, activity-based travel demand, human mobility generation, cross-lingual distributional transfer and tabular generation under shift, and did not find one (searched 2026-09-13; see §6.4 for what this absence does and does not license). Table 1 positions the present study against the lineage it belongs to.
 
 **Table 1.** - Positioning against the time-use-survey-to-occupancy lineage.
 
@@ -64,26 +64,26 @@ Published generative work does not test against that baseline. Language-model ap
 | Widén and Wäckelgård (2010) | ✓ | ✓ (Markov) | ✗ | ✗ | ✗ | ✓ | ✗ |
 | Osman and Ouf (2021), review | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✓ |
 | Vosoughkhosravi et al. (2023), review | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✓ |
-| Author's prior line (single country) | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✓ |
+| Iseri et al. (2026), single country | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ | ✓ |
 | This study | ✓ | ✓ (fine-tuned LLM) | ✓ | ✓ | ✓ | ✓ | ✓ |
 
-Occupancy models built from national time-use surveys form a continuous lineage from the first-order inhomogeneous Markov chains of Richardson et al. (2008) and Widén and Wäckelgård (2010), through the higher-order and semi-Markov variants that followed, to the survey-conditioned statistical models reviewed by Osman and Ouf (2021) and Vosoughkhosravi et al. (2023). The baseline reported in the author's earlier work sits in this family. A first-order inhomogeneous Markov chain, fitted per fold on the training countries, is retained here as a comparator throughout, and its margin is reported alongside the raked-donor null rather than in place of it.
+Occupancy models built from national time-use surveys form a continuous lineage from the first-order inhomogeneous Markov chains of Richardson et al. (2008) and Widén and Wäckelgård (2010), through the higher-order and semi-Markov variants that followed, to the survey-conditioned statistical models reviewed by Osman and Ouf (2021) and Vosoughkhosravi et al. (2023). The baseline reported in the author's earlier work (Iseri et al., 2026) sits in this family. A first-order inhomogeneous Markov chain, fitted per fold on the training countries, is retained here as a comparator throughout, and its margin is reported alongside the raked-donor null rather than in place of it.
 
 ### 1.3 Conditioning on Marginals Does Not Certify the Joint
 
-Conditioning a generative model on demographic marginals does not certify the joint distribution those marginals came from. We report a case from our own pipeline: a correction that repaired a marginal left the corresponding joint badly wrong, generating more than fifteen hundred employed thirteen-year-olds from a single donor day, and it was detected only because the joint was inspected directly. Every stage of this study therefore scores quantities that were never in the prompt, including dwell-time distributions, transition matrices and co-presence cross-tabulations conditioned on attribute pairs, and treats marginal agreement as a precondition rather than as evidence.
+Conditioning a generative model on demographic marginals does not certify the joint distribution those marginals came from. One case from this study's own pipeline illustrates the point: a correction that repaired a marginal left the corresponding joint badly wrong, generating more than fifteen hundred employed thirteen-year-olds from a single donor day, and it was detected only because the joint was inspected directly. Every stage of this study therefore scores quantities that were never in the prompt, including dwell-time distributions, transition matrices and co-presence cross-tabulations conditioned on attribute pairs, and treats marginal agreement as a precondition rather than as evidence.
 
 The same discipline applies to the surveys themselves. Time-use surveys differ in how they allocate diary days and in whether the supplied weights repair that allocation. The three HETUS-derived files used here target three different day bases, and only one of the three is representative of the calendar week. Because the discrepancy is a property of the country, it is confounded with the leave-one-country-out split, which is the worst shape a nuisance can take in this design; every diary is therefore re-based onto the calendar week before any statistic is computed, and the size of the correction is reported rather than only its existence.
 
 ### 1.4 What Was Fixed in Advance
 
-This study's primary claim was pre-registered. The evaluation file naming the metrics, the bands, the null and the fold structure was frozen and md5-locked before the first training submission, two gates verify that lock at every closure, and the bar it names is the one reported in §5.1. Bands were not moved after the result was seen, no metric was substituted, and the comparison that does not clear its bar is reported at the strength at which it falls short. The design is falsifiable in one sentence, which was the reason for adopting it: if a fine-tuned language model cannot reproduce a held-out country better than a demographically raked pool of real European donor diaries, the transfer claim does not hold.
+This study's primary claim was pre-registered. The evaluation file naming the metrics, the bands, the null and the fold structure was frozen and hash-locked before the first training submission, two gates verify that lock at every closure, and the bar it names is the one reported in §5.1. Bands were not moved after the result was seen, no metric was substituted, and the comparison that does not clear its bar is reported at the strength at which it falls short. The design is falsifiable in one sentence, which was the reason for adopting it: if a fine-tuned language model cannot reproduce a held-out country better than a demographically raked pool of real European donor diaries, the transfer claim does not hold.
 
 It did not hold. This paper reports that, and it reports what the machinery built to test it produced along the way.
 
 ### 1.5 Contributions and Aim of the Study
 
-The first contribution is the result itself, stated without softening. Under leave-one-country-out over Spain, Italy and the United Kingdom, a fine-tuned open-weight language model conditioned on published demographic marginals is beaten by a raked pool of real donor diaries in every age band of every fold, by factors of two to six, and by five further pre-registered transfer gates. The shortfall is uniform rather than marginal, and it is not a capacity limitation: a larger backbone, a ninety-two-fold increase in trainable parameters and a different model family were each measured and each changed nothing in the direction that would rescue it.
+The first contribution is the result itself, stated without softening. Under leave-one-country-out over Spain, Italy and the United Kingdom, a fine-tuned open-weight language model conditioned on published demographic marginals is beaten by a raked pool of real donor diaries in every age band of every fold, by factors of 1.1 to 3.9, and by five further pre-registered transfer gates. The shortfall is uniform rather than marginal, and it is not a capacity limitation: a larger backbone, a ninety-two-fold increase in trainable parameters and a different model family were each measured and each changed nothing in the direction that would rescue it.
 
 The second is diagnostic, and it is the part most likely to transfer to other problems. A fictional-country control conditions the model on a country it has never seen, with deliberately perturbed marginals, and scores two things separately: whether the generated population moves in the direction the conditioning specifies, and whether it moves by the right amount. On the reported model the amplitude arm misses its floor in all three folds at a slope near one half, so the model is not ignoring its conditioning but under-responding to it. The steering arm, also measured on the reported model, passes in all three folds, which §5.4 reports in full. Separating the two ways the response falls short is what turns an uninformative loss into a locatable one.
 
@@ -106,13 +106,13 @@ The aim of the study follows directly. *This paper asks whether a fine-tuned lan
 Three national time-use surveys, one published demographic reference per country, one set of published
 residential building parameters, and one set of weather files. Each is described with the properties that
 bear on the leave-one-country-out design, and in particular with the asymmetries between the three
-countries, because in this design any property that differs by country is confounded with the split.
+countries, because in this design any property that differs by country is confounded with the split. The United Kingdom fold is called Britain throughout, for brevity; the survey covers the whole United Kingdom, while the building typology used in §2.3 covers England only.
 
 **Table 2.** - The three national time-use surveys as delivered.
 
 | | Spain | United Kingdom | Italy |
 |---|---|---|---|
-| Instrument | INE *Encuesta de Empleo del Tiempo* | UKTUS, UK Data Service SN 8128 | ISTAT *Uso del Tempo* |
+| Instrument | INE *Encuesta de Empleo del Tiempo* (INE, 2011) | UK Time Use Survey (UKTUS), UK Data Service SN 8128 (Sullivan and Gershuny, 2023) | ISTAT *Uso del Tempo* (ISTAT, 2016) |
 | Wave | 2009-10 | 2014-15 | 2013-14 |
 | Delivered form | 144 fixed 10-minute slots | native episodes | native episodes, explicit clock times |
 | Diaries | 19,295 | 16,533 | 41,229 |
@@ -149,9 +149,12 @@ week. Left uncorrected this shifts at-home time by about one percentage point in
 essentially nothing in Britain, which is a country-correlated shift on a leave-one-country-out split and
 therefore the worst possible shape for a nuisance to take. Every diary is re-based onto the calendar week
 before any statistic in this paper is computed, and §5.5 reports the size of that correction rather than
-only its existence. Whether the HETUS framework itself requires a particular day allocation is not
-asserted here; the guidelines have not been read directly on that question, and the claim made is only
-about what these three files do, which is measured.
+only its existence. Whether the HETUS framework itself specifies a diary-day allocation is answered
+directly by the guidelines, read in full for this study: both the 2008 and 2018 editions recommend two
+diary days per respondent, one weekday and one weekend day, while noting that a single diary day is
+acceptable though it leaves intra-personal variation unmeasured (Eurostat, 2009, §2.2.1; Eurostat, 2019,
+§2.2.1). Of the three files used here, only the British survey follows the two-day recommendation; Spain
+and Italy use the one-day option the guidelines describe as acceptable, not the one they recommend.
 
 Two further delivery properties are recorded as data properties rather than repaired. One British
 activity code appears in the data and is labelled nowhere in the delivery. The Italian file carries
@@ -179,13 +182,13 @@ reported there rather than absorbed.
 
 ### 2.3 Residential building parameters and weather
 
-Building parameters come from the published TABULA typology workbook, from which this study constructs
+Building parameters come from the published TABULA typology workbook (Loga et al., 2012; Loga et al., 2016), from which this study constructs
 its own archetypes; these are not an official TABULA product. Two properties of the source constrain what
 follows: the British typology covers England only, with no Scottish or Welsh row, and the boundary
 conditions attached to the archetypes are TABULA's cross-country European rows rather than its national
 ones, which is why the reference internal gain is identical in all three countries.
 
-Weather is one TMYx file per country over the 2009 to 2023 base period, at Valencia Viveros, Birmingham
+Weather is one typical meteorological year (TMYx) file per country over the 2009 to 2023 base period, at Valencia Viveros, Birmingham
 Airport and Torino Venaria. A single shared base period was chosen over each country's own fieldwork
 years so that the weather is not itself a country-specific treatment. Stations were selected by scoring
 44 candidates against TABULA's published monthly temperatures rather than against any simulation output.
@@ -272,7 +275,7 @@ and unmet because the honest state of the data is that the category exists.
 
 ### 3.3 The Fine-Tuned Model
 
-The reported model is a low-rank adapter fine-tune of an open-weight 7.30-billion-parameter backbone, at
+The reported model is a low-rank adapter (LoRA; Hu et al., 2022) fine-tune of an open-weight 7.30-billion-parameter backbone, at
 a pinned revision. Two comparison arms are trained under the same recipe and reported in §5.3: a
 1.48-billion-parameter model from the same family, and a 7-billion-parameter model from a different
 family.
@@ -304,8 +307,7 @@ At generation time the model sees nothing about the held-out country except a pr
 synthetic population fitted to that country's published census marginals.
 
 Each synthetic population contains 100,000 persons. A four-way joint table over age band, sex, household
-type and economic status is fitted by iterative proportional fitting onto published national marginals,
-to a worst absolute marginal deviation below 1e-13. The marginal sources are national and are named in
+type and economic status is fitted by iterative proportional fitting onto published national marginals, following the synthetic-population construction of Beckman et al. (1996), to a worst absolute marginal deviation below 1e-13. The marginal sources are national and are named in
 full in the supplementary material: the census dissemination service for the United Kingdom, the 2011
 census releases for Spain, and a combination of the national census tract release and the European census
 hub for Italy, the last because the Italian tract file publishes no household-type table.
@@ -357,19 +359,7 @@ than a returned last iterate, and a target category that no donor can supply is 
 than a silently dropped cell. And the raking starts from a uniform seed, which discards the donor
 surveys' own weights, so the null is not given an advantage the model does not have.
 
-The objection that this comparison is circular deserves an explicit answer rather than a renamed
-gate. The null is raked onto the same marginals the model was conditioned on, so the two candidates
-share a reference. That is deliberate. The comparison is not between a candidate and its own target;
-it is between two candidates' distance to a third reference that neither produced, published by
-national statistical offices before either candidate existed. Giving the null weaker or different
-marginals would not make the test more demanding, it would convert a null into a handicap, and any
-margin it produced would measure the handicap. The construction is enforced in code rather than
-asserted: the comparison refuses to run if the two sides carry different marginal sources or if the
-held-out country appears in the donor pool, and the margin is a difference rather than a ratio, so a
-null scored against itself returns exactly zero and does not clear the bar. No quantity anywhere in
-this study is a ratio of two divergences. Figure 2 sets the design out schematically, with the
-null's flat seed and the shared-reference argument that keeps the comparison from being a handicap
-in either direction.
+The null is raked onto the same marginals the model was conditioned on, so the two candidates share a reference. That is deliberate, and the objection that it makes the comparison circular is answered in full in §6.3. In brief, the comparison is between two candidates' distance to a third reference that neither produced; the construction is enforced in code, since the comparison refuses to run if the two sides carry different marginal sources or if the held-out country appears in the donor pool; and the margin is a difference rather than a ratio, so a null scored against itself returns exactly zero and does not clear the bar. Figure 2 sets the design out schematically, with the null's flat seed and the shared-reference argument that keeps the comparison from being a handicap in either direction.
 
 Two secondary nulls are carried. Single-donor-country populations are built for every donor country in
 every fold, six in all, with no country nominated as nearest; the word was removed from the design when
@@ -405,7 +395,7 @@ here, not the convention that was eventually adopted.
 ### 3.7 European Residential Archetypes and the Occupancy-to-Gain Conversion
 
 Generated schedules are carried into building energy simulation on residential archetypes constructed by
-the author from published TABULA parameters. The parameter source is the TABULA calculator workbook, and
+the author from published TABULA parameters. The parameter source is the TABULA calculator workbook (Loga et al., 2012, 2016), and
 the archetypes actually built are 88 in total, 24 for Spain, 32 for Britain and 32 for Italy, each
 combining one of four dwelling classes with one national construction-period band. The four classes are
 single-family house, terraced house, multi-family house and apartment building, and all four are retained
@@ -416,7 +406,7 @@ attached to every archetype in all three countries are TABULA's cross-country Eu
 its national ones, which is why the reference internal gain is identical across the three countries; that
 identity is what makes a cross-country comparison of gain redistribution meaningful at all.
 
-Simulation uses EnergyPlus 24.2.0, with the build hash read from each run's own error file rather than
+Simulation uses EnergyPlus 24.2.0 (Crawley et al., 2001), with the build hash read from each run's own error file rather than
 inherited across cells. Weather is a single TMYx file per country over the 2009 to 2023 base period, at
 Valencia Viveros for Spain, Birmingham Airport for Britain and Torino Venaria for Italy. The stations were
 selected by scoring 44 candidates against TABULA's own published monthly temperatures for each country, a
@@ -468,8 +458,7 @@ No pre-rotation number from this campaign appears anywhere in this paper.
 
 End-use loads are generated by triggering appliance cycles from recorded activities rather than by
 applying a diversified load profile. The appliance model is adapted from the published lineage rather
-than invented: the CREST demand model, Widén's activity-based electricity and lighting work, the
-LoadProfileGenerator, and RAMP. Only two of those four publish a usable activity-to-appliance mapping
+than invented: the CREST demand model (Richardson et al., 2010), the activity-based electricity and lighting model of Widén and Wäckelgård (2010), the LoadProfileGenerator (Pflugradt, 2016), and RAMP (Lombardi et al., 2019). Only two of those four publish a usable activity-to-appliance mapping
 table, and this study builds on those two, taking CREST's 33-appliance table as the operative set and
 verifying it against the vendored implementation's own input file rather than against the paper alone.
 The mapping from the harmonised activity alphabet to appliances carries 192 rows over 141 activity codes,
@@ -500,7 +489,7 @@ minutes across 29 distinct codes. The information is present and deliberately un
 its calibration precondition being unsatisfiable, not on the field being absent, and the paper does not
 claim otherwise.
 
-Domestic hot water is generated with the Jordan and Vajen four-event tapping model, with short, medium,
+Domestic hot water is generated with the Jordan and Vajen (2001) four-event tapping model, with short, medium,
 bath and shower events driven from washing, showering, food-preparation and laundry activity codes, and
 with per-event volumes transcribed from that source's own table: 1, 6, 140 and 40 litres at daily
 portions of 0.14, 0.36, 0.10 and 0.40, summing to 200.0 litres per dwelling per day.
@@ -508,8 +497,8 @@ portions of 0.14, 0.36, 0.10 and 0.40, summing to 200.0 litres per dwelling per 
 The reference band that this quantity was originally scored against turned out on inspection not to
 belong to that source at all, and the resolution is reported in §5.10 and §7.7 rather than smoothed
 over. Jordan and Vajen state 200 litres per day for a single-family house at a 35 kelvin rise, with
-no per-person figure and no 60 degree reference anywhere. The 30 to 50 litres per person per day
-band that was registered traces instead to a review by Fuentes, Arce and Salom, compressed into a
+no per-person figure and no 60 °C reference anywhere. The 30 to 50 litres per person per day
+band that was registered traces instead to a review by Fuentes et al. (2018), compressed into a
 single attribution in error. The model is per dwelling, the band is per person, and the ratio
 between them is exactly the household size. The band was not moved, the medians are still printed
 outside it, the gate is permanently informational, and a replacement gate scoring the per-dwelling
@@ -571,13 +560,12 @@ only, every square metre belongs to a flat, nothing is narrower than two metres,
 thermal zone. It covers 3,529 buildings, 31,591 dwellings and 35,290 simulation cells, distributed as
 11,510 in Madrid, 11,710 in Bologna and 12,070 in London.
 
-That campaign ran to completion and its gate board was never executed. It is described in this paper as a
-compute campaign whose board was deliberately not read, and no scored result from it is claimed anywhere.
+That campaign ran to completion. Its gate board was scored only after the results reported in this paper were fixed, under a separate authorisation, and that scoring found a defect that is still to be engineered out: in a small number of cells, dwellings holding different diaries produced byte-identical internal-gain series. No scored result from that campaign is therefore claimed anywhere in this paper, and it is described here as a compute campaign only.
 The earlier core-era campaign, of 410 cells, is retained as a method and reproducibility record; its peak
 and timing pattern is described in §5.11 as an illustration from that record, not as this study's scored
 result.
 
-Two checks from the earlier campaign remain unmet and are the only open items in the whole pipeline.
+Two checks from the earlier campaign remain unmet and, with the defect above, are the only open items in the whole pipeline.
 Both are provenance-link gaps rather than data defects: five manifest fields are written on zero of
 410 cells, and the rotation declaration is absent from every cell manifest although the convention
 is declared correctly upstream. Neither was retrofitted, because a field that was never written is
@@ -608,9 +596,7 @@ the third kind are reported as already not met rather than as detections.
 Three further conventions apply. A check that returns a verdict on zero rows reports that it is not
 evaluable rather than that it passed. A check whose reference cannot be obtained reports as not checked
 rather than as passing; two such appear in this work, both of them citation checks requiring network
-access. And a refusal is a first-class outcome: where authorisation to run a campaign is not authorisation
-to read it as a scored result, the tooling refuses to emit a scored verdict, and §4.4 reports one campaign
-that sits in exactly that state.
+access. And a refusal is a first-class outcome: authorisation to run a campaign is not authorisation to read it as a scored result, and the tooling refuses to emit a scored verdict until a second, separate authorisation is recorded; the larger observed-stock campaign of §4.4 sat in that state until its board was scored separately, after this paper's results were fixed.
 
 # 5 Results
 
@@ -634,8 +620,7 @@ positive margin is a win for the model.
 | Italy | Y45-64 | 33.95 | 13.85 | -20.1 |
 | Italy | Y_GE65 | 35.84 | 15.51 | -20.3 |
 
-Every margin is negative. The null wins every band of every fold by factors between two and six, and the
-closest the model comes is 2.70 minutes per day short, in the oldest British band. There is no subset of
+Every margin is negative. The null wins every band of every fold, by factors of 2.3 to 3.9 in eight of the nine cells and by a factor of 1.15 in the ninth, where the closest the model comes is 2.70 minutes per day short, in the oldest British band. There is no subset of
 Table 3 in which the method worked. Figure 3 draws the same nine cells.
 
 ![Figure 3](figures/Figure_03_nine_cells.png)
@@ -660,7 +645,7 @@ cuts against this study, since the model lost to the weakest of its three regist
 
 | Check | What it scores | Band | Verdict |
 |---|---|---|---|
-| Budget agreement | level-1 budget error against published tables | MAPE at or below 15 per cent | FAIL, 9 of 9 |
+| Budget agreement | level-1 budget error against published tables | mean absolute percentage error (MAPE) at or below 15 per cent | FAIL, 9 of 9 |
 | Frozen limitation criteria | conjunction of three pre-declared limitation conditions | any one triggers | FAIL, 9 of 9 |
 | Held-in regression | training-country prefixes must clear the same bar | MAPE at or below 15 per cent | FAIL, 6 of 6 |
 | Fictional country | response to an unseen country token | slope at or above 0.80 | FAIL, 3 of 3 |
@@ -800,7 +785,7 @@ occupancy shares, and it is why the dwell-time result above is reported ahead of
 Four registered privacy checks were run on the reported model. One misses its bar, one passes, one
 passes, and one splits two to one.
 
-The loss-based membership-inference attack returns an area under the curve of 0.6645 against a
+The loss-based membership-inference attack (Shokri et al., 2017) returns an area under the curve of 0.6645 against a
 registered ceiling of 0.65, 1.70 standard deviations over the bar. The untuned-base floor on the
 same construction is 0.4886, essentially chance, which is what makes 0.6645 readable as membership
 signal rather than as a split artefact. The reference-based attack passes at 0.5594 against a
@@ -843,9 +828,9 @@ neutral.
 
 | Fold | Peak hour | Peak power |
 |---|---|---|
-| Spain | 14:00 | 503 W |
-| Italy | 18:00 | 404 W |
-| Britain | 20:00 | 416 W |
+| Spain | 14:00 | 518 W |
+| Italy | 18:00 | 395 W |
+| Britain | 20:00 | 422 W |
 
 One appliance set, one set of published parameters, one calibration, one trigger rule. The only thing that
 differs between the three is the diary, so the entire six-hour spread is the activity data speaking. This
@@ -871,8 +856,7 @@ them separately would overstate what is wrong with this pipeline by a factor of 
 The appliance trigger fires from the primary recorded activity only. Laundry is the archetypal secondary
 activity: the machine is started and the person goes and does something else. The model therefore cannot
 see most laundry by ruling. Eligible laundry minutes per dwelling-year measure 2,462 in Spain, 1,589 in
-Britain and 781 in Italy, against the 27,036 minutes that the reference washing machine's published cycle
-count requires, giving modelled-to-published ratios of 0.776, 0.179 and 0.092. Stock load-shape agreement
+Britain and 781 in Italy, against the 27,036 minutes per year that the reference washing machine's published cycle count requires. After calibration, modelled washing-machine cycles reach 0.776, 0.179 and 0.092 of the published count. Stock load-shape agreement
 falls to coefficients of determination of 0.2967, 0.4106 and 0.0346 against a floor of 0.85.
 
 At stock scale the same mechanism reappears on two much larger and independently drawn populations: 7,602
@@ -885,18 +869,14 @@ rather than a small-sample artefact. No band was moved at either scale, and the 
 was deliberately not reclassified as informational, because it is a genuine shape correlation that
 could have passed had the shape matched.
 
-One fact prevents a misreading and is printed alongside. The generated diaries do carry a secondary
-activity field, on 29.816 per cent of episodes and 26.308 per cent of modelled minutes across 29 codes.
-The information is present and deliberately unused; the ruling rests on its calibration precondition
-being unsatisfiable, not on the field being absent.
+One fact prevents a misreading. The generated diaries do carry a secondary activity field, populated at the rates given in §3.9; the information is present and deliberately unused, because the ruling rests on its calibration precondition being unsatisfiable, not on the field being absent.
 
 ### 5.10 The hot-water comparison is a denominator mismatch, and the replacement check passes
 
 The registered hot-water check measured 100.16, 117.65 and 91.06 litres per person per day against a
 registered band of 30 to 50, missing it by factors of two to four. Reading the source rather than
 re-measuring the model established three things. The band was never the modelling source's: that
-source publishes 200 litres per day per dwelling at a 35 kelvin rise, with no per-person figure and
-no 60 degree reference. The band traces instead to a review paper, compressed into a single
+source publishes 200 litres per day per dwelling at a 35 kelvin rise, with no per-person figure and no 60 °C reference. The band traces instead to a review paper, compressed into a single
 attribution in error. And the scored quantity reduces to 200 divided by household size, to within
 0.0005 over all 300 rows, so the check was measuring household size rather than the hot-water model.
 
@@ -922,7 +902,7 @@ Table 8 reports the corrected values, taken at the top of the sensitivity sweep.
 | | Spain | Britain | Italy |
 |---|---:|---:|---:|
 | Peak effect | +2.7145 % | +0.0393 % | -0.6332 % |
-| Between-diary spread | 4.9837 | 2.3797 | 1.5959 |
+| Between-diary spread | 4.9837 % | 2.3797 % | 1.5959 % |
 | Ratio of effect to spread | 0.54 | 0.02 | 0.40 |
 | Annual median effect | -1.5100 % | -0.3605 % | -0.4178 % |
 
@@ -952,7 +932,7 @@ claim.
 
 One further comparison is reported as a structural difference rather than as a validation. Simulated
 hourly-dynamic heating demand differs from the published quasi-steady-state monthly figure by +136.6 per
-cent in Spain, -29.6 per cent in Britain and -36.7 per cent in Italy, a 166-percentage-point spread whose
+cent in Spain, -29.6 per cent in Britain and -36.7 per cent in Italy, a 173-percentage-point spread whose
 sign flips by country. Spain's mechanism is measured: the published method counts gains over a 539-hour
 heating season while the simulation heats for 2,901 hours at the same set point. This is a model-to-model
 structural comparison and is permanently informational, with no band that will ever be created for it.
@@ -962,7 +942,7 @@ structural comparison and is permanently informational, with no band that will e
 ### 6.1 What the shortfall is, and what it is not
 
 The pre-registered comparison did not clear its bar uniformly. It missed the bar in every age band
-of every fold, by factors between two and six, with the closest miss still 2.70 minutes per day on
+of every fold, by factors of 1.1 to 3.9, with the closest miss still 2.70 minutes per day on
 the wrong side of zero, and five further registered transfer gates returned the same verdict on
 quantities the first gate does not score. A result that misses the bar everywhere is easier to
 interpret than one that misses it in half its cells, because there is no subset in which the method
@@ -1027,13 +1007,7 @@ picture is of a generator that knows the shape of a European day in general, adj
 direction when told about a country, and does not reproduce that country's distribution of how long
 people stay in states.
 
-Where that sits relative to the older lineage is instructive. A first-order inhomogeneous Markov
-chain, fitted on the same two training countries and scored on the same held-out one, reproduces the
-transition rate almost exactly, at 0.264 transitions per day against a tolerance of 1.50, and misses
-the dwell-time distribution by an order of magnitude, at 119.6 minutes of Wasserstein distance
-against a 10.0 minute band. Matching a rate while missing the distribution is the characteristic
-first-order shortfall, and it is the clearest single argument for scoring dwell times at all rather
-than scoring occupancy shares.
+Where that sits relative to the older lineage is instructive, and §5.5 gives the numbers: the first-order Markov comparator matches the transition rate almost exactly and misses the dwell-time distribution by an order of magnitude. Matching a rate while missing the distribution is the characteristic first-order shortfall, and it is the clearest single argument for scoring dwell times at all rather than scoring occupancy shares.
 
 ### 6.3 Why the null is hard, and why it is not circular
 
@@ -1064,13 +1038,12 @@ of nearly four. No quantity in this study is a ratio of two divergences.
 
 ### 6.4 The absence in the literature, and what it licenses
 
-We searched for a published like-for-like comparison between a fine-tuned or prompted language model and
+The author searched for a published like-for-like comparison between a fine-tuned or prompted language model and
 a demographically raked real-donor pool, on a population the generator had not seen, and did not find one
-(searched 2026-09-13). We also searched for evidence that any learned hybrid has beaten plain raking of
+(searched 2026-09-13). The author also searched for evidence that any learned hybrid has beaten plain raking of
 an empirical donor pool for cross-population joint sequence transfer, and did not find that either.
 
-An absence found by a search is not a proof of non-existence, and it is reported here in the first person
-for that reason. What it licenses is modest and worth stating precisely. It licenses the claim that the
+An absence found by a search is not a proof of non-existence, and it is reported here as a dated search for that reason. What it licenses is modest and worth stating precisely. It licenses the claim that the
 difficulty of this particular comparison has not been characterised in the published record, which is why
 a study that runs it has something to add even when the answer is negative. It does not license a claim
 that nobody has ever run it, and it does not license treating the raked donor pool's unbeaten status as a
@@ -1141,7 +1114,7 @@ coverage figure that is vacuous precisely where the evidence is weakest.
 For a modeller who needs occupancy schedules for a country without accessible time-use microdata, the
 recommendation from this study is not the one it set out to test. On this corpus, at this scale, and
 against this null, reweighting real diaries from neighbouring countries onto the target country's
-published demographic tables produced the better synthetic population by a factor of two to six, runs in
+published demographic tables produced the better synthetic population by a factor of 1.1 to 3.9, runs in
 seconds, requires no accelerator, and cannot generate a day nobody has lived. That is the method to use.
 
 The honest form of the question this study did not ask itself until late is therefore worth putting
@@ -1184,7 +1157,7 @@ not confined to transfer; the model misses the same bar in-sample, on countries 
 which qualifies how much of the deficit the title's transfer framing can be read to explain.
 
 It is worth being precise about what the literature does and does not supply on this point, because the
-temptation runs both ways. We searched for a published floor on the number of source populations below
+temptation runs both ways. The author searched for a published floor on the number of source populations below
 which cross-population transfer is not expected to succeed, in survey statistics, small-area estimation,
 spatial microsimulation and the domain-generalisation literature, and found none stated as a rule
 (searched 2026-09-13). The consequence is symmetric and both halves belong in the paper. This study
@@ -1215,12 +1188,12 @@ asked to reconstruct from those tables a pattern that those tables do not encode
 The objection is real, and this study's own strongest positive result sharpens it rather than blunting
 it: the six-hour spread in stock appliance peak reported in §5.8 is exactly the institutional signal the
 objection describes, and it enters the pipeline through the diary rather than through the conditioning
-vector. Read honestly, that is a statement about the conditioning design, which is ours, and not about
+vector. Read honestly, that is a statement about the conditioning design, which is this study's own, and not about
 the backbone.
 
 It does not, however, rescue the comparison, and the reason is structural. The raked donor pool was
 given the same marginals and no more. Whatever the conditioning vector does not carry, it did not
-carry it for both sides of a comparison that one side won by a factor of two to six. A richer
+carry it for both sides of a comparison that one side won by a factor of 1.1 to 3.9. A richer
 conditioning vector is a well-motivated next experiment; it is not an explanation of this one's
 outcome.
 
@@ -1266,8 +1239,7 @@ at parity sample size. The direction of the resulting bias is not separately qua
 claim in this paper is stated in a form that would survive only under the assumption that
 constrained decoding is distribution-preserving.
 
-A related rule constrains the whole study and is stated here once. Generated output is never raked. Raking
-our own output onto the target marginals would close the marginal gap by construction, because raking
+A related rule constrains the whole study and is stated here once. Generated output is never raked. Raking this study's own output onto the target marginals would close the marginal gap by construction, because raking
 closes marginal gaps by construction, and the resulting agreement would measure the raking rather than the
 model. That is precisely why the raked donor pool is the null rather than a component of the method.
 
@@ -1313,9 +1285,7 @@ The domestic hot water comparison is reported as a denominator incompatibility a
 limitation of the model or a pass. The band it was scored against turned out on inspection to be
 per-person while the source most often cited for it publishes a per-dwelling figure, and the scored
 quantity was found to track household size almost exactly. The band was not moved, the medians are
-still printed outside it, and the gate is permanently informational. One further caution is carried
-openly: the paper that is the true source of the per-person band has not been read by the author,
-and the figure inside it remains unverified at the time of writing.
+still printed outside it, and the gate is permanently informational.
 
 ### 7.8 Reproducibility is statistical, not bit-exact
 
@@ -1357,9 +1327,7 @@ the manifest shipped with the full fine-tune control describes a low-rank adapte
 log records a full fine-tune with no adapter. The manifest was deliberately not edited, a correction
 sidecar sits beside it, and this paper quotes the sidecar.
 
-The larger of the two observed-stock campaigns ran to completion, across 35,290 cells in three
-districts, and its gate board was never executed; it is described here as a compute campaign whose
-board was deliberately not read, and no scored result from it is claimed anywhere. Within that same
+The larger of the two observed-stock campaigns ran to completion, across 35,290 cells in three districts. Its gate board was scored separately after this paper's results were fixed, that scoring found the identical-series defect named in §4.4, and no scored result from the campaign is claimed anywhere in this paper. Within that same
 larger campaign, a block of 840 cells that did not complete, across 84 buildings in Madrid, was left
 unrepaired by deliberate choice, and three courtyard buildings in Bologna are permanently outside
 what this subdivision method can simulate.
@@ -1370,7 +1338,7 @@ A fine-tuned open-weight language model, trained on two European countries' harm
 diaries and conditioned on a third country's published demographic tables alone, does not reproduce
 that third country as well as a pool of the same two countries' real diaries reweighted onto the
 same tables. The comparison was pre-registered as the objective, frozen and hash-locked before
-training, and it missed the bar in all nine of its cells by factors of two to six, with five further
+training, and it missed the bar in all nine of its cells by factors of 1.1 to 3.9, with five further
 registered checks agreeing. The bar was not moved, no metric was substituted, and the result is
 reported at the strength at which it fell short.
 
@@ -1400,57 +1368,86 @@ question is worth continuing to ask even after this particular answer to it.
 
 For a modeller who needs occupancy schedules for a country whose microdata cannot be obtained, the
 recommendation from this work is the classical one. Reweight real diaries from neighbouring countries onto
-the target country's published tables. It won here by a factor of two to six, it runs in seconds, and
+the target country's published tables. It won here by a factor of 1.1 to 3.9, it runs in seconds, and
 every day it produces is a day somebody lived.
 
 # References
 
-*Reference list assembled from this project's own verified citation records. Every DOI below was resolved
-against CrossRef during the pipeline's citation checks; four such checks are reported in this paper as not
-performed offline and resolve online. One entry is flagged: the review that is the true source of the
-domestic hot water band has not been read by the author, and §7.7 says so in the text.*
-
 Beckman, R. J., Baggerly, K. A., and McKay, M. D. (1996). Creating synthetic baseline populations.
 *Transportation Research Part A: Policy and Practice*, 30(6), 415-429. DOI: 10.1016/0965-8564(96)00004-3
+
+Crawley, D. B., Lawrie, L. K., Winkelmann, F. C., Buhl, W. F., Huang, Y. J., Pedersen, C. O., Strand, R. K.,
+Liesen, R. J., Fisher, D. E., Witte, M. J., and Glazer, J. (2001). EnergyPlus: creating a new-generation
+building energy simulation program. *Energy and Buildings*, 33(4), 319-331. DOI: 10.1016/s0378-7788(00)00114-6
 
 Deville, J.-C., and Särndal, C.-E. (1992). Calibration estimators in survey sampling. *Journal of the
 American Statistical Association*, 87(418), 376-382. DOI: 10.1080/01621459.1992.10475217
 
+Eurostat. (2009). *Harmonised European Time Use Surveys: 2008 Guidelines*. Methodologies and Working
+Papers, Catalogue number: KS-RA-08-014-EN. Luxembourg: Publications Office of the European Union.
+
+Eurostat. (2019). *Harmonised European Time Use Surveys (HETUS) 2018 Guidelines*. Manuals and Guidelines,
+Catalogue number: KS-GQ-19-003-EN. Luxembourg: Publications Office of the European Union.
+
 Fuentes, E., Arce, L., and Salom, J. (2018). A review of domestic hot water consumption profiles for
 application in systems and buildings energy performance analysis. *Renewable and Sustainable Energy
-Reviews*, 81, 1530-1547. DOI: 10.1016/j.rser.2017.05.229 [not read by the author; see §7.7]
+Reviews*, 81, 1530-1547. DOI: 10.1016/j.rser.2017.05.229
+
+Hu, E. J., Shen, Y., Wallis, P., Allen-Zhu, Z., Li, Y., Wang, S., Wang, L., and Chen, W. (2022). LoRA:
+Low-Rank Adaptation of Large Language Models. In *International Conference on Learning Representations
+(ICLR 2022)*. Pre-print DOI: 10.48550/arXiv.2106.09685
+
+Instituto Nacional de Estadistica (INE). (2011). *Encuesta de Empleo del Tiempo 2009-2010: Metodologia*.
+Madrid: INE.
+
+Iseri, O. K., Gursel Dino, I., and Kalkan, B. (2026). Occupancy modeling using population statistics and
+machine learning for urban residential built environment. *Energy and Buildings*, 357, 117155. DOI:
+10.1016/j.enbuild.2026.117155
+
+Istituto Nazionale di Statistica (ISTAT). (2016). *I tempi della vita quotidiana: L'uso del tempo in Italia
+- Anno 2013-2014: Metodologia e primi risultati*. Roma: ISTAT.
 
 Jordan, U., and Vajen, K. (2001). Realistic domestic hot-water profiles in different time scales.
 IEA-SHC Task 26: Solar Combisystems, report V2.0, May 2001.
 
-Lombardi, F., Balderrama, S., Quoilin, S., and Colombo, E. (2020). Generating high-resolution multi-energy
-load profiles for remote areas with an open-source stochastic model. *Energy*.
+Loga, T., Diefenbach, N., and Stein, B. (2012). *Use of Building Typologies for Modelling the Energy
+Balance of the National Residential Building Stocks*. TABULA Synthesis Report. Darmstadt: Institut Wohnen
+und Umwelt (IWU).
+
+Loga, T., Stein, B., and Diefenbach, N. (2016). TABULA building typologies in 20 European countries -
+Making energy-related features of residential building stocks comparable. *Energy and Buildings*, 132,
+4-12. DOI: 10.1016/j.enbuild.2016.06.094
+
+Lombardi, F., Balderrama, S., Quoilin, S., and Colombo, E. (2019). Generating high-resolution multi-energy
+load profiles for remote areas with an open-source stochastic model. *Energy*, 177, 433-444. DOI:
+10.1016/j.energy.2019.04.097
 
 Lovelace, R., Birkin, M., Ballas, D., and van Leeuwen, E. (2015). Evaluating the performance of iterative
 proportional fitting for spatial microsimulation: new tests for an established technique. *Journal of
 Artificial Societies and Social Simulation*, 18(2), 21. DOI: 10.18564/jasss.2768
 
 Osman, M., and Ouf, M. (2021). A comprehensive review of time use surveys in modelling occupant presence
-and behavior. *Building and Environment*. DOI: 10.1016/j.buildenv.2021.107785
+and behavior. *Building and Environment*, 196, 107785. DOI: 10.1016/j.buildenv.2021.107785
 
 Pflugradt, N. (2016). *Modellierung von Wasser- und Energieverbräuchen in Haushalten*. LoadProfileGenerator.
 
 Richardson, I., Thomson, M., and Infield, D. (2008). A high-resolution domestic building occupancy model
-for energy demand simulations. *Energy and Buildings*, 40(8), 1560-1566.
+for energy demand simulations. *Energy and Buildings*, 40(8), 1560-1566. DOI: 10.1016/j.enbuild.2008.02.006
 
 Richardson, I., Thomson, M., Infield, D., and Clifford, C. (2010). Domestic electricity use: a
 high-resolution energy demand model. *Energy and Buildings*, 42(10), 1878-1887. DOI:
 10.1016/j.enbuild.2010.05.023
 
-Vosoughkhosravi, S., Dixon-Grasso, L., and Jafari, A. (2023). The impact of occupancy on building energy
-performance: a review. *Energy and Buildings*. DOI: 10.1016/j.enbuild.2023.113245
+Shokri, R., Stronati, M., Song, C., and Shmatikov, V. (2017). Membership Inference Attacks Against Machine
+Learning Models. In *2017 IEEE Symposium on Security and Privacy (SP)*, pp. 3-18. DOI: 10.1109/sp.2017.41
+
+Sullivan, O., and Gershuny, J. (2023). *United Kingdom Time Use Survey, 2014-2015*. [data collection]. 1st
+Edition. UK Data Service. SN: 8128. DOI: 10.5255/UKDA-SN-8128-1
+
+Vosoughkhosravi, S., Jafari, A., and Zhu, Y. (2023). Application of American time use survey (ATUS) in
+modelling energy-related occupant-building interactions: a comprehensive review. *Energy and Buildings*,
+294, 113245. DOI: 10.1016/j.enbuild.2023.113245
 
 Widén, J., and Wäckelgård, E. (2010). A high-resolution stochastic model of domestic activity patterns
-and electricity demand. *Applied Energy*, 87(6), 1880-1892.
-
-⚠ **To be completed before submission.** The TABULA typology documentation, the three national survey
-user guides, the Eurostat HETUS methodological guidelines, and the author's own prior line are cited in the
-text and are not yet formatted here. The HETUS guidelines in particular carry an open check recorded in
-§2.1: they have not been read directly on the question of diary-day allocation, and no claim about the
-HETUS framework's requirements is made in this paper until they are.
+and electricity demand. *Applied Energy*, 87(6), 1880-1892. DOI: 10.1016/j.apenergy.2009.11.006
 
