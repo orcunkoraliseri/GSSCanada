@@ -80,11 +80,12 @@ electronic questionnaire that the respondent fills in rather than an interviewer
 change in collection method lands on exactly the one survey year, 2022, that this paper also treats
 as carrying the pandemic-era shift toward more time spent at home, and there is no earlier or later
 wave collected in the new method to compare against, so the two changes cannot be told apart with
-these data. Survey-methodology literature outside this project reports that moving to a
-self-administered mode of this kind can on its own change how much at-home time a respondent records,
-separately from any real change in behaviour. This paper's design cannot rule that possibility in or
-out: it has no way to separate a genuine pandemic/work-from-home effect from an effect of how the 2022
-diaries were collected. This does not overturn the direction of the result (more at-home time is
+these data. The collection-mode indicator in the source data is zero for the
+2005, 2010 and 2015 cycles and one only for 2022, so in this design the change of method and the
+pandemic-era shift are perfectly confounded: an effect of the new method cannot be estimated
+separately from a genuine change in behaviour, in either direction. This paper therefore treats the
+possibility that part of the 2022 step reflects how the diaries were collected as neither supported
+nor excluded by its own evidence. This does not overturn the direction of the result (more at-home time is
 recorded in 2022 than in 2015), which is independently supported by the wider pandemic literature; it
 does mean that the exact size of that step, and anything built forward from it, including the 2030
 scenarios above (which extend a trend fitted partly across this same 2015-to-2022 boundary), carries an
@@ -113,7 +114,7 @@ measured internal gains in this study.
 | 5 | Weekend ceiling 0.10, weekday 0.0619/0.0630 pass, weekend 0.1817/0.1843 (held-out) and 0.1637/0.1618 (backcast) fail, observed-only weekend 0.036/0.040, synthesized 0.138-0.175, up-weighting moved score ~0.005, 0.20 ceiling disclosed but unused | "Saturday and Sunday do not meet this ceiling ... moved this gap by only about 0.005" | `manuscript/draft_SI_model_selection.md:95-128` | Yes | Matches task doc's numbers exactly (0.036/0.040 vs 0.138-0.175, ~0.005 movement) |
 | 6 | 2030 = same stock persons/diaries, target = clamp(stock_rate + 8*pre_slope, 0, 1), pre_slope from real 2005/2010/2015 respondents, no uncertainty range built in | "only each household's probability of being home ... is shifted, by an amount equal to eight times a linear trend" | `impl/2026-09-15_WP1_step2_retargeting_spec.md` (Section 3, "Chosen design (D1, delta on the stock)") and `impl/2026-09-15_T20_wp1_d1_2030_build.md:9-18` | Yes | Formula identical in both files: `target[s,t] = clamp(stock_rate[s,t] + 8 x pre_slope[s,t], 0, 1)` |
 | 8 | Saturday and Sunday pooled into one weekend pattern at the building-model interface; the day-type map is `{1,2,3} -> {Weekday, Weekend, Weekend}` | "Saturday and Sunday are pooled into that single weekend pattern" | `2J_docs_occ_nTemp/07_aug_to_bem.py:34`; `2J_docs_occ_nTemp/07_bemIntegrationGSS.md:60-68`; plan `00_REVISION_PLAN.md:481` (S5, item 5) | Yes | Added by the manager 2026-09-15 (log (bc)) after the SI schedule-completion draft settled it. The size of the lost difference is PENDING on the rebuilt runs, so no number is quoted here. |
-| 9 | GSS diary collection moved from telephone interview (CATI) to a self-administered electronic questionnaire (EQ) starting with the 2022 cycle, the same cycle that carries the pandemic/WFH at-home shift; `COLLECT_MODE` is 0 for 2005/2010/2015 and 1 only for 2022, so mode and behaviour cannot be separated in this design; outside survey-methodology literature reports self-administered modes can change recorded at-home time on their own | "This change in collection method lands on exactly the one survey year, 2022 ... the two changes cannot be told apart with these data" | `00_REVISION_PLAN.md:550-558` (§5, "New, currently unassigned work"); `deepResearch/dr_2J-12_VETTING.md:127-132,195-197` | Yes | New limitation added this task (T43); not re-derived, taken from dr_2J-12's already quote-checked/Crossref-corroborated finding per the task's instruction; classified here as reviewer-adjacent (R3-3 asks to "list other concurrent changes as a limitation") rather than in the reviewer-unraised group below, a judgement call recorded in the implementation doc |
+| 9 | GSS diary collection moved from telephone interview (CATI) to a self-administered electronic questionnaire (EQ) starting with the 2022 cycle, the same cycle that carries the pandemic/WFH at-home shift; `COLLECT_MODE` is 0 for 2005/2010/2015 and 1 only for 2022, so mode and behaviour cannot be separated in this design and neither a mode effect nor its absence can be shown from these data | "This change in collection method lands on exactly the one survey year, 2022 ... the two changes cannot be told apart with these data" | `00_REVISION_PLAN.md:550-558` (§5, "New, currently unassigned work"); `deepResearch/dr_2J-12_VETTING.md:127-132,195-197` | Yes | New limitation added this task (T43); not re-derived, taken from dr_2J-12's already quote-checked/Crossref-corroborated finding per the task's instruction; classified here as reviewer-adjacent (R3-3 asks to "list other concurrent changes as a limitation") rather than in the reviewer-unraised group below, a judgement call recorded in the implementation doc |
 | 7a | TMY (typical-year) weather, not future weather, used for 2030 | "the 2030 schedules use the same typical-year weather file as 2022" | `00_REVISION_PLAN.md:472` (S5, item 1) | Yes | Found under S5 "Weaknesses the reviewers did not raise", not literally under a S9 checkbox; recorded per task item 7 instruction |
 | 7b | Census-GSS match rests on conditional independence | "matching census households to survey diaries assumes ... independently of anything not captured by those characteristics" | `00_REVISION_PLAN.md:474` (S5, item 3) | Yes | Same S5 list as 7a |
 | 7c | Metabolic heat channel not independently calibrated | "the metabolic heat given off by occupants ... is not independently calibrated" | `00_REVISION_PLAN.md:475` (S5, item 4) | Yes | Same S5 list as 7a |
@@ -136,6 +137,14 @@ measured internal gains in this study.
 - Searched `00_REVISION_PLAN.md` for a literal plan-log entry "(ba)" (the task doc's header cites "plan log (ba)" as the entry that commissioned T37): not found by grep; the log runs through entry (az) at the point this session read it. Recorded as a discrepancy below, not corrected silently.
 
 ## Decisions (T43, 2026-09-17 addition)
+- 2026-09-17, manager: plan §5 item 22 CLOSED by **option (b)**. The eleventh limitation's one
+  outside-literature sentence is removed and replaced by what this project's own data supports: the
+  `COLLECT_MODE` indicator is 0 for 2005/2010/2015 and 1 only for 2022, so the mode change and the
+  pandemic shift are perfectly confounded and neither a mode effect nor its absence is demonstrable
+  here. No citation is now owed, and none may be invented. The limitation still stands on its own
+  evidence, which was the plan's stated reason for declaring option (b) sufficient. The table row for
+  this limitation was softened in the same way; `dr_2J-12_VETTING.md:127-132,195-197` stays in the
+  source column as the provenance of the finding, not as a citation in the prose.
 - Added an eleventh limitation (the CATI-to-EQ survey collection-mode confound, `dr_2J-12` CARRIED item,
   plan `00_REVISION_PLAN.md:550-558`) as its own paragraph, placed after the "Saturday and Sunday are
   simulated as one day" paragraph and before the "Three further limitations" bundle. Opening-sentence

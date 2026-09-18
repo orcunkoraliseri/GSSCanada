@@ -8,6 +8,14 @@
 
 *Shipped model = J3 + Phase-8B per-(cycle × stratum × slot) marginal raking. J3 had the lowest composite score among the four trials that cleared all four gates, out of 40+ trials.*
 
+*Plain-term gloss (reviewer R2-1).* **J3** is this project's internal trial name for the generator
+architecture specified in this card: one shared Transformer encoder feeding an autoregressive
+activity decoder and a set of parallel binary heads. It is the third variant of the "J" family of
+architecture trials and the one that was shipped; the name itself carries no other meaning. The label
+is used in this supplementary table because the review asked that architecture detail be reported
+here rather than in the main text. The main text names the model in plain words and does not use this
+label.
+
 ### Architecture
 
 | Component | Specification |

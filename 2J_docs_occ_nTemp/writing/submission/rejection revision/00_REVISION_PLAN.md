@@ -536,7 +536,7 @@ too — cost **+3,600 runs** (2005/2010/2015 on the new panel). Recommended if W
     energy modeling under future climate scenarios"; the real, full published title (Crossref) is
     "Urban-scale building energy modeling under future climate scenarios: a scalable workflow and
     insights from Nassau County, New York" (same 2026-09-17 re-verification). Restore the full title.
-22. **The eleventh limitation carries one uncited literature claim.** `manuscript/draft_S7_limitations.md`
+22. **CLOSED 2026-09-17 by option (b), see Progress Log (ca) — the sentence is softened, no citation is owed, and Step 13 must not reopen this.** The eleventh limitation carried one uncited literature claim: `manuscript/draft_S7_limitations.md`
     now states that survey-methodology literature outside this project reports that moving to a
     self-administered mode can change how much at-home time a respondent records, independently of any
     real behaviour change. The claim is traceable to `deepResearch/dr_2J-12_VETTING.md:127-132,195-197`,
@@ -588,6 +588,164 @@ too — cost **+3,600 runs** (2005/2010/2015 on the new panel). Recommended if W
     (not 290); Papineau et al. is **2021** (not 2022); the Makonin HUE dataset covers **22** homes and its
     citable publication is **2019** (not 28 homes, not 2018). None of the three carries a number used
     anywhere in this paper.
+25. **RULED: the A6 stop rule does NOT fire on T45's evidence; it stays armed until the rebuild is
+    measured at full grid (T48 submitted).** T45 reported `OtherDwelling__Montreal_6A` at a **-6 h**
+    activity-vs-baseline `equip_bldg` peak shift in both years, outside the pre-registered 0 +/- 1 h band.
+    A6's own wording is "a shift outside that band stops the paper numbers **until the manager has read
+    why**", so this item is that reading. **Four independent reasons the -6 h is not a measurement of A6.**
+    (a) **Wrong n.** A6 is defined on the official script over the whole cell, n=50; T45 ran it on **15 of
+    50** households, locally, in a hand-rebuilt directory tree, for 4 of 24 cells. (b) **The signal it
+    subsampled is 1/7 strength in exactly that archetype.** `step9_validate_full.py:47` sets
+    `OD_N_UNITS = 7`: the OtherDwelling `equip_bldg` meter is a seven-unit building in which six units
+    carry non-occupancy load only, so roughly one seventh of the metered equipment profile responds to the
+    occupant schedule and the rest is a flat pedestal. The argmax of a weak signal riding on a large flat
+    pedestal is unstable under subsampling by construction. (c) **The competing hours were a tie.** T45's
+    own numbers put the baseline peak at hour 18 (7659.89 W) with hour 17 at 7562.82 W, **1.3 percent
+    apart**; a 15-household mean breaks that tie arbitrarily. (d) **The defect A6 exists to trap is ruled
+    out by the same data.** A6 was written after the -4 h injection bug (T25 Q6 trap 1), which is a shared
+    schedule-injection code path and would move every archetype together; HighRise and MidRise measured
+    0 h and SingleD -1 h on the very same pass.
+    **The decisive fact, which T45 did not have and the manager found on disk:** the published campaign's
+    own full-grid A6 output already exists at `/speed-scratch/o_iseri/step9_run/loadshape/peak_shift_summary.csv`
+    (written 10 June, n=50, all 24 cells x 2 years). **All 48 rows are inside +/-1 on `equip_bldg_shift`**,
+    and `OtherDwelling__Montreal_6A` is **0 h (2022) and -1 h (2030)** there. Note also that the published
+    values differ between the two years for several cells, whereas T45's -6 h was **identical in both
+    years** -- the signature of a fixed 15-household subset, not of a physical shift.
+    **What is still genuinely open, and why the rule stays armed:** A5 and A6 have never been run on the
+    **T21 rebuild** at full grid by anyone. Until they have, no rebuilt number is usable. T48 does exactly
+    that in one 4-CPU job (`impl/2026-09-17_T48_A5_A6_fullgrid.md`), with a seen-working control
+    (reproduce the published `peak_shift_summary.csv` row for row) and a seen-failing control (rotate one
+    cell's activity hours by +3 h and confirm the detector reports +3 h; if it does not, every A6 PASS in
+    this project is worthless and A6 becomes NOT_TRUSTED).
+    **Side note for whoever reads that file: the `equip_zone_shift` column in the published output is -17
+    for every HighRise and MidRise row and `light_zone_shift` is -19 or -20 everywhere.** A6 as
+    pre-registered is the `equip_bldg` check and only that, so these columns are not gate values and do
+    not change any verdict; they are recorded here so nobody later mistakes them for an A6 result.
+26. **OPEN QUESTION, must be answered before any multi-unit energy number is used: does the published
+    campaign pass its own SHEU gate?** T45 measured A5 (report-only, +/-15 percent) on its 4-cell,
+    15-household sample and found SingleD clean (-0.0 percent) but OtherDwelling, MidRise and HighRise
+    between **5x and over 80x** the target, with one raw HighRise household file alone showing about
+    156,105 kWh/year of interior equipment against a 1,922 kWh target, before any averaging. The manager
+    read the script and the cause is structural, not a T45 harness artefact: `step9_validate_full.py`
+    compares a **building-level** meter (divided only by the number of households aggregated, line 127)
+    against a **per-dwelling** SHEU target (lines 38-41), and applies a per-unit correction for
+    **OtherDwelling only** (line 146, and fridge energy only). **MidRise and HighRise get no correction at
+    all.** A whole-building multi-unit model therefore cannot pass that gate by construction. The T21 task
+    doc records the published A5 as "all pass" (48/48). **Both cannot be true**, so one of them is wrong,
+    and which one matters: if the published campaign also fails those archetypes, the "all pass" line is
+    the error and the rebuild is not implicated; if the published campaign passes, the rebuild changed the
+    multi-unit archetype basis and that is a regression. T48 Step 5 answers it by running the same
+    unmodified script over `/speed-scratch/o_iseri/step9_run` as well as the rebuild. **Until that lands,
+    no MidRise, HighRise or OtherDwelling energy-intensity number goes into the manuscript.** SingleD is
+    unaffected either way.
+
+27. **OPEN QUESTION, pre-registered before the number exists: is the WP3 static-schedule arm paired with
+    the diary arm at all?** While building the T49 checker the employee spot-checked one cell by hand and
+    found **three different household sets for the same cell** (`SingleD__Toronto_5A`): T22's static arm
+    drew `HH32815` as its `sample_001`, the published campaign's own `step9_manifest.csv` has `HH33298`,
+    and T17's staged tree has yet a third, `HH33188`. None of the first five IDs matched. T22's Design
+    section anticipated exactly this risk — it ran against T17's staged `BEM_Schedules_2022.csv` rather
+    than waiting for the 2022 rebuild, on the stated assumption that "the rebuild keeps the same census
+    households" — but nothing has ever tested the assumption. **Ruling, fixed now so it cannot be spun
+    later:** WP3's whole point is "same homes, different schedule source". If gate B4 of job `1329278`
+    reports widespread per-cell mismatches, then the static and diary arms simulated **different
+    households**, the comparison is **not** a paired one, and its difference confounds schedule source
+    with household composition. In that case the static-vs-diary difference may **not** be reported as a
+    within-household effect, and the choice is (a) re-run the static arm on the published household draw,
+    or (b) report an unpaired comparison and say so in the limitations. **The remedy is not chosen yet and
+    must not be chosen from a five-row spot check.** The next task after B4 is scored diagnoses *why* the
+    draws differ — compare the household pool of the schedules file T22 read against the pool the
+    published campaign read, since the same seed over a different pool lands on different homes. **Until
+    B4 is scored and that diagnosis is in, no WP3 static-vs-diary number enters the manuscript.** The
+    diary arm alone is unaffected.
+
+28. **The one SI glossary table the review asked for does not exist yet.** §7's WP10 spec says
+    "replace or gloss every self-defined label — 'calibrated J3', 'True-Future-Test', 'paired
+    frozen-frame', 'Tier-1/2/3 FailSafe', 'COLLECT_MODE', 'DDAY_STRATA', 'Step-8/Step-9', 'occACT'.
+    Keep one short glossary table in SI." A search of `writing/submission/tables/` and
+    `rejection revision/manuscript/` for the word "glossar" returns **nothing**: no such table has
+    been written. Table B1 now carries an inline gloss for `J3` alone (log (cb)), which discharges
+    that one label and nothing else. **WP10 owes the single SI glossary table covering the whole
+    list**, and every label on it must be either glossed there or replaced in the prose. Do not treat
+    the B1 gloss as the deliverable.
+
+29. **CLOSED 2026-09-18, see Progress Log (cf). P2's FAIL stays NOT_INTERPRETABLE and the band is untouched; the valid same-basis source is T26's own SC1 and SC5, both PASS, and the manuscript rule is “claim the designed SHIFT, never the absolute LEVEL”.** P2's 0.5 pp target-attainment band is breached on BOTH 2030 scenario arms,
+    and the breach barely moves with the scenario.** T51 (job `1329407`) ran the T29 collector after all
+    five of its controls were seen firing, so P2 is trusted. It reports, from
+    `T29/out/t29_check.json`: λ=0.5 target **73.2080594433387 pp**, injected **74.89275507775919 pp**,
+    diff **+1.68 pp**; λ=0.0 target **70.84227310158259 pp**, injected **72.57500276388889 pp**, diff
+    **+1.73 pp**. Both carry `flag_over_0.5pp: true`. **The band is pre-registered and is not moved.**
+    What makes this a diagnosis rather than a defect is the shape of it: two different λ values produce
+    almost the same offset in the same direction, where a scenario-construction error would be expected
+    to scale with λ. `p2_target_reached()` (`t29_check.py:214-258`) computes the injected side **only
+    over the sampled households** (`bem["SIM_HH_ID"].isin(all_ids)`, 1,198 and 1,196 IDs) while the
+    target side is a single population-level number from T26. If T26's target was computed over the full
+    household file, the gate has been comparing a sample against a population. **T52 measures it** by
+    recomputing the identical formula with the `.isin(all_ids)` restriction dropped, after first
+    reproducing T51's four numbers to six decimals as a control. **Until that comes back, no 2030
+    scenario at-home-share number and no target-attainment claim enters the manuscript**, and if the
+    population figure is also off by ~1.7 pp the finding is a WP2 defect, not a gate artefact. Neither
+    outcome licenses editing the gate.
+
+30. **CAUSE FOUND 2026-09-17, see Progress Log (cd) — the loss was documented by the campaign itself and never read; still OPEN because the two scenario arms do not share a household set.** Two of the 2,400 λ=0.0 scenario runs do not exist, and the array reported complete success.** T51's P0 reads λ=0.5 **1200/1200** and λ=0.0 **1198/1200**, with the two absences in
+    `OtherDwelling__Vancouver_5C` and `HighRise__Kelowna_5B` (one household each); the same two appear in
+    `P1["0.0"]["undelivered_manifest_by_cell"]`, so the manifest lists them and the output does not
+    contain them. Meanwhile `sacct -j 1328434` reports **24/24 COMPLETED, exit `0:0`**, T51's new P5b
+    confirms **all 49 task logs present and non-empty**, and P5 found **zero** fallback-schedule hits.
+    **So two simulations went missing with no task failure, no empty log, and no log line the fallback
+    scan recognises.** This is the case for the collector existing at all: three independent success
+    signals agreed, and the output was still short. T52 reports what is actually absent for those two
+    households and quotes whatever their own task logs say about them, including the possibility that
+    the logs say nothing. **Until it is explained, no S-Revert (zero work-from-home) energy number
+    enters the manuscript.** The λ=0.5 arm is unaffected and is complete at 1200/1200.
+
+31. **PREMISE CORRECTED 2026-09-18, see Progress Log (ce) — `t29_check.py` DOES read these files; the heading below was wrong when written. The real, narrower finding is that it reads them and discards the reason strings, and that six of the eight trees never write one at all, which makes their silence uninformative rather than reassuring.** The original claim, kept for the record: no collector in this project has ever read a campaign's own `undelivered.csv`.** T52 found
+    that the two missing λ=0.0 households were not lost silently at all — the campaign wrote the reason
+    down, per cell, at the moment it happened, in `out/lambda_0.0/<cell>/undelivered.csv`:
+    `9,129937,"not in scenario pool (absent from schedule file, or dropped by
+    validate_household_schedule -- integration.py:432-438; same mechanism T21 diagnosis 1328414
+    identified)"`. T51's P0 caught the shortfall only by counting rows, and the explanation was one
+    `cat` away the whole time. **So the question is how many other campaigns have written one of these
+    files that nobody has read.** T53 sweeps T17, T21, T22, T26, T28, T29, T30, T32 and the published
+    `step9_run` tree and reports, per cell and kept strictly distinct, whether an `undelivered.csv`
+    exists at all, how many data rows it has, and every row verbatim — the P5b distinction, because "no
+    file", "a file with no rows" and "a campaign version that never wrote one" are three different
+    things and only one means nothing was dropped. It also reports whether **any** checker script in the
+    project reads the string `undelivered`. **Nothing is fixed until that scope is known**, and the
+    remaining collectors (T48, T49, the T32 campaign collector) should read these files as a matter of
+    course once it is.
+
+32. **OPEN, small but unexplained: `BEM_Schedules_2030.csv` carries 43 households whose `DTYPE` is the
+    literal value `8`.** Found in T52's Q2 population breakdown, which reports per-archetype figures for
+    `{'8': 43 households, 'HighRise': 18505, 'MidRise': 30716, 'OtherDwelling': 18835, 'SingleD':
+    76366}`, total 144,465. `STOCK_WEIGHTS` in `t29_check.py` has exactly four keys and the stock-weighted
+    sum skips any archetype not in `ARCH_NAMES`, so **those 43 households are silently excluded from
+    every stock-weighted figure on both the sampled and the population basis.** At 43 of 144,465 the
+    effect on any number is immaterial and no result changes. What is not immaterial is that a
+    dwelling-type column contains a bare integer where the other 144,422 rows carry a name: that is
+    either a harmless legacy code or a parsing artefact, and nobody has established which. **Establish
+    it before the supplement describes the dwelling-type classification**, and if it is an artefact,
+    check whether it reaches any other file. Do not "fix" it by dropping the rows.
+
+33. **OPEN: the household drop is systematic, not a one-off — the same household is dropped again in a
+    second, independent campaign.** T53's sweep found that only two campaign trees write an
+    `undelivered.csv` at all, and **both of them have rows**: T29 (49 cell directories, all 49 files
+    present, 2 with rows) and **T32** (10 cell directories built so far, all 10 present, **1 with a
+    row**). The T32 row is not a new household — it is **the same one**:
+    `T32/step8_std/out/OtherDwelling__Vancouver_5C`, `sample 9`, `sim_hh_id 129937`, with the reason
+    string identical to T29's to the character. Same household, same cell, same sample index, same
+    mechanism, two campaigns that were built and launched separately. **So this is not a random loss and
+    it is not specific to one run.** What the two affected campaigns have in common is that both are
+    **reversion-style scenario builds** (T29's λ=0.0 arm and T32's population-mix-fixed S-Revert-std),
+    while **T29's λ=0.5 arm delivers both households with full 8,760-row files** — so something in the
+    reversion-side schedule construction excludes them, and that is a WP2 question, not a run-time
+    accident. **Consequences, all three of which bind now:** (a) T32's campaign is still running
+    (`1329220`), so more such rows may appear and its collector must read them; (b) T32 inherits item
+    30's rule — any comparison between T32 and another arm must be put on the household set common to
+    both; (c) the reversion-side exclusion must be explained before any reversion-scenario number is
+    described as covering the sampled households, because on present evidence it does not cover all of
+    them. `HighRise__Kelowna_5B` has not been built in T32 yet, so the second household is not yet
+    testable there.
 
 Items 1–2 get stronger once WP7 step 3 exists; item 8 is the one to do before resubmitting anywhere.
 Items 10–19 are cheap, quote-verified fixes from `dr_2J-12`, `dr_2J-10`/`dr_2J-11` Fable, and
@@ -1742,3 +1900,1148 @@ Applied Energy, WP13 package.
   independent of the five end uses at T44. No paper number depends on either figure.
   Next: T45 (T21 collector) still running; then the T22, T30, T28, T29-revert and T32-campaign collectors
   as each array finishes.
+
+- **(bw) 2026-09-17, manager — T45 ACCEPTED on A1-A4 and A2X; the A6 stop rule is READ and does NOT fire;
+  T48 submitted to make the one measurement nobody has ever made.** T45 (`impl/2026-09-17_T45_T21_collector.md`,
+  170 lines) scored the T21 rebuild's scorer job `1329216` (COMPLETED, exit 0:0, 00:50:25). **A1 PASS**
+  (7200/7200 runs delivered across all 72 campaign-cell rows, zero bad row counts), **A2 restated PASS**
+  (0/72 pairing mismatches against an independent engine re-draw), **A2X PASS** (0/24 cells where Step 8,
+  Step 9 activity and Step 9 baseline drew different households), **A3 PASS** (no fallback or invalid line
+  in any task log, re-verified by the employee's own independent greps), **A4 PASS** (all four staged
+  schedule CSVs byte-identical before and after, md5 for md5). The **selftest was seen failing before it
+  was trusted**, which is the whole point of it: the log shows it reporting `FAIL:1_mismatch` on a copy
+  with one household id deliberately swapped to 999999999 and `PASS` on the clean copy, and the real check
+  only ran after that. The employee also hand-recomputed one household's annual electricity from the raw
+  8760-row meter file (8209.333463 kWh) and it matched the scorer to six decimal places.
+  **A6 came back as a triggered stop rule, and the manager's ruling is that it does not fire.** T45 could
+  not run A5 or A6 at full grid (separate scripts, no cluster compute allowed in that task, ~5.5 GB of raw
+  output) so it ran them locally on **4 of 24 cells at 15 of 50 households** and measured
+  `OtherDwelling__Montreal_6A` at **-6 h**, with HighRise 0 h, MidRise 0 h, SingleD -1 h. A6's own wording
+  is that a shift outside the band "stops the paper numbers until the manager has read why" — so reading
+  why is the ruling channel, not a bypass of it. Four independent reasons, recorded as plan §5 item 25:
+  the n is wrong (15 of 50); the OtherDwelling `equip_bldg` meter is a seven-unit building in which six
+  units carry non-occupancy load only (`step9_validate_full.py:47`, `OD_N_UNITS = 7`), so the
+  occupant-driven part is about one seventh of the profile and its argmax is unstable under subsampling;
+  the two competing baseline hours were **1.3 percent apart**, a tie a 15-household mean breaks
+  arbitrarily; and the defect A6 was written to trap (the -4 h injection bug, T25 Q6 trap 1) is a shared
+  code path that would move every archetype together, while three of four archetypes measured 0 h or -1 h
+  on the same pass.
+  **What settled it was not reasoning but a file.** The published campaign's own full-grid A6 output has
+  been sitting on scratch since 10 June at `/speed-scratch/o_iseri/step9_run/loadshape/peak_shift_summary.csv`:
+  n=50, all 24 cells, both years, and **all 48 rows inside +/-1 on `equip_bldg_shift`**, with
+  `OtherDwelling__Montreal_6A` at **0 h and -1 h**. T45 did not know it existed. The published rows also
+  vary between the two years for several cells, whereas T45's -6 h was identical in both years, which is
+  what a fixed sample subset looks like and not what a physical shift looks like.
+  **The rule stays armed, because the real gap is still open:** A5 and A6 have never been run on the T21
+  rebuild at full grid by anyone. So **T48** was written and handed to a fresh employee
+  (`impl/2026-09-17_T48_A5_A6_fullgrid.md`): one job, 4 CPUs, 7-day walltime, staging the rebuild into the
+  layout the official scripts expect with **symlinks only** and a rebuilt 4800-row manifest, then running
+  both scripts unmodified over the rebuild **and** over the published campaign. It carries a seen-working
+  control (reproduce the published `peak_shift_summary.csv` row for row, or the instrument is not
+  reproducing itself) and a seen-failing control (rotate one cell's activity hours by exactly +3 h and
+  confirm the detector reports +3 h; if it does not, **every A6 PASS in this project is worthless** and A6
+  becomes NOT_TRUSTED). Neither script may be edited by one character — they are the published
+  instruments, and changing them would destroy the comparison that is the point of the job.
+  **A5 raised a bigger question than the stop rule did, and it is now plan §5 item 26.** T45 measured
+  OtherDwelling, MidRise and HighRise at **5x to over 80x** the SHEU target while SingleD came in at
+  -0.0 percent, and flagged that it could not tell whether the published campaign had the same problem.
+  The manager read the script and the cause is structural rather than a T45 harness artefact:
+  `step9_validate_full.py` divides a **building-level** meter only by the number of households aggregated
+  (line 127) and compares it against a **per-dwelling** SHEU target (lines 38-41), with a per-unit
+  correction for **OtherDwelling only** and fridge energy only (line 146) and **none at all for MidRise or
+  HighRise**. A whole-building multi-unit model cannot pass that gate by construction. But the T21 task
+  doc records the published A5 as 48/48 all pass, and **both statements cannot be true**. Which one is
+  wrong decides whether this is old or new: if the published campaign fails those archetypes too, the "all
+  pass" line is the error and the rebuild is clean; if it passes, the rebuild changed the multi-unit
+  archetype basis and that is a regression reaching published numbers. T48 Step 5 runs the same unmodified
+  script over the published tree to answer it. **Until it lands, no MidRise, HighRise or OtherDwelling
+  energy-intensity number goes into the manuscript**; SingleD is unaffected either way.
+  **Resource note.** 2J was at **exactly 32 running CPUs** at submission time (`1328415_1` at 8, plus six
+  4-CPU tasks across `1328310`, `1328419` and `1328434`), so T48 was submitted with
+  `--dependency=afterany:1328310`, the `t22_static` array that is at 22/24 and finishes next, freeing 8
+  CPUs. The other arrays are all at their own throttles and cannot expand, and `1329220` is gated on
+  `1328434`, so T48's 4 CPUs cannot push the project above 32 in any ordering. The author's other 32 stay
+  untouched.
+  Next: T48 (full-grid A5/A6) submitted and queued behind T22; then the T22, T30, T28, T29-revert and
+  T32-campaign collectors as each array finishes.
+
+- **(bx) 2026-09-17, manager — T48 SUBMITTED as job `1329258`; the rotation-control reading is RULED ON
+  and accepted; one employee process deviation recorded.**
+  The full-grid A5/A6 job is on the queue: **`1329258`**, `-p ps`, `--cpus-per-task=4`, `-t 7-00:00:00`,
+  **PENDING with reason `Dependency`** on `afterany:1328310`, log
+  `/speed-scratch/o_iseri/2J_revision/T48/logs/t48_a5a6_1329258.out`, script
+  `/speed-scratch/o_iseri/2J_revision/T48/t48_a5a6.sh`, interpreter
+  `/speed-scratch/o_iseri/envs/step4/bin/python` (read out of `T21_scripts/t21_array.sh:60` rather than
+  guessed). Verified by the manager's own `squeue` read, not taken from the employee's report: the job is
+  PENDING on the dependency, and the project's **running** CPUs are **exactly 32** (`1328415_1` at 8, plus
+  `1328310_15`, `1328310_23`, `1328419_41`, `1328419_42`, `1328434_22`, `1328434_23` at 4 each). Neither
+  protected Step-9 script existed anywhere on the cluster before this task; byte-identical copies (8,470 and
+  13,633 bytes) were scp'd into `T48/scripts/` and neither local file was touched.
+  **RULING on the seen-failing control (the employee flagged it, correctly).** The task doc told the
+  employee to "roll the 8760 data rows by 3". Read literally — move whole records, `hour` column included,
+  to different line positions — that is a **mathematical no-op** for `step9_loadshape_aggregate.py`, because
+  the script buckets and sums each row by the **value** in that row's own `hour` column and summation does
+  not care what line the row sat on. A literal reorder would therefore have made a working detector look
+  blind, which is the opposite of what a seen-failing control is for. The employee instead kept the `hour`
+  column sequential and rolled every other column forward by three positions, so the reading taken at hour H
+  is now labelled hour H+3 (mod 8760), and hand-verified it on an 8-row example. **That is the correct
+  construction and it is accepted**: it is a genuine phase shift in the only coordinate the instrument
+  reads. The task doc's wording was mine and it was loose; the employee's judgement was better than the
+  instruction. **When `1329258`'s log is read, Step 2 counts as a valid seen-failing control** and the
+  expected reported shift for `SingleD__Toronto_5A` is **+3 h**; anything else means A6 is NOT_TRUSTED
+  project-wide, exactly as pre-registered.
+  **Process deviation, recorded not buried.** The employee ran `find` once over `/speed-scratch/o_iseri` on
+  the login node while looking for stray copies of the protected scripts. `find` is not on the allowed
+  login-node list. It returned empty well inside the timeout, no python or other directory-iterating command
+  was run there, and every later check used `ls` on named directories. Impact: none measurable. **Fix for
+  future task docs: the allowed-command list must be quoted in the brief with `find` named explicitly as
+  forbidden**, since "no python on the login node" was read as the whole rule. The manager also stopped its
+  own stale background `find` on the same tree this session, for the same reason.
+  **Not verified by anyone yet:** the manifest row count (expected 4800) is computed at run time, so it is
+  unknown until the job runs; the employee deliberately did not wait for output, which is correct.
+  Next: poll `1329258` no more often than every 30 minutes, then read its log in the Step 3b order
+  (seen-working control, seen-failing control, A6 at full grid, A5 provenance) and rule; the T22, T30, T28,
+  T29-revert and T32-campaign collectors follow as each array finishes.
+
+- **(by) 2026-09-17, manager — T49 (the T22 collector) SUBMITTED as job `1329278` and ADJUDICATED; both
+  gaps the employee disclosed are accepted as real and sent to T50 as a patch; the household-pairing
+  question is pre-registered as plan §5 item 27.**
+  **The job.** `1329278` (`t49_t22_score`), `-p ps -c 1 --mem=8G -t 7-00:00:00
+  --dependency=afterany:1328310`, report to `/speed-scratch/o_iseri/2J_revision/T49/logs/
+  t49_check_report.txt`, task doc `impl/2026-09-17_T49_T22_collector.md`. Verified by the manager's own
+  `squeue`, not from the report: **PENDING, reason `Dependency`**, 1 CPU, partition `ps`; running CPUs
+  **exactly 32** (`1328415_2` at 8, plus `1328310_15`, `1328310_23`, `1328419_41`, `1328419_42`,
+  `1328434_22`, `1328434_23` at 4 each), counting RUNNING rows only. It scores four gates on the WP3 static
+  arm: B1 exit states, B2 completeness (24 cells x 50 homes, 8761-line meter files), B3 the schedule.json
+  fallback bug, B4 household identity against the published draw — each with a control that must be seen
+  firing first.
+  **Accepted without change.** (i) The **B4 reference file**: no per-cell `cell_manifest.csv` exists in the
+  published tree, and the employee used `/speed-scratch/o_iseri/step9_run/step9_manifest.csv` instead —
+  campaign-owned, 4,800 rows (24 cells x 50 homes x 2 treatments x 2 years, cross-checked by
+  `grep -c ',SingleD__Toronto_5A,'` = 200), with `cell` and `hh_id` as real columns. That is a better find
+  than the absence the task doc allowed for, so B4 is scored rather than `NOT_EVALUABLE`. (ii) The **B2
+  control by symlink** for the 48 untouched households, with only the truncated and the deleted file
+  materialised: it perturbs exactly the coordinate B2 reads and never opens the real tree for writing.
+  (iii) The **"successful run" definition** (meter file exists and has 8761 lines) — there is no status
+  column in the manifest, and this is the coordinate B2's own PASS condition names.
+  **Two disclosed gaps, both accepted as real, both patched by T50 (`impl/2026-09-17_T50_T49_checker_patch.md`)
+  while `1329278` is still PENDING** — SLURM copied only the `.sh` at submit time, so replacing
+  `t49_check.py` changes what the pending job will do, with no resubmission and no `scancel`.
+  (a) **GATE_B3 could pass on a log that is not there.** A missing, zero-byte or truncated `.out` greps to
+  zero occurrences exactly like a clean log, so "no evidence of the bug" and "no evidence at all" were
+  reported identically. T50 adds **GATE_B3b** (all 24 `.out` logs exist and are non-empty; offenders named;
+  B3 becomes `NOT_EVALUABLE` for any task whose log fails B3b). No guessed completion marker — a guessed
+  marker manufactures false FAILs. `.err` files are excluded, since an empty `.err` is the good outcome.
+  (b) **The B4 control never exercised the T22-side parse.** The employee built the control's un-mutated
+  baseline from the published manifest's own IDs so that exactly one mutated ID could be verified — sound,
+  and accepted as a test of the set-comparison logic, since T22's real IDs already differ and a control
+  built on them could not have had a known ground truth. But both sides of that control come from the
+  published file, so a bug reading T22's `cell_manifest.csv` would still let the control fire and would then
+  print a large mismatch that looks like a finding. T50 adds **B4_PARSE_ECHO**: per cell, both set sizes and
+  the first five sorted IDs from each side, plus a parse guard that sends any cell whose set size is not 50
+  to `NOT_EVALUABLE` rather than counting it as a mismatch. A mismatch with `t22_n=0` is a bug; a mismatch
+  with `t22_n=50, pub_n=50` and two different ID lists is a finding.
+  **The real finding, and why it is item 27 rather than a verdict.** The same spot check found three
+  different household sets for one cell (T22 `HH32815`, published `HH33298`, T17 `HH33188`, no match in the
+  first five). If B4 confirms that at scale, the static and diary arms are not the same homes and the WP3
+  comparison is unpaired. That ruling, its two remedies and the "diagnose the pool before choosing one"
+  requirement are written into §5 item 27, together with the hold: **no WP3 static-vs-diary number enters
+  the manuscript until B4 is scored and the diagnosis is in.** The diary arm alone is unaffected.
+  **Process.** Both the T49 and the T50 brief quote the full allowed login-node command list and name
+  `find` explicitly as forbidden, which is the fix (bx) promised. The T49 employee ran nothing outside it.
+  Next: when `1328310` ends, `1329258` (T48) and `1329278` (T49) both start; read T48's log in the Step 3b
+  order and T49's report controls-first (`CONTROL_B*_FIRED`, then `CHECKER_NOT_TRUSTED`, then the `GATE_*`
+  and `VERDICT_*` lines, then the offender lines), and quote no gate whose control did not fire.
+
+- **(bz) 2026-09-17, manager — T50 DONE and verified: the T49 checker is patched in place while its job
+  still waits; the employee's label deviation is ACCEPTED and my own reading instruction was the thing that
+  was wrong.**
+  **Verified by the manager's own reads, not from the report.** `squeue -j 1329278`: still **PENDING
+  (Dependency)**, 1 CPU — the patch never raced the job. `ls -l /speed-scratch/o_iseri/2J_revision/T49/`:
+  `t49_check.py` 17,119 bytes (patched), `t49_check_v1.py` 13,416 bytes (the preserved original),
+  `t49_check.sh` 1,092 bytes untouched. A single-file `grep` over the patched script shows every promised
+  label present and in the right order: `CONTROL_B2/B3/B4` with their `_FIRED` lines and
+  `CHECKER_NOT_TRUSTED` (lines 255-288), `GATE_B1` (298), `GATE_B2` (323), the new `GATE_B3b` +
+  `B3b_OFFENDER` + `VERDICT_B3b` (331-339), `GATE_B3` with its `NOT_EVALUABLE` branch (348-353), the new
+  `B4_PARSE_ECHO` + `B4_PARSE_OFFENDER` (380-384), `GATE_B4` (400) and the four verdicts (413-416).
+  **Technique worth keeping.** SLURM copies only the `.sh` into its spool at submit time; the `.py` the
+  wrapper calls is read from disk when the job starts. A job that is still PENDING can therefore be
+  corrected by replacing the python file — no `scancel`, no resubmit, no lost queue position. The discipline
+  that makes it safe: read `squeue` before the edit, again immediately before the copy and again immediately
+  after, keep the original beside it under a `_v1` name, and abandon the patch rather than half-replace a
+  file under a job that has started. All three reads came back PENDING.
+  **RULING on the label deviation: the employee was right and my brief was wrong.** My Design section asked
+  for `VERDICT_B3:` and `VERDICT_B4:` lines. The script's real, pre-existing convention is
+  `VERDICT: B3=<value>`, printed under a `==== VERDICT ====` banner. The employee kept the existing
+  convention and merely widened the possible values to include `NOT_EVALUABLE`, rather than inventing a
+  second parallel label set, and flagged the choice. That is the correct call: the labels were already
+  promised to me in the T49 Ledger, and two competing notations for the same verdict is exactly the kind of
+  seam a later agent reads wrongly. **The consequence is mine to fix, and it is fixed:** the reading
+  instruction I had written into the prompt file (Step 3c) told a future agent to grep `VERDICT_*`, which
+  would have matched only `VERDICT_B3b` and missed all four real verdicts. It now greps
+  `CONTROL_B|CHECKER_NOT_TRUSTED|^GATE_|^VERDICT|B4_PARSE`.
+  **New brief rule, and this is the third time this pattern has cost something:** when a brief asks an
+  employee to add output to a script that already exists, it must **quote that script's actual existing
+  labels** and say "match these", never invent a notation from the brief's own head. Alongside the (bx) rule
+  (quote the allowed login-node command list) and the (bx) rotation ruling (check which coordinate the
+  instrument reads), the pattern is the same: **my instructions have been the weak link, not the
+  employees' judgement, and in all three cases the employee caught it and said so.** That is the behaviour
+  to keep rewarding.
+  Next: nothing more to do on T49 until `1328310` ends. Then `1329258` (T48) and `1329278` (T49) both start;
+  read T48 in the Step 3b order and T49 controls-first, and quote no gate whose control did not fire.
+
+- **(ca) 2026-09-17, manager — plan §5 item 22 CLOSED by option (b), taken as a manager decision; and one
+  Step-13 sub-item found already done.**
+  **The decision.** `manuscript/draft_S7_limitations.md` claimed, in the eleventh limitation, that
+  "Survey-methodology literature outside this project reports that moving to a self-administered mode of this
+  kind can on its own change how much at-home time a respondent records". That claim was traceable only to
+  `deepResearch/dr_2J-12_VETTING.md:127-132,195-197` — quote-checked there, but with **no citable reference
+  attached**, and the assistant may not go and find one because deep research is external. Item 22 allowed
+  exactly two remedies and pre-declared option (b) sufficient. **I have taken option (b).** The sentence now
+  reads only what this project's own data supports: the collection-mode indicator is 0 for the 2005, 2010 and
+  2015 cycles and 1 only for 2022, so the change of method and the pandemic-era shift are **perfectly
+  confounded** in this design, an effect of the new method cannot be estimated separately from a genuine
+  change in behaviour **in either direction**, and the paper treats the possibility that part of the 2022 step
+  is a collection artefact as **neither supported nor excluded by its own evidence**.
+  **Why (b) and not (a).** The limitation's job is to disclose that the two changes cannot be separated. That
+  disclosure rests entirely on `COLLECT_MODE` in our own data, not on the outside literature, so the outside
+  sentence was carrying no load — it was decoration with a citation debt attached. Option (a) would have cost
+  an author-run deep-research cycle to buy a sentence the limitation does not need. The vetting file stays
+  cited in the limitation table's **source** column as the provenance of the finding, which is honest: it
+  records where we learned to look, not an authority for a claim in the prose.
+  **The same claim was repeated in the limitations table**, row 9, and was softened the same way in the same
+  pass — a fix applied in the prose and left standing in a table is the sort of seam that survives into a
+  submitted PDF.
+  **Found already done, recorded so Step 13 does not redo it.** Step 13 also instructs an update to
+  `writing/submission/tables/SI/Table_B1_B2.md` lines 9 and 59 for the "sole model" wording. Both lines
+  already read "J3 had the lowest composite score among the four trials that cleared all four gates", and a
+  `grep` for `sole`, `only model` and `the only` over that file returns **nothing**. The wording fix is
+  already in. **One thing Step 13 must still handle there:** the internal label `J3` appears in both lines,
+  and the Step-13 rule is that this label never appears in prose. A table footnote is prose enough to matter,
+  so the label must be replaced at assembly or the rule must be narrowed on the record to exclude SI table
+  footnotes. I am not deciding that here, because it depends on the SI's final shape.
+  **Items 20 and 21 are NOT actionable yet** and were deliberately left alone: both are reference-list fixes
+  (Motuzienė volume 76 → 77; Jalilian & Kamel's full subtitle) and there is no new reference list to fix
+  until WP10 builds one at Step 13. The submitted files are never edited. They stay as Step-13 carry-ins.
+  Next: await the three scoring jobs; nothing else in the writing track is unblocked without a pending number.
+
+- **(cb) 2026-09-17, manager — ruling on the `J3` label in the SI table; a paraphrase in (ca)
+  corrected; and plan §5 item 28 opened for the SI glossary table that does not exist.**
+  **The ruling: `J3` stays in `writing/submission/tables/SI/Table_B1_B2.md`, glossed.** Entry (ca)
+  left this open and described the governing rule as "this label never appears in prose". **That
+  paraphrase was too tight and I am correcting it on the record** rather than editing (ca), which is
+  append-only. The plan's actual text, §7 WP10 spec, says two things: "**Move to SI** (R2-1): J3
+  architecture detail, 40+ trial search detail, all PASS/WARN/INFO scorecards …" and "**Plain terms**
+  (R2-1): **replace or gloss** every self-defined label — 'calibrated J3', … Keep one short glossary
+  table in SI." So the reviewer asked for this detail to be **put** in the SI, and the label
+  requirement is replace-**or**-gloss, not delete. Removing `J3` from the SI card would have obeyed
+  my own paraphrase and disobeyed the review. Table B1 now carries a plain-term gloss under its
+  shipped-model line, stating what the name is (the third variant of the "J" family of architecture
+  trials, the one shipped), that the name carries no other meaning, that it is used there because the
+  review asked for the detail to live there, and that the main text names the model in plain words
+  and does not use the label. `Table_B1_B2.md` **7,076 → 7,550 bytes**, measured with `ls -la` after the write, not estimated. One side effect to record: the file arrived with Windows line endings and the patch script writes LF, so its line endings are now LF throughout (`grep -c $'\r'` = 0). No text other than the gloss changed.
+  **Why this matters beyond one label.** A wrong paraphrase of a reviewer instruction is worse than
+  no note at all: it survives into later sessions as if it were the instruction. Both quoted lines
+  are now in this log so the next reader does not have to trust a summary.
+  **New §5 item 28.** The single SI glossary table the review asked for **has never been written** —
+  `grep -ril "glossar"` over the tables tree and the revision manuscript folder returns nothing. The
+  B1 gloss covers `J3` and nothing else. WP10 owes the table for the whole label list.
+  **Step-13 carry-ins after this entry:** items 20 and 21 (reference-list fixes, not actionable until
+  WP10 builds a reference list) and item 28. The `J3` question is closed.
+  Next: T51 is running (job `1329407`); nothing in the writing track is unblocked without a number.
+
+- **(cc) 2026-09-17 night, manager — T51 ACCEPTED controls-first; two real findings opened as plan §5
+  items 29 and 30; T52 dispatched to diagnose both.**
+  **The controls, read before any real number.** Job `1329407` COMPLETED. All five controls fired inside
+  the one shadow tree, each on its own gate: **C-P0** moved `P0["0.5"]` to `delivered 1198 / planned
+  1200`; **C-P1** put `cells_failing: 1` of 24 on a *set* comparison, which a row reorder could not have
+  faked; **C-P4** returned `"status": "FAIL"`; **C-P5** returned `"FAIL:1_hits"` for the task whose log
+  carried the injected `schedule.json not found`; and **C-P5b** returned `NOT_EVALUABLE` — not clean —
+  for both the zero-byte log and the deleted one. The controls run exited 1, which is the correct
+  outcome. **P0, P1, P2, P4, P5 and P5b are therefore trusted**, and the (by) rule is discharged for P5:
+  its early `if not os.path.isdir(logs_dir): return hits` would have reported a clean result over a logs
+  directory that did not exist, and P5b now closes that with the control to prove it. C-P2 and C-P3 were
+  not built and were not needed — P3 has no band to break, and P2's band is exercised against T26's
+  independently produced target file rather than against itself; recorded so the absence is a decision.
+  **A question I pre-registered in the T51 doc before the real numbers were visible**, so the conclusion
+  could not be fitted to them: the controls run showed `P0["0.0"] = 1198/1200` although nothing in the
+  λ=0.0 arm's *output* had been perturbed, and I wrote down the two possible readings — a real
+  shortfall, or a shadow-build artefact — and which measurement would tell them apart. The real run
+  answered it: λ=0.0 is genuinely **1198/1200** and λ=0.5 is **1200/1200**, so the shortfall is real
+  and the symlink shadow tree dropped nothing. That is now item 30.
+  **What passed cleanly:** P4 `"PASS"` with an empty `diffs` dict — the input schedules were not touched
+  while the runs were going; P5 `n_logs_with_hit: 0` with every per-task entry `"PASS"`, which is now a
+  meaningful zero rather than an ambiguous one because P5b confirms all 49 logs were present and
+  non-empty; P1 `cells_failing: 0` on both arms, so the pairing itself is sound; and P3's deltas
+  reported without a band as designed.
+  **Employee decisions, all four accepted**, and one worth keeping: the brief never said whether a P5b
+  finding should change the exit code, which would have left a gate able to fail invisibly. The employee
+  spotted it, folded P5b into the existing `fail` accumulator, and said so in Decisions. Fourth time in
+  this series an employee has caught a loose manager instruction. Also accepted: the expected log set is
+  **49 not 50**, derived from the two scripts' own `--output` lines, with the leftover Phase-A smoke log
+  excluded **by filename pattern rather than a hardcoded list** — the better choice, because a list is
+  where a genuinely missing log could hide later. And: **the wrapping job always exits 0 on purpose**,
+  so `sacct` State is not a verdict for `1329407`; the four inner exit codes are in
+  `T51/logs/t51_t29_report.txt`. That consequence is now in the resume prompt.
+  **T52 dispatched** (`impl/2026-09-17_T52_T29_diagnosis.md`, 1 CPU): five questions in order, gated on
+  a seen-working control that must reproduce all four of T51's P2 numbers to six decimals before
+  anything else it says counts, plus one seen-failing control on a copy. It measures and names (A) or
+  (B) for item 29; it does not decide. It also settles why the sampled-ID set came out 1,198 and 1,196
+  rather than 1,200 — duplicate IDs collapsing across cells, or IDs genuinely absent — which must be
+  confirmed rather than assumed even though only one reading fits λ=0.5's clean 1200/1200.
+  2J at **28 running CPUs** before T52, the other project's array excluded from the count as always.
+  Next: T52, then `1329258` and `1329278` when `1328310_15` ends.
+
+- **(cd) 2026-09-17 night, manager — T52 ACCEPTED; items 29 and 30 RULED; items 31 and 32 opened; T53
+  dispatched.**
+  **Both controls first.** Job `1329419` COMPLETED in 36 s. **Q1, the seen-working control: all four of
+  T51's P2 numbers reproduced to ≤1e-6**, so the diagnosis tool measures the same thing the gate
+  measured. **The seen-failing control fired exactly as predicted:** a +0.10 shift applied to `HighRise`
+  rows in a *copy* of the schedule file moved that archetype's figure by **+10.0 pp** and the
+  stock-weighted figure by **+1.28 pp**, both equal to the prediction to the digit. A measurement tool
+  that has never been seen to move is not a measurement tool; this one moved, by the amount arithmetic
+  said it would.
+  **Item 29 RULED: P2's FAIL is NOT_INTERPRETABLE. The band is not moved, the FAIL is not overturned,
+  and it is not converted into a PASS.** Q2 dropped only the `.isin(all_ids)` restriction and the gap
+  fell from **+1.68 to +0.362 pp** (λ=0.5) and from **+1.73 to +0.374 pp** (λ=0.0) — both inside the
+  0.5 pp band — so verdict **(A)** is supported and roughly four fifths of the breach came from the
+  sample restriction alone. But Q3 shows the two sides were never comparable in **three** ways at once,
+  not one. T26's target is computed by `compute_stock_rate()` (`T26/T26_scripts/t20_d1.py:136-148`) as a
+  **plain unweighted per-person mean over the whole rebuilt stock**, per stratum, and
+  `write_targets_csv()` (`t26_scenario.py:104-115`) writes rows keyed only `stratum, slot, lam` — **there
+  is no archetype dimension in it at all**. P2's injected side is a **per-household** mean, unweighted
+  *within* archetype, then weighted *across* archetypes by `STOCK_WEIGHTS`, over a **1,198-home sample**.
+  Sample versus population, household versus person, archetype-stock-weighted versus plain mean. Q2
+  removed the first mismatch and left the other two standing, **so its +0.36 pp is not a measurement of
+  target attainment either** — it is merely much closer to one. `stratum == 1` really is the weekday
+  stratum (`t26_scenario.py:75-76`), so that part of the gate was right.
+  **What follows for the manuscript.** No target-attainment claim may be sourced from P2 in **either**
+  direction: its FAIL is not evidence the schedules miss their target, and a PASS would not have been
+  evidence they hit it. If the paper says the scenarios reach their designed shift, that sentence rests
+  on **T26's own build-time attainment check**, computed on a single consistent basis at build time, and
+  that check must be re-read and quoted before any sentence rests on it. Item 29 stays open for exactly
+  that re-read and nothing else. **This is a finding about a gate, recorded rather than repaired:** the
+  gate's specification, not its implementation, was the defect, and under the additive-fixes rule a
+  pre-registered gate's basis is not rewritten after it has been read.
+  **Item 30: cause found, and it changes what the finding is.** Both households were dropped at
+  **scenario-pool construction, before the manifest was ever consulted**, and the campaign recorded it
+  itself: `out/lambda_0.0/<cell>/undelivered.csv` carries `9,129937,"not in scenario pool (absent from
+  schedule file, or dropped by validate_household_schedule -- integration.py:432-438; same mechanism T21
+  diagnosis 1328414 identified)"` and the same for `40,48609`. Both households are **present and
+  delivered in the λ=0.5 arm** with a full 8,760 data rows each, so the drop is specific to λ=0.0's
+  schedule content and is not a random loss. Neither task log names either household; both record only
+  an aggregate pool-construction line. **So this was never a silent loss — it was a documented loss that
+  nobody read**, which is a materially different and more embarrassing thing. **The ruling:** the two
+  scenario arms **do not share a household set** (1,200 against 1,198), so any cross-scenario comparison
+  must be recomputed on the **1,198 households common to both arms**, or the two-household difference
+  must be shown by measurement to be negligible. T51's P3 deltas were computed on 1,200 and 1,198
+  respectively and are therefore **not on a common basis**; they may not be quoted as they stand. Same
+  family of error as item 27, caught before it reached a number this time.
+  **Item 31 opened and T53 dispatched** (`impl/2026-09-18_T53_undelivered_sweep.md`, 1 CPU): sweep every
+  campaign tree's `undelivered.csv`, keeping "file absent", "file with zero rows" and "file with rows" as
+  three distinct outcomes, with the two rows T52 already found as the seen-working control and a
+  perturbed copy as the seen-failing one. It also reports whether any checker in the project reads the
+  string at all. **Item 32 opened**: 43 households carry a `DTYPE` of the literal value `8` and are
+  silently excluded from every stock-weighted figure; immaterial to any number, unexplained as data.
+  **Also worth keeping: Q4 confirmed rather than assumed.** The 1,200 → 1,198 sampled-ID drop is a
+  `set()` collapse of two households each sampled into two different cells — `144329` in
+  `OtherDwelling__Kelowna_5B` and `OtherDwelling__Vancouver_5C`, `78908` in `HighRise__Kelowna_5B` and
+  `HighRise__Vancouver_5C` — and the λ=0.0 arm shows the same two collapses **on top of**, not instead
+  of, its two missing households. Only one reading fitted λ=0.5's clean 1200/1200 and the employee still
+  went and named the IDs, which is the standard.
+  Next: T53, then `1329258` and `1329278` when `1328310_15` ends.
+
+- **(ce) 2026-09-18, manager — T53 ACCEPTED; item 31's premise CORRECTED because it was mine and it was
+  wrong; item 33 opened.**
+  **All three controls pass.** Job `1329422` COMPLETED in 11 s. The seen-working control located both of
+  T52's rows; seen-failing control 1 read one extra row from a perturbed **copy**; seen-failing control
+  2 reported `ABSENT` rather than zero rows for a shadow cell directory with no file in it — which was
+  the whole point of demanding the three-way distinction.
+  **The scope answer: only two trees write an `undelivered.csv`, and both have rows.** T29: 49 cell
+  directories, 49 files present, 47 header-only, **2 with rows**. T32: 10 built so far, 10 present, 9
+  header-only, **1 with a row**. **T17 (8 cells), T21 (75), T22 (24), T28 (3), T30 (47) and the
+  published `step9_run` (48) have no such file at any cell** — 226 cell directories with no file. T26
+  has no per-household `sample_*` structure at all, correctly reported as a fact rather than an error
+  (the employee flagged that the brief never defined "cell directory" and defined it as "has a
+  `sample_*` subdirectory"; accepted).
+  **⚠ I have to correct myself, and the correction matters more than the original claim.** Item 31 was
+  written as "no collector in this project has ever read a campaign's own `undelivered.csv`". **That is
+  false.** T53's grep found 142 hits over 247 files, and among them
+  `t29_check.py:150 read_undelivered_samples()`, called from P1 at line 181, with line 191 reading
+  `continue  # explained by undelivered.csv -- not a pairing bug`. **The collector opens the file and
+  uses it**, deliberately, so that an absence the campaign already explained is not counted as a pairing
+  defect. What it does **not** do is carry the **reason strings** into its report. So the explanation of
+  the λ=0.0 shortfall was sitting inside the gate's own input the whole time and simply never reached
+  the gate's output — which is why T51's report could say `1198/1200` with no reason attached and I
+  commissioned a whole task to `cat` a file the checker had already opened. **The fix is additive and
+  touches no criterion: the collector should print the reasons it already reads.** I also checked the
+  second thing I was about to assert and it was wrong too: `t21_array.sh:47-50` says T21 "records every
+  undelivered run via its **own per-task exit code and stdout log**", so T21 never intended to write
+  such a file and there is no missing artefact there. **Both errors came from the same habit — stating
+  a general claim from one instance — and both were caught by reading the code rather than the
+  summary.** The heading of item 31 now says so in place.
+  **What remains true and still binds.** For those six trees the **absence of the file is uninformative,
+  not reassuring**: it means the runner never wrote one, not that nothing was dropped. Their
+  completeness rests entirely on counting delivered output against a manifest — which is the strong
+  check and which came out complete for T21 (7,200 of 7,200) — but the **reason channel does not exist**
+  for them, so a future shortfall there will arrive with no explanation beside it. Record it; do not
+  retrofit it.
+  **Item 33 opened, and it is the real find.** T32's undelivered row is **the same household as T29's**:
+  `OtherDwelling__Vancouver_5C`, `sample 9`, `sim_hh_id 129937`, reason string identical to the
+  character, in a campaign built and launched separately. Both affected arms are **reversion-style
+  builds** (T29 λ=0.0, T32 S-Revert-std) and T29's λ=0.5 arm delivers the same household with a full
+  8,760-row file. **So the reversion-side schedule construction excludes these households
+  reproducibly** — a WP2 question, not a run-time accident. T32 is still running, so its collector must
+  read these files, it inherits item 30's common-household rule, and the exclusion must be explained
+  before any reversion-scenario number is described as covering the sampled households.
+  Next: `1329258` and `1329278` when `1328310_15` ends; the T32 collector reads `undelivered.csv`.
+
+- **(cf) 2026-09-18, manager — plan §5 item 29 CLOSED from documents already on disk; no job needed, and
+  the 0.36 pp residual is now fully accounted for.**
+  **The valid source was already scored, on a consistent basis, in September.** `impl/2026-09-15_T26_
+  wp2_scenario_builds.md`'s own acceptance table (Status DONE, `1328377`/`1328379` COMPLETED `0:0`):
+  - **SC1, intended step — PASS on all three arms.** Band: "within 0.5 pp of `target_λ − stock_2022`
+    mean". Achieved against design: λ=1.0 **1.4850 vs 1.5066 pp (diff 0.0216)**; λ=0.5 **−0.8547 vs
+    −0.8592 (diff 0.0045)**; λ=0.0 **−3.2081 vs −3.2250 (diff 0.0169)**. **SC1 tests the CHANGE from
+    2022, with both sides computed from the same stock table** — so unlike P2 it compares like with
+    like, and the agreement is two orders of magnitude inside its band.
+  - **SC5, rake residual — PASS, 0 of 48 slots flagged** in every arm; max absolute difference per
+    stratum **0.0002 pp weekday, 0.0012 Sat/Sun**. Essentially zero.
+  - **SC0 — PASS at 6,934,320 of 6,934,320 cells exactly equal** (λ=1.0 against T20 main), and **SC2 —
+    strict order Revert 71.2168 % < Partial 73.5702 % < Persist 75.9099 % nationally and in all five
+    archetypes.**
+  **An unplanned cross-check fell out of this, and it is worth more than the closure.** T52's
+  independently written population figures were **73.56961 pp** (λ=0.5) and **71.21605 pp** (λ=0.0).
+  T26's SC2 national figures, computed by a different script written weeks earlier, are **73.5702** and
+  **71.2168**. They agree to **0.0006 and 0.0008 pp**. Two independent implementations landing under a
+  thousandth of a point apart is real corroboration that T52's number is right.
+  **And that closes the arithmetic.** T26's own SC2 level for λ=0.5 (73.5702) sits the same **+0.36 pp**
+  above the target level (73.2081) that T52 measured. So the residual is not a T29 artefact and not a
+  rake failure: **SC1 shows the achieved change matches the design change to 0.02 pp, SC5 shows the rake
+  residual is 0.0002 pp, and the level is still 0.36 pp high** — which is only possible if the **2022
+  baseline the target is defined on differs from the 2022 baseline the achieved level is measured on**
+  by about that amount. The obvious candidate is the unit: T26's target basis is a **per-person** mean
+  (`t20_d1.py:136-148`) and every achieved figure quoted here is **per-household**.
+  ⚠ **That last step is an inference, not a measurement.** It is the only reading consistent with SC1,
+  SC5 and the residual together, but nobody has measured the person-versus-household gap in this stock.
+  **I am deliberately not spending a job on it**, because the manuscript rule below is safe under either
+  explanation and no number in the paper moves either way. If a reviewer asks specifically about the
+  level, that measurement becomes owed; recorded here so the next session knows it is unmeasured rather
+  than assuming I checked.
+  **The manuscript rule, which is what item 29 was really for: claim the designed SHIFT, never the
+  absolute LEVEL.** "Each 2030 scenario reaches its designed change in at-home time, to within
+  0.02 pp of design" is evidenced by SC1 on a consistent basis. "The simulated 2030 weekday at-home
+  share equals its target level" is **not** evidenced by anything, sits 0.36 pp out, and must not be
+  written. **The chain that links the scored schedule file to the energy runs does not need P2 at all:**
+  SC1/SC5 say the file hits its design change; T51's **P4 PASS with an empty `diffs` dict** says the md5
+  of that file was unchanged before and after the runs, so the runs read exactly the file SC1 scored;
+  T51's **P1 `cells_failing: 0`** says the households are paired. Same-basis, end to end, and P2 is
+  redundant for the purpose it was written for.
+  **One pre-existing mismatch carried forward, not resolved here:** T26's SC4 band text says "Validator
+  28/28" while that validator's own total is 31 (30 PASS + 1 WARN). The doc flagged it for the manager
+  in September and it is still open — it does not affect SC1, SC5 or any number above, but the band text
+  and the validator disagree and one of them is wrong. **Do not quote "28/28" anywhere.**
+  Next: `1329258` and `1329278` when `1328310_15` ends.
+
+- **(cg) 2026-09-18 morning, manager — two long-running arrays finished overnight and their collectors are
+  dispatched.** Fresh session after a context clear; first act was `sacct` over every live job, not a trust of
+  the prompt file's own table. **Changed since (cf):**
+  **T28 (`1328415`) is DONE 4/4, exit `0:0`** — tasks `_0` 01:08:29, `_1` 03:11:56, `_2` 05:04:02, `_3` 05:11:39,
+  last End 2026-09-18T03:30:09. That is the 200-household sample-size arm, 4 Montreal cells x 200 x 2 years =
+  1,600 runs planned, and it was the slowest set left.
+  **T30 (`1328419`) is DONE 48/48, exit `0:0`**, last End 2026-09-18T02:21:40 — the average-profile arm,
+  24 cells x 50 households x 2 years = 2,400 runs planned.
+  **T32's campaign (`1329220`) is at 20/24**, two running, two pending, no failure.
+  **T22 (`1328310`) is still 23/24**: task `_15` alone has been running 1 d 22 h. It is the only thing holding
+  `1329258` (T48, full-grid A5/A6) and `1329278` (T49, the WP3 static-arm collector), both still `PENDING` on
+  `afterany:1328310`.
+  **Across every 2J job in this revision the only non-zero exit remains `1328428`**, the T21 scorer's argparse
+  bug, already fixed and rerun as `1329216`.
+  **Dispatched, one fresh Sonnet each, both controls-first:** **T54** scores T28 on B0-B5
+  (`impl/2026-09-18_T54_T28_collector.md`, `-c 4`, report `T54/logs/t54_t28_report.txt`) and **T55** scores T30
+  on V0-V5 plus the two spread metrics (`impl/2026-09-18_T55_T30_collector.md`, `-c 1`, report
+  `T55/logs/t55_t30_report.txt`). Neither checker has ever run against real full-grid output, so both briefs
+  require the gates to be **seen failing first** on a deliberately broken copy inside the same job, with every
+  control outcome written into one file by one invocation and "did not run" / "ran and did not fire" / "ran and
+  fired" kept as three distinct outcomes. Both briefs carry the T53 lesson (read any `undelivered.csv` and print
+  its reason strings, and state that its absence is uninformative, not reassuring) and the T51 lesson (an
+  explained count mismatch is still printed, never silently dropped).
+  **One trap written into the T55 brief before it could become a finding:** `T30/out/` holds smoke leftovers
+  beside the 48 real cell-year directories — `cell_manifest.csv`, `sample_001_HH130168`, `sample_001_HH130228`,
+  `sample_002_HH79150`, `sample_002_HH79252` and `SimResults_Plotting_Schedules`, from the two smokes `1328399`
+  (published schedules) and `1328418` (paired pool). The collector must exclude them by an explicit stated rule
+  and print the excluded count.
+  **CPU accounting at dispatch:** running was 4 (T22 `_15`) + 8 (T32 at `%2`) = **12**. Worst case once
+  everything releases is 4 + 8 + 4 (T48) + 1 (T49) + 4 (T54) + 1 (T55) = **22**, inside the 32 ceiling. No `%N`
+  and no `--cpus-per-task` was raised.
+  Next: T54 and T55 JobIDs, then `1329258` and `1329278` when `1328310_15` ends.
+
+- **(ch) 2026-09-18 morning, manager — two more tasks opened in parallel, neither of them waiting on the
+  cluster queue.** Author instruction this session: "continue till end, for every step update manager prompt."
+  So the writing track and the open WP2 question move now rather than after the collectors land.
+  **T56 — plan §5 item 28, the SI glossary table** (`impl/2026-09-18_T56_si_glossary_table.md`). Writing only,
+  no cluster. The review's R2-1 asked for two separate things and only one was delivered: the J3 architecture
+  detail moved to the SI, but **the one short glossary table has never been written** — a search for "glossar"
+  across the tables tree and the revision manuscript folder returns nothing, and the `J3` gloss added to
+  `Table_B1_B2.md` on 2026-09-17 covers one term and is **not** that deliverable. The brief writes it to
+  `writing/submission/tables/SI/Table_SI_glossary.md` from T33's `jargon_inventory.md`, with three rules fixed
+  in advance: a term WP10 replaces everywhere earns no row (so "forecast" is out), a gloss may not contain a
+  second self-defined label, and the target is roughly 8 to 14 rows because "one short glossary table" is what
+  was asked for. The **list of terms deliberately left out, with a reason each**, is required alongside the
+  table — it is the part a later editor needs. `J3` stays in the model card, glossed; entry (ca)'s "never
+  appears in prose" phrasing was already corrected in (cb) and is not reopened.
+  **T57 — plan §5 item 33, the reproducible reversion-side exclusion**
+  (`impl/2026-09-18_T57_reversion_pool_exclusion.md`). Diagnosis only, 1 CPU, no fix and no re-run.
+  **The mechanism is already located in the code and is written into the brief as a starting point, not as the
+  answer:** `load_schedules()` ends by deleting every household for which `validate_household_schedule()` is
+  False (`integration.py`, the `invalid_ids` block at 432-438), which is exactly the reason string both
+  `undelivered.csv` files carry — so **the sampling pool depends on schedule CONTENT**, the same hazard T21
+  hit at (ak). `validate_household_schedule()` (from line 219) rejects a household when, for weekday or
+  weekend, any hour leaves [0, 1], all 24 hours are zero, **total presence-hours leave [2, 24]**, more than 4
+  isolated one-hour spikes appear, or all 24 hours are exactly 1 without the retiree tag.
+  **Pre-registered hypothesis, recorded before measurement:** the reversion arms move at-home time *down*, so
+  the rule expected to fire is the **lower end of the [2, 24] presence-hours band**. The brief requires the
+  employee to report the rule that actually fires even if it is a different one, and to say plainly that the
+  hypothesis was wrong if it was.
+  **The number that decides the shape of this finding is item 4 of the brief:** how many households fail
+  validation in each whole file, broken down by which rule fired, for λ=0.0, S-Revert-std, λ=0.5 and the
+  unmodified 2030 main file. Two households is a footnote; a systematic population is a WP2 problem that
+  reaches the manuscript. Controls as always: a seen-working household that passes in all three arms, and a
+  seen-failing copy driven below 2.0 presence-hours, both firing inside one invocation in one file.
+  **CPU accounting:** T57 adds 1 CPU, T56 adds none. Worst case is now 23 of 32.
+  Next: four employees out (T54, T55, T56, T57); nothing else needs the queue.
+
+- **(ci) 2026-09-18 morning, manager — both overnight collectors are on the cluster, and plan §5 item 32 is
+  opened.**
+  **T54 is job `1329670`** and **T55 is job `1329668`** (RUNNING on `speed-11` at submit). Both employees
+  submitted, wrote their Ledgers and ended their turns without waiting, as the no-parking rule requires.
+  T54's employee preserved `t28_check.py` unmodified as `t28_check_v1.py` before patching, and its patch is
+  additive in the two ways the brief allowed: it now reads any `undelivered.csv` in a T28 cell directory and
+  prints the **reason strings** (T53's lesson), keeping "no file" and "file with zero rows" as different
+  outcomes, and it prints the raw `Pool=` line it actually read rather than only the booleans derived from it.
+  **No threshold, band or PASS criterion was changed** — to be re-confirmed against the report when it lands.
+  **Read both reports controls-first. If a control did not fire, quote no gate from that run at all.**
+  **T58 opened — plan §5 item 32, the 43 households whose `DTYPE` is the bare value `8`**
+  (`impl/2026-09-18_T58_dtype8_households.md`, 1 CPU, diagnosis and documentation only). 43 of 144,465 changes
+  no number and the brief says so in its first paragraph; **the reason to spend a job on it is that the
+  supplement is about to describe the dwelling-type classification to a reviewer**, and a bare integer sitting
+  in a column that elsewhere holds a named archetype is currently unexplained. `STOCK_WEIGHTS` has four keys
+  and the weighted sum skips anything not in `ARCH_NAMES`, so these rows are silently outside every
+  stock-weighted figure on both bases.
+  **The question that carries the task is question 2: what `8` means in the SOURCE codebook, quoted, with the
+  codebook file named** — found in `codebooks/` and the `references_*` folders, **not inferred from what the
+  pipeline does with it**. The brief states in advance that a clean **NOT FOUND** is a real and useful answer
+  and that an invented category is the one outcome that would make the task worse than not doing it. Question 3
+  asks for the mapping code as `file:line` and what it does with an unrecognised value; question 4 asks whether
+  any of the 43 ever reached a run at all (T21's cell manifests are the reference draw), which decides whether
+  the exclusion is at the weighting or upstream of it.
+  **Standing rule restated in the brief:** no row is dropped, recoded or repaired, and the wording the employee
+  drafts is **not** written into any manuscript file — the manager places it.
+  **CPU accounting:** T54 4 + T55 1 + T57 1 + T58 1, plus T22 4 and T32 8 running and T48 4 + T49 1 pending =
+  **24 of 32** in the worst ordering.
+  Next: five employees out; the four cluster reports are read controls-first as they land.
+
+### (cj) 2026-09-18 — T56 ACCEPTED: the SI glossary table exists, and it corrected a unit before shipping
+- **Plan §5 item 28 is CLOSED as a deliverable.** `writing/submission/tables/SI/Table_SI_glossary.md` now
+  exists: 12 rows, inside the 8-14 target, columns *Term as it appears | Plain-English meaning | Where it is
+  used in the paper*. Rows: `J3`, `gate`, `PASS/WARN/INFO/FAIL`, `True-Future-Test`, `Tier 1/2/3/4`,
+  `FailSafe`, `occACT`, `Step-8 / Step-9`, `COLLECT_MODE`, `DDAY_STRATA`, `DRIFT_MATRIX`, `C-VAE`.
+  Seven terms are listed as **deliberately left out with a reason each**, inside the deliverable file rather
+  than only in the task doc, which is where that list belongs — it travels with the table.
+- **The three acceptance conditions fixed before dispatch were all met**: every row cites where a reader meets
+  the term; no gloss contains a second self-defined label; the left-out list is present. **The row count must
+  not grow** — the review asked for one *short* table.
+- **The one substantive claim in the table was re-derived, not trusted.** The `FailSafe` row asserts the
+  last-resort matching tier was never triggered. Source located and quoted: `Table_C1_C2.md:22`
+  (`FailSafe tier share | 0% | PASS`) and `Appendix_D_deviations.md:83,85` ("FailSafe = 0% (all 286,537 Census
+  agents matched in Tier 1-3)"). The claim holds. **The unit did not.** Both the `Tier` row and the `FailSafe`
+  row said **household** where the source says **Census agent**, i.e. a person — and 286,537 agents live in
+  144,507 households, so the words are not interchangeable. A reviewer checking Appendix D against the
+  glossary would have found the mismatch. **Manager corrected both rows in place to "person".**
+  **Lesson, of the same family as (ce): a gloss inherits the unit of the thing it glosses, and a
+  plain-English rewrite is precisely where a unit changes quietly.** Checked by the manager, not asserted by
+  the employee.
+- **The employee's scope expansion is upheld and recorded.** The brief named four drafts plus
+  `Table_B1_B2.md`; the employee also grepped `Table_C1_C2.md` and `Appendix_D_deviations.md`, because the
+  brief's own test is "a term a reader still meets" and those two shipped SI files still carry Tier 1-4,
+  FailSafe, True-Future-Test, occACT, Step-8/9 and DRIFT_MATRIX in their own prose. Without the expansion the
+  table would have glossed only the four already-rewritten drafts, which need no glossary. The expansion is
+  written into the deliverable, not assumed silently.
+- **New carry-in for WP10 / Step 13 (not a new plan item, an instruction attached to item 28's closure):**
+  `Table_C1_C2.md` and `Appendix_D_deviations.md` have **not** had the plain-language pass the four drafts and
+  `Table_B1_B2.md` had. WP10 must choose one of two, and may not leave it open: either those two tables keep
+  their raw labels and this glossary carries them unchanged, **or** they are rewritten too, in which case the
+  "Where it is used" column of the Tier, FailSafe, occACT, Step-8/9 and DRIFT_MATRIX rows is stale and those
+  rows are re-pointed or removed. **Either way the glossary and those two tables are re-read against each
+  other once, in the same sitting.**
+- **Not verified, stated so it is not mistaken for checked:** the `C-VAE` row assumes that label survives in
+  the main text, on the strength of `jargon_inventory.md`'s count of 3 lines, not a re-read of the
+  Introduction. WP10 confirms it when it rewrites that section; if `C-VAE` has been replaced everywhere, its
+  row goes.
+- Step-13 carry-ins are now items 20 and 21 only; item 28 leaves the queue as a deliverable and re-enters at
+  WP10 as the one-sitting cross-check above.
+- Next: T57 and T58 land next; the four cluster reports are read controls-first as they arrive.
+
+### (ck) 2026-09-18 — T57 has the mechanism of item 33 in hand; the job that confirms it is still running
+- **Job `1329673` submitted, unread.** The employee also hand-derived the answer from single-file `grep`s
+  before the job ran, which is legitimate here (48 rows per household, read by eye, no file loaded into
+  context) but is a **prediction, not a confirmation**. **Nothing in this entry is quotable until
+  `1329673`'s `==== CONTROLS ====` block is read.** Recorded early because the mechanism changes what we
+  should be looking for, not because it is closed.
+- **The pre-registered hypothesis was confirmed, and confirmed in the right order** — written into the brief
+  before dispatch, written into the doc before measuring, then measured. Weekday presence-hour totals for
+  `sim_hh_id 129937`: **1.5 h** under λ=0.0, **1.0 h** under S-Revert-std, **exactly 2.0 h** under λ=0.5.
+  The `validate_household_schedule` band is `[2, 24]` and inclusive, so the first two are rejected and the
+  third passes. `sim_hh_id 48609` (`HighRise__Kelowna_5B`, λ=0.0) is **0.5 h**. All 48 rows of the household
+  are present in all three files, so the reason string's "absent from schedule file" branch is not the one
+  that fired — **the household is computed, then refused by the engine's own sanity check.**
+- **Item 33's real content is the DIRECTION of the filter, not the missing household.** The reversion arms
+  are the arms in which at-home time falls; the filter removes the households whose at-home time fell
+  furthest; therefore the households that survive into a reversion arm are the ones that reverted least, and
+  **the delivered reversion arm is biased upward in at-home time relative to the scenario as designed.** The
+  bias runs in the same direction as the effect being measured. **Its magnitude is unknown until item 4 —
+  per-file validation-failure counts broken down by rule, for λ=0.0, S-Revert-std, λ=0.5 and the unmodified
+  2030 main file — is read from the job.** Two households is a footnote; a population changes what the
+  reversion scenarios may be said to represent. **The standing rule does not move: no reversion-scenario
+  number may be described as covering the sampled households until that count is read.**
+- **λ=0.5 clearing the band at exactly 2.0 is a warning, not reassurance.** It passes by nothing. Any change
+  to the blend, the smoothing or the rounding moves households across that edge in either direction and
+  silently changes the pool. **The band is not widened. Relaxing a band to pass is not available here.**
+- **Ruling on the code-versus-docstring gap the employee found** (`integration.py` documents five rejection
+  rules and implements four; the "all 24 hours exactly 1 without the retiree tag" rule is never executed):
+  **do not touch the file.** Every campaign in this revision ran against the code as it stands; editing the
+  code would change the sampling pool and invalidate delivered runs, and editing even the docstring puts a
+  modification date on a live pipeline file mid-revision for no gain. Recorded as a documented deviation.
+  **What it does bind is prose: no manuscript or SI sentence may claim the pipeline rejects always-occupied
+  schedules.** It does not — `48609`'s weekend profile is all 24 hours at exactly 1.0 and passes.
+- **New prose correction owed, and it is a correctness fix.** `manuscript/draft_SI_schedule_completion.md`
+  (the sampling-pool paragraph) describes the filter as dropping "a household that is never home at all".
+  **That is not the rule.** The rule drops a household with **fewer than two presence-hours in a day type**,
+  and `129937` at λ=0.0 is home for 1.5 hours — it is home, and it is dropped. As written, a reader would
+  conclude the filter cannot reach a plausible household, which is the opposite of what item 33 shows.
+  **Deliberately held until `1329673` lands** so the wording and item 4's count are written in one sitting.
+  WP10 owns it; it is not optional.
+- Open and not ruled: a weekday profile of 1.5 presence-hours with 22 of 24 hours at exactly 0.0 is an odd
+  schedule for a "return to the office" scenario on its own terms, filter or no filter. Item 4's counts
+  decide whether that question is worth asking.
+- Next: `1329673`, `1329670` (T54) and `1329668` (T55) are read controls-first as they land; T58 still out.
+
+### (cl) 2026-09-18 — T58 answers item 32 at source, and finding it turned up something larger (new item 34)
+- **Job `1329676` submitted, unread.** Q1 (the counts), Q4 (did any of them reach a run) and Q5 (shared
+  attributes) are unanswered. This entry rules only on Q2 and Q3, which needed no job, and **both were
+  re-read at source by the manager rather than accepted from the employee's report.**
+- **Item 32 is answered, and the answer is clean.** `0_Occupancy/DataSources_CENSUS/cen21.sps:360-364` reads
+  `DTYPE / 1 "Single-detached house" / 2 "Apartment" / 3 "Other dwelling" / 8 "Not available"`, with `:84`
+  labelling the variable `'Structural type of dwelling'`. **`8` is Statistics Canada's own missing-value
+  code.** So these are not 43 households of a mystery fifth dwelling type; they are **43 households whose
+  dwelling type the Census did not release.** The supplement can say that plainly and owes no apology for it.
+- **The mechanism is verified too, and the wording must follow it exactly.**
+  `21CEN22GSS_occToBEM.py:101-105` maps only `"1"`, `"2"`, `"3"`; line 142 is
+  `self.dtype_map.get(val_str, val_str)`, so an unrecognised value is **passed through unchanged** and `"8"`
+  survives into the stock file as a literal label. The Apartment branch (143-153) never fires for it.
+  **Nothing in the pipeline decides to exclude these households** — they fall out later only because
+  `ARCH_NAMES` has no member called `8`. **It is an absence of a category, not a rule that drops rows**, and
+  the supplement sentence must not imply otherwise.
+- **The employee's scope expansion is upheld, and it is this task's lesson.** The brief pointed at
+  `codebooks/` and `references_*`; those are GSS activity codebooks and never mention `DTYPE`. Stopping there
+  would have produced **a NOT FOUND that was only a search in the wrong place** — the worst outcome available,
+  because the brief had pre-blessed NOT FOUND as a real answer and it would have been believed. **Rule for
+  every future brief: named search locations are a starting point, not a boundary, and NOT FOUND is honest
+  only after searching where the variable actually comes from.**
+- **The employee's own guard stands:** if `[seen-working]` does not reproduce 144,465 households and 6,934,320
+  rows, the wrong stock file was streamed, **no count from that report is quotable**, and the choice between
+  `..._framev2.csv` and `BEM_Schedules_2022.csv` reopens.
+- **New plan §5 item 34, found by the manager while verifying Q3, and larger than item 32.** The same
+  codebook gives **`BEDRM 8 = "Not available"`** (`cen21.sps:252-259`). The Apartment branch runs
+  `int(float(bedrm_raw))` then `"HighRise" if bedrm_int <= 1 else "MidRise"`. **`8` parses to 8, which is
+  `>= 2`, so an apartment whose bedroom count the Census did not release is silently classified as a
+  mid-rise** — not because it has two or more bedrooms, but because the missing-data code is a large number.
+  The `default=2` and `except -> 2` fallbacks in the same branch land identically.
+  **Why this outranks item 32: those 43 households sit outside every weighted figure, while these sit inside
+  them, carrying a dwelling type they were never measured to have.**
+  **It is not yet a number.** How many households have `DTYPE == '2'` with `BEDRM == '8'` is unmeasured and
+  may be zero. **Measure before calling it anything.** `BEDRM` is already a column of the stock file being
+  streamed, so the agent that reads `1329676` opens **T59** with that one extra count, reusing
+  `t58_dtype8.py` rather than writing a second streamer. **Until that count is read, no manuscript or SI
+  sentence may describe the mid-rise/high-rise split as bedroom-based.** No code is changed either way; the
+  runs are delivered against the code as it stands.
+- Next: `1329670` (T54), `1329668` (T55), `1329673` (T57) and `1329676` (T58) are all out and read
+  controls-first as they land; T59 opens off T58's report.
+
+### (cm) 2026-09-18 — T58's job failed at its own control, which is the best thing it could have done; T59 out
+- **`sacct -j 1329676`: `COMPLETED`, ExitCode `0:0`, Elapsed `00:00:02`. The job raised.** Its report reads
+  `[seen-working] did not run: ValueError: Usecols do not match columns, columns expected but not found:
+  ['Day_Type', 'Hour', 'SIM_HH_ID']`, and `==== INNER EXIT CODES ==== controls: 1`.
+- **This is the design working, and it is worth more than a clean pass.** The seen-working control ran first,
+  did not run, and because the brief kept **"did not run" distinct from "ran and did not fire"**, no count
+  was produced and so none was quoted. The employee had pre-registered this exact failure in its own
+  Decisions ("if the report's row/household counts do not reproduce 6,934,320/144,465, this choice needs
+  revisiting"). **The guard was written before the run and it caught the run.**
+- **Second evidenced instance of a success signal lying.** `sacct` reported `COMPLETED 0:0` for a job whose
+  only work threw an exception — the same family as (cc), where three success signals agreed and the output
+  was still short. **Rule, now evidenced twice: where a wrapper can swallow the inner status, `sacct` is not
+  a verdict; the report's own per-section exit codes are.** Every collector brief already says this. Keep it.
+- **Cause, established without a job.** Two files exist and T58 read the wrong one.
+  `..._aug_Full_Aggregated_framev2.csv` is the **person**-level augmented frame (header begins
+  `PP_ID,HH_ID,MATCH_TIER,occID,...`) and carries `DTYPE` and `BEDRM` as **raw Census codes**, with no
+  `SIM_HH_ID`, `Day_Type` or `Hour`. `BEM_Schedules_2022.csv` is the **household × day-type × hour** file
+  and carries `DTYPE` as the **mapped archetype label**. Item 32's own shape — 144,465 households and
+  6,934,320 rows, and 6,934,320 = 144,465 × 48 — is the schedule file's. **Item 32 lives in
+  `BEM_Schedules_2022.csv`; item 34 lives in `_framev2.csv`; neither substitutes for the other.**
+- **The split is a gain, not only a correction.** Item 34 is only measurable where the **raw** `BEDRM` and
+  `DTYPE` codes still exist, which is `_framev2.csv` alone — the mapped file has already discarded the
+  evidence. Had T58's first job succeeded on the schedule file, item 34 would have been unmeasurable there
+  and might have looked answered.
+- **T59 dispatched** (`impl/2026-09-18_T59_dtype8_rerun_and_bedrm8.md`, fresh Sonnet, **1 CPU**). Part A
+  redoes item 32's Q1/Q4/Q5 on `BEM_Schedules_2022.csv` with the 144,465 / 6,934,320 reproduction as a
+  **hard stop**. Part B measures item 34 on `_framev2.csv`: the `DTYPE=='2'` AND `BEDRM=='8'` household
+  count and its share, the full `BEDRM` distribution within `DTYPE=='2'`, **what archetype those households
+  actually carry in the schedule file** (the prediction is `MidRise`; the brief orders the employee to report
+  what it finds and say plainly if the prediction was wrong), and separately the blank or unparseable
+  `BEDRM` cases that reach `MidRise` by the `except -> 2` path. **The brief states in advance that zero is a
+  good answer to Part B and closes item 34 cheaply**, so a null result is not mistaken for a failed search.
+  It reuses `t58_dtype8.py` rather than writing a second streamer, and may not edit anything under `T58/`.
+- **CPU accounting:** T58's job is finished, so T59 replaces it. Worst case unchanged at **24 of 32**.
+- Next: `1329670` (T54) and `1329673` (T57) are finished and being read controls-first; `1329668` (T55) is
+  still running.
+
+### (cn) 2026-09-18 — T57 ACCEPTED; item 33 is a bounded footnote, and it hands over two carries
+- **Controls read first and both are right.** Seen-working: `HH130228` validates `True` in all four files,
+  real function and re-implementation agreeing — "ran and did NOT fire". Seen-failing: a hand-built household
+  at 1.0 weekday presence-hours — "ran and FIRED", `fail_rule=R3_presence_bounds`, and the **real**
+  `validate_household_schedule` agrees. Three outcomes kept distinct. **The numbers are quotable.**
+- **The hand-derivation in (ck) is confirmed by the job, through the real function.** `129937`: 1.5 h
+  (λ=0.0), 1.0 h (S-Revert-std), 2.0 h (λ=0.5, passes). `48609`: 0.5 h (λ=0.0).
+  `real-vs-diag mismatches = 0` and `reopened SIM_HH_ID groups = 0` in all four files, so the streamer's
+  contiguity assumption was checked, not trusted. **The pre-registered hypothesis is CONFIRMED and was
+  reported as confirmed, not reshaped.**
+- **Item 4, the number the task turned on.** Households dropped of 144,465: **main (unmodified 2030) 983
+  (0.680 %); λ=0.5 1,010 (+27); λ=0.0 1,053 (+70); S-Revert-std 1,144 (0.792 %, +161).** The ordering is
+  **monotone in reversion strength**, and the weekday presence-bound rule carries it —
+  `R3_presence_bounds` on Weekday runs **142 → 167 → 202 → 244** across those same four files. The predicted
+  mechanism appears at population scale, not only in two households.
+- **I re-derived the arithmetic independently and it closes on all three arms.** S-Revert-std against main:
+  weekday `R2_all_zero` +51, weekday `R3` +102, weekend `R2` +18, weekend `R3` −10 = **+161** = `1144−983`.
+  λ=0.0: +7, +60, +18, −15 = **+70** = `1053−983`. λ=0.5: 0, +25, +18, −16 = **+27** = `1010−983`.
+  **Three closures. The per-rule breakdown reconciles; it is not decorative.**
+- **RULING: item 33 is a footnote and an SI sentence, not a manuscript-blocking finding.** The decision rule
+  was fixed before dispatch and the honest reading lands between its two branches, closer to "footnote".
+  **The bound settles it:** the worst arm excludes **161 more households than the unmodified file, 0.111 % of
+  the stock**, and a household contributes at most 24 hours, so **the largest arithmetically possible shift
+  in the weekday at-home share from this exclusion is 0.111 percentage points** — an upper bound, realistic
+  value a fraction of it, inside the 0.5 pp design band. **But it is several times T26's measured
+  design-attainment differences of 0.0045–0.0216 pp, so it may never be waved away as rounding.** The SI
+  states the mechanism, the direction and the count.
+- **The direction ruling from (ck) stands and is now evidenced:** the filter removes the households whose
+  at-home time fell furthest, so a delivered reversion arm leans toward the households that reverted least.
+  Bounded, real, and in the same direction as the effect being measured. **The band is not widened**; λ=0.5
+  clearing at exactly 2.0 stays on the record as fragility, not licence.
+- **Carry 1 — this widens (cd)'s common-household rule from two arms to all four.** (cd) had λ=0.0 and λ=0.5
+  not sharing a set (1,200 vs 1,198 delivered). **Item 4 shows four files with four different pools** (983,
+  1,010, 1,053, 1,144 dropped), and the two reversion arms are **not even nested**: `48609` fails under
+  λ=0.0 at 0.5 h and **passes** under S-Revert-std at 3.0 h. **No cross-arm comparison may assume a shared
+  household set from the design. Manifest equality is established from the manifests, arm by arm, or it is
+  not established.** This is why T54's and T55's manifest checks are load-bearing.
+- **Carry 2 — new plan §5 item 35, surfaced without being asked for.** Weekend `R2_all_zero` is **288** in
+  the unmodified 2030 file and **exactly 306 in all three scenario files**, for λ=0.0, λ=0.5 and
+  S-Revert-std alike — **a constant +18, independent of λ.** A blend that varies with λ cannot produce a
+  λ-independent constant, so **something in the scenario build step, not the blend, zeroes eighteen
+  households' weekends.** It biases no cross-arm comparison (the same households are dropped in every
+  scenario arm), but a constant appearing in three separately built files is a bug until shown otherwise.
+  **No job opened** — a WP2 question for when the scenario build is next opened, not a reason to hold a
+  number. Noted in the opposite direction and also unexplained: weekend `R3_presence_bounds` is **19** in the
+  unmodified file against **3, 4 and 9** in the scenario arms.
+- **One report defect, for future briefs and not for this job.** Where a household fails on Weekday the
+  report prints `Weekend total=nan`. The weekend hourly values are printed beside it and are fine —
+  `48609` under λ=0.0 is 24 hours of exactly 1.0, summing to 24.0, **which I checked by hand rather than
+  assuming.** The `nan` is a short-circuit artefact of the reporting, not a value in the data. **Rule: a
+  quantity deliberately not computed prints "not computed (short-circuited)", never `nan`** — `nan` reads as
+  a data problem and a reader without the hourly values beside it could not tell the difference.
+- **Restated so it is not reopened:** `integration.py` is not touched; **no prose may claim the pipeline
+  rejects always-occupied schedules** (`48609`'s weekend is all 1.0 and passes). The prose correction owed to
+  `draft_SI_schedule_completion.md` — the filter drops a household with **fewer than two presence-hours in a
+  day type**, not only one "never home at all" — is now **unblocked** and carries these counts with it. WP10
+  writes both in one edit.
+- Next: T54's report read controls-first; `1329668` (T55) still running; T59 out.
+
+### (co) 2026-09-18 — T54 ACCEPTED on B0/B1/B2/B5; **B3 REJECTED as mis-specified**; T60 out (new item 36)
+- **All four controls read first and all four are right.** Control 4 (hand arithmetic against
+  `t28_check.py`'s own unmodified `_paired_t_ci()`): mean `10.875000` both ways, half-width `1.697967`
+  against `1.697980`, subsample mean `10.500000` both ways — "ran and agreed". Control 1 (B1 seen-failing,
+  one `sim_hh_id` swapped `42121 -> 999999` on the T28 side only): "ran and fired", `prefix_ok=False`, inner
+  exit `1`. Control 2 (B2 seen-failing, one cell's 2022 `Electricity:Facility` × 5 on the T28 side only):
+  "ran and fired", `SingleD__Montreal_6A:FAIL:1_of_10`, inner exit `1`. Control 3 (seen-working, untouched
+  trees): "ran and did not fire", inner exit `0`. Three distinct outcomes preserved, and the job's own note
+  states it exits `0` regardless and that `sacct` is not the verdict.
+- **The employee's "no threshold, band or PASS criterion changed" claim is upheld on behavioural grounds, not
+  on its word.** `t28_check_v1.py` preserved unmodified at 21,851 B, patched `t28_check.py` at 23,607 B —
+  additive. More decisively, **the patched checker was seen both firing (controls 1, 2) and not firing
+  (control 3) inside the same run.** A checker that still says no on broken input and yes on clean input has
+  not been hollowed out. No `diff` was run (`diff` is not an allowed login-node command and the question did
+  not warrant a job) — recorded as a limit of the check, not glossed.
+- **ACCEPTED: `B0` 1600/1600 delivered, no `undelivered.csv` in any T28 cell** — and that silence is now
+  *informative* rather than uninformative, because (ce) established which campaigns write such files and the
+  patched checker distinguishes "no file" from "file with zero rows". **`B1` PASS in all four cells**, with
+  `pool_ok` and `prefix_ok` both true, so the first 50 of the 200 really are the main runs' households; its
+  printed pool line `Pool=16326 sampled=200` independently matches the 16,326 paired pool already written
+  into `draft_SI_schedule_completion.md`. **`B2` PASS in all four cells. `B5` PASS.**
+- **`B3` REJECTED — the runs are fine, the TEST is built wrong, and this would have been a serious error in
+  the paper.** `t28_b3_wp4_test.csv` has 72 metric-cell rows and **14 carry `inside_t_ci=False`** (the same
+  14 also `inside_boot_ci=False`). The naive reading is "the 50-home answer is outside the 200-home interval
+  19 % of the time, so 50 homes is not enough". **`B1` itself defeats that reading:** `prefix_ok=True` means
+  **the 50 are the first 50 of the same 200**, so the two means are nested, not independent, and
+  `Var(mean50 − mean200) = sigma^2 (1/50 − 1/200) = sigma^2 · 3/200` — **sqrt(3) times the standard error of
+  `mean200`**. The flag measures that difference against the `mean200` **confidence interval**, a yardstick
+  **sqrt(3) too short**, so under perfectly well-behaved sampling it should read `False` about
+  `2(1−Phi(1.96/sqrt(3)))` = **26 %** of the time. **The observed 19 % is BELOW that.** Read correctly the
+  evidence leans *toward* 50 households being adequate — **but `B3` is not a test and no verdict may be
+  quoted from it in either direction.** `B3=REPORT` was the right label; the CSV's two boolean columns are
+  the trap.
+- **Same family as item 29 (entry (cd)): a comparison whose two sides are not on the same basis. The response
+  is identical — the band is NOT widened, because the band was never the problem.**
+- **Held loosely until T60, stated so it is not lost:** the flagged rows are concentrated in the load-shape
+  metrics (`mean_peak_hour`, `midday_share`, `evening_ramp_kW_mean`) and especially in the
+  `_delta_2022to2030` changes, while energy totals are largely unflagged. **If that pattern survives the
+  corrected test it is a real, reportable limitation** — the paper's energy conclusions and its load-shape
+  conclusions would not be equally supported at 50 households. **It is not reportable yet**, and several
+  flagged rows sit inside even the n=50 interval on inspection, which is a further sign the flag does not do
+  what its name says.
+- **`B4` is where reviewer C3's question is actually answered, and it needs no significance test.**
+  `t28_b4_convergence.csv` (432 rows, N in 10/20/50/100/150/200) reports the precision achieved at each
+  sample size. For `SingleD__Montreal_6A` yearly electricity the half-width runs **81.2 (N=10) → 55.1 (N=20)
+  → 18.9 (N=200)** on a mean near 8,175 kWh — a textbook `1/sqrt(N)` curve, a fraction of a percent of the
+  mean. **That, not a boolean, answers the reviewer.**
+- **T60 dispatched, new plan §5 item 36** (`impl/2026-09-18_T60_b3_nested_subsample_correction.md`, fresh
+  Sonnet, **1 CPU, arithmetic on the two existing CSVs only — no re-simulation**). Part A recomputes the
+  comparison with the correct nested half-width `t(0.975,199)·s_200·sqrt(1/50 − 1/200)` and reports the
+  failure rate against the 5 % a correct 95 % test should give, **split energy-against-load-shape and
+  level-against-change**. Part B reads the convergence curve as relative precision, worst-first, and checks
+  the curve behaves as `1/sqrt(N)`. **Its third control is the load-bearing one:** 72 rows of pure nested
+  noise, showing the original flag fires near **26 %** and the corrected one near **5 %**, so the
+  mis-specification is **demonstrated, not asserted**.
+- **Until T60 lands, no sample-size adequacy claim may be made from `B3` in either direction.** `B0`, `B1`,
+  `B2`, `B5` are unaffected and stand.
+- Also this morning: **T59 submitted as job `1329686`** (item 32 redone on the schedule file, item 34
+  measured on `_framev2.csv`).
+- **CPU accounting:** T22 4 + T32 8 + T48 4 + T49 1 + T55 1 + T59 1 + T60 1 = **20 of 32** worst case.
+- Next: `1329668` (T55), `1329686` (T59) and T60 outstanding.
+
+---
+
+### (cp) 2026-09-18 — T59 and T60 both land. Items 32, 34 and 36 CLOSED. My own yardstick was wrong too (new item 37).
+
+**T59 (job `1329686`, 41 s) — ACCEPTED. Items 32 and 34 CLOSED.**
+
+- **Controls.** The hard-stop fired as written: the counter reproduced **6,934,320 rows / 144,465
+  households** on `BEM_Schedules_2022.csv` before any per-value count was quoted, so the right file was
+  read this time. The seen-failing control flipped one `DTYPE` and one `BEDRM` on **scratch copies** and
+  both buckets moved by exactly one with every other bucket unchanged; the real file was never opened for
+  writing.
+- **Defect, recorded not waived:** the report labels the seen-working control **"ran and fired"**. A
+  seen-working control that fires is a failure. The three-outcome vocabulary — *did not run / ran and did
+  not fire / ran and fired* — was applied loosely. The substance is unambiguous (counts match, `status=PASS`),
+  so the run is accepted, but **the vocabulary is load-bearing and the next brief must say so explicitly.**
+
+- **Item 32 — CLOSED.** `DTYPE == '8'` is the **Census's own code for "structural dwelling type not
+  available"** (`cen21.sps:360-364`), not a fifth dwelling class. It survives the mapping as the literal
+  string `'8'` because `21CEN22GSS_occToBEM.py:142` passes unrecognised values through unchanged.
+  **43 households, 2,064 rows.** *Manager's own arithmetic, done independently of the report:*
+  `76,366 + 30,716 + 18,835 + 18,505 + 43 = 144,465` and `43 x 48 = 2,064`. **Both close exactly.**
+- **Why they are in no simulated cell is STRUCTURAL, and the report proved it the weak way.** The employee
+  checked all 24 cell manifests and found **zero overlap**, then wrote "the exclusion is upstream". *The
+  overlap count cannot carry that conclusion:* 1,198 households are sampled out of 144,465, so the expected
+  overlap with any 43 named households is **0.36** — observing zero would have been unsurprising even with
+  no exclusion at all. **The real proof needs no counting:** a cell is named `f"{archetype}__{city}"` over
+  the four archetypes, so a household whose archetype label is the literal `'8'` **matches no cell by
+  construction.** The zero overlap is a consistency check that *had* to pass, and it did.
+- **SI sentence owed (WP10), recorded here verbatim so it cannot be lost:** *"43 of the 144,465 households
+  (0.03 %) carry the Census code for an unreleased structural dwelling type and therefore fall outside the
+  four building archetypes; they are excluded from every archetype-weighted figure."* **They are not
+  dropped silently and they are not "fixed". They are named.**
+
+- **Item 34 — CLOSED as a bounded footnote, same treatment as item 33.** `BEDRM == '8'` is also "not
+  available", and because the split test is `bedrm_int <= 1 -> HighRise else MidRise`, an apartment with an
+  unreleased bedroom count is silently classified **MidRise**. Measured: **5 households of 49,221
+  apartments (0.010 %)**, all five confirmed MidRise in the schedule file. **5 of 144,465 = 0.0035 % of
+  stock.** The `except -> 2` fallback beside it **never fires on this data**: 0 blank, 0 unparseable.
+- ***Manager's cross-file closure, which is stronger than anything the report claimed for itself.*** The
+  bedroom counts come from the **person-level `_framev2.csv`** and the archetype labels from the
+  **household-level `BEM_Schedules_2022.csv`** — two separately built files. `BEDRM` 1 (17,422) + `BEDRM` 0
+  (1,083) = **18,505 = exactly the HighRise household count in the other file**, and
+  `21,563 + 6,457 + 1,597 + 1,094 + 5 = 30,716 = exactly MidRise`. **The two files agree to the single
+  household, and the closure only works if the 5 unavailable-bedroom apartments sit inside MidRise —
+  which is the finding.**
+- `BEDRM == '0'` ("No bedroom", 1,083 households) maps to **HighRise**. Treating a studio as high-rise is a
+  deliberate consequence of the `<= 1` rule, defensible, and **left alone** — recorded, not changed.
+
+**T60 (job `1329691`, 30 s) — ACCEPTED. Item 36 CLOSED. Entry (co)'s B3 ruling is now EVIDENCED, not
+merely derived.**
+
+- **Control 3 is the one that matters and it fired exactly as predicted.** On 72 rows of pure noise drawn
+  under the **nested** design, the original `inside_t_ci` logic read `False` **19/72 = 26.4 %** against a
+  predicted `2(1-Phi(1.96/sqrt3)) = 25.8 %`, while `consistent_nested` read `False` **2/72 = 2.8 %** against
+  a predicted 5 %. Both inside two binomial standard errors. **The flag was demonstrated mis-specified on
+  invented data before a word of the real result was read.** Controls 1 and 2 also fired (formula
+  reproduced to `0.000e+00`; the hand-broken row flagged).
+- **Corrected result: 6 of 72 rows inconsistent = 8.3 %** against the 5 % a correct 95 % test gives — that
+  is **1.3 binomial SE** at n=72, i.e. *not distinguishable from a well-behaved test*. **And the rate must
+  not be pushed harder than that in either direction:** the 72 rows are 4 cells x 6 metrics x 3 forms, and
+  `@2022`, `@2030` and their `_delta` are strongly correlated, so the effective number of independent trials
+  is well under 72. **No adequacy verdict may be sourced from a rate.**
+- **The family split the task was built to find is real in direction.** **Energy: 0 of 12 rows flagged**,
+  levels and changes alike. **Load-shape: 6 of 48**, every one of them in `mean_peak_hour` or
+  `evening_ramp_kW_mean`. `load_factor` was left unassigned by my brief and the employee correctly reported
+  it separately rather than guessing it into a family — 0 of 12 flagged there too.
+- t-based and bootstrap-based `consistent_nested` agree on **72 of 72** rows.
+
+**Item 37, NEW — my own task doc mis-specified a second yardstick, and I found it by reading the source.**
+
+- Part B's numbers did not line up with Part A's, so I read `t28_check.py` myself. `b4_convergence()`
+  (lines 353-380) builds every sub-`N` point as the **2.5-97.5 percentile of 1,000 subsample means drawn
+  WITHOUT REPLACEMENT from the same 200.** That carries a **finite-population correction**
+  `sqrt((200-50)/199) = 0.8682`, and uses a percentile 1.96 rather than `t(49)`.
+- **This explains, exactly, two things the report flagged as unexplained.** *(i)* `B3`'s `halfwidth_t_n50`
+  and `B4`'s `halfwidth` at N=50 disagree by 14-37 % on the same cell and metric while their **N=200 values
+  agree to six decimals**. Predicted ratio `1.1811 x (s50/s200)`: SingleD 1.379 vs **1.369** observed,
+  OtherDwelling 1.270 vs **1.246**, MidRise 1.376 vs **1.352**, HighRise 1.125 vs **1.136** — **all four
+  close to about 2 %.** *(ii)* The `hw50/hw200` ratio sits near **1.73** on all 72 rows, not the **2.0** my
+  brief told the employee to expect. The correct expectation under that sampling is
+  `1.96*0.12277 / (1.97196/14.1421) = 1.726`. **The observed values sit on it.**
+- **Consequences.** The convergence curve is behaving **exactly** as `1/sqrt(N)` should; the one row my
+  brief's threshold flagged as "far from 2.0" (`MidRise / midday_share@2030`, 1.5589) is **0.17 from the
+  true expectation and is not an outlier — it must not be reported as one.** Equally, the "s50 and s200
+  disagree by more than 3 %" list (56 of 72 rows) is **noise, not a finding**: the standard deviation of
+  `log(s50/s200)` is about 0.09, so roughly 74 % of rows should exceed 3 %, and 78 % did.
+- **Second mis-specified yardstick in the same task family, and this one was mine.** T54's was the
+  reviewer-facing flag; this one was in my own brief. **Lesson, for the gates doc: a brief that states an
+  expected value is itself a check, and it must be derived from the code that produces the number, not from
+  the textbook formula the code resembles.**
+
+**What the manuscript may now say about sample size — and it is Part B, corrected, not any flag.**
+
+- Because the reviewer is asking about drawing 50 homes from a **16,326-home pool**, not from 200, the
+  finite-population factor must be **divided out**: the honest half-widths are **15 % larger** than Part B
+  prints.
+- **Quotable: at 50 households a cell's annual electricity total is resolved to better than +/-0.6 % of
+  itself** (worst 0.5075 % -> **0.585 %**, best 0.3281 % -> 0.378 %). **Load-shape levels: about 6 % at the
+  median, up to ~49 % in the worst cell and metric.**
+- **NOT quotable, and this is the real limitation:** the **per-cell 2022->2030 changes are not resolved at
+  either 50 or 200 households.** At N=50 the half-width is 37-64 % of the change for energy and 41-754 %
+  for load shape; at N=200 it is only about half of that. `mean_peak_hour_delta` and
+  `evening_ramp_kW_mean_delta` have intervals that contain zero by a wide margin in every cell. **Rule: no
+  per-cell 2022->2030 load-shape change may be quoted as a change unless its own interval excludes zero.**
+  This is a limitation of what 200 homes can resolve, stated as such — **no band is moved and no flag is
+  relaxed.**
+- One metric's mean drifts monotonically across all six N (`OtherDwelling / load_factor_delta`, 0.004330 ->
+  0.004234). The drift is **2.2 % of the value** and it is a drift, not a precision problem; recorded, too
+  small to act on.
+
+- **CPU accounting:** T59 and T60 both finished and released their CPUs. In flight or queued: T22 4 + T32 8
+  + T48 4 + T49 1 + T55 1 = **18 of 32** worst case.
+- Next: `1329668` (T55) is the only 2J job still running; T48, T49 and the T32 campaign remain queued behind
+  `1328310`.
+
+---
+
+### (cq) 2026-09-18 — the owed SI prose correction is written. Debt discharged, not deferred again.
+
+Only one 2J job is still running (`1329668`, T55), so the gap was used on the prose debt that entry (cn)
+opened and entry (cp) left standing.
+
+**Written into `manuscript/draft_SI_schedule_completion.md`, by the manager, in one edit:**
+
+- The sampling-pool paragraph no longer says the filter drops *"a household that is never home at all"*.
+  **That was never the rule.** It now names the two rules that actually remove households: **a minimum of
+  two occupied hours in a day type**, and a cap on presence on/off transitions within the day.
+- A new paragraph, **"The two-hour rule interacts with the reversion scenarios, and the direction
+  matters,"** states the mechanism and the bound in the order the evidence was obtained: the rule removes
+  households shown occupied under two hours, the reversion scenarios are the ones where time at home falls,
+  so it removes preferentially **the households that reverted most** and what remains leans toward those
+  that reverted least. Counts over all 144,465 households: **983** excluded by the ordinary 2030 file,
+  **1,010 / 1,053 / 1,144** by the three scenario files. Largest excess **161 = 0.11 % of stock**, bounding
+  the possible national at-home-share shift at **0.11 percentage points** — inside the 0.5-point tolerance
+  set in advance. **Explicitly refused as rounding**, because it is several times the 0.005–0.022 pp margins
+  by which the scenarios are shown to reach their design. **"The two-hour rule was not relaxed."**
+- **Two evidence-table rows added**, to that file's own convention: one for the corrected rule, carrying the
+  worked case (`129937` totals 1.5 Weekday hours at λ=0.0 and is removed, 2.0 at λ=0.5 and is kept) and the
+  fact that the firing rule was **printed by name** (`R3_presence_bounds`, band `[2.0, 24.0]`) rather than
+  inferred from the household's absence; one for the counts, carrying the manager's independent per-rule
+  arithmetic closure (`+51+102+18−10 = +161`, `+7+60+18−15 = +70`, `0+25+18−16 = +27`).
+- `integration.py` was **not touched**, and no sentence claims the pipeline rejects always-occupied
+  schedules — `48609`'s weekend is all 1.0 and passes.
+
+**What is deliberately still owed, and why it is not a deferral in the same sense.** Items 32 and 34's two
+dwelling-type sentences (recorded verbatim in (cp)) are **not** written, because **no current draft describes
+the four-archetype mapping at all**. Writing them would mean inventing the section that holds them. That is
+WP10's job. **They are now recorded in three places — plan (cp), the manager prompt, and the T59 task doc —
+so they cannot be lost.**
+
+- Next: `1329668` (T55) is the only 2J job running; T48, T49 and the T32 campaign remain queued behind
+  `1328310`. **18 of 32 CPUs** worst case.
+
+---
+
+### (cr) 2026-09-18 — T55 landed hours ago and I did not know it. Six gates pass, one never ran, and the report called that a FAIL.
+
+**How this surfaced, recorded plainly.** The author asked whether we were still waiting on Speed. We were
+not, for T55. `sacct` reports job `1329668` as **`FAILED`, exit `1:0`, elapsed `01:26:21`**, finished around
+10:26 UTC. Entry (cq) — written after it had already finished — says "the only 2J job running". **That line
+was wrong when I wrote it**, because I carried the job's state forward from an earlier check instead of
+re-reading it. The background waiter was polling a job list that did not include `1329668`. Recorded as a
+process defect, not smoothed over: **a job's state is a thing to re-read, not a thing to remember.**
+
+**The `FAILED` is not what it looks like, and the T55 agent deserves credit for making that legible.** Its
+report explains its own exit-code semantics in the log, in so many words: the wrapper exits with the inner
+script's top-level code, which reflects **whether every section ran without crashing (0) or at least one
+section raised (1)** — it does **not** mean a gate failed, and a gate can run cleanly and still report FAIL.
+Because that sentence was written down, one `sacct` line and one `tail` were enough to tell a crashed
+section from a real finding. **This is the good version of the three-outcome discipline and the next brief
+should keep the convention.**
+
+**What actually landed.**
+
+| section | verdict | control / note |
+|---|---|---|
+| V0 out-dir audit + undelivered scan | PASS | 6 of 54 entries excluded (smoke leftovers), grid = 48 |
+| **V1 — manifest equality with T21** | **PASS** | my stop-rule did not fire; **no cell was stopped** |
+| V2 — avg-side vs direct-side | PASS | all 48 rows agree to ~1e-15; worst `|delta|` seen 7.5e-15 |
+| **V3 — one profile per cell, design levels differ** | **DID NOT RUN** | see below |
+| V4 — the arm sees the year | PASS | weekday-midday at-home change +2.31 to +2.90 pp, every cell |
+| V5 — no fallback / no invalid lines | PASS | 0 hits |
+| hand-check | PASS | two independently-coded sums, 8760 rows each, agree to <1 J |
+
+Controls, and **this time they are labelled correctly** — the contrast with T59 is the point:
+`CONTROL_1_V1_seen_failing: RAN, FIRED`; `CONTROL_2_V2_seen_failing: RAN, FIRED`;
+`CONTROL_3_seen_working: RAN, DID NOT FIRE`. T59 printed "ran and fired" for a control that found nothing;
+T55 did not. **The vocabulary is holding where it is written into the brief.**
+
+The hand-check is worth quoting because it is the kind of check that cannot be faked by a shared bug:
+`sample=1 sim_hh_id=130228`, `SingleD__Montreal_6A`, 2022 — pandas `.sum()` and a hand-rolled
+`csv.DictReader` accumulation both return `26,954,658,507.793 J = 7,487.405 kWh` over 8,760 rows. Two
+independent code paths, one answer.
+
+**V3 did not run, and the report was wrong to call it FAIL.** Its first statement raised:
+
+```
+V3 ERROR: FileNotFoundError("IDD file not found at '/usr/local/EnergyPlus-24-2-0/Energy+.idd'. ...")
+    IDF.setiddname(step8_v3.config.resolve_idd_path())
+```
+
+**The cause is an environment omission in the checker's own wrapper, not a defect in the data and not a
+defect in V3.** `config.py::resolve_idd_path()` takes `IDD_FILE` from the environment first and falls back to
+a compiled-in `/usr/local` path that does not exist on the compute nodes. The T30 array script that
+**produced the very data being checked** sets it correctly (`t30_array.sh:61-62`,
+`IDD_FILE=/speed-scratch/o_iseri/ep_wrappers/Energy+.idd`); `t55_score.sh` sets only `PY`. I verified the
+real file myself: it exists, 4,448,311 bytes, first line `!IDD_Version 24.2.0`. **One missing line.**
+
+**New plan item 38 — a gate that never executed printed a verdict.** `v3_pass` is initialised `False`, the
+`except` branch sets only the exit code, and the summary then printed `VERDICT: V3=FAIL`. Anyone reading only
+the verdict block — which is exactly what a verdict block is for — would have entered a crash into the record
+as a finding about the building models. **A section that raised before reaching its own test has no verdict;
+it is NOT_EVALUABLE.** This is the third distinct outcome collapsing into the second, one layer down from
+where I have been watching for it: I have been checking that *controls* keep the three outcomes apart and had
+not checked that the *summary* does. The fix is printing-only and is in the T61 brief with its own control.
+
+**T61 dispatched (Sonnet, 1 CPU, fresh agent), brief at `impl/2026-09-18_T61_V3_rerun_idd.md`.** It re-runs
+**V3 alone** with both variables exported, and is forbidden from re-running the six adjudicated gates or
+touching `T30/out/`. Four controls required: break `pass_v3_one_profile` in one cell on a shadow copy; break
+`pass_design_levels_differ` in one cell on a shadow copy; the unmodified seen-working run; and — new — point
+`IDD_FILE` at nothing and **show the summary print `NOT_EVALUABLE` rather than `FAIL`**, which is the control
+that proves the item-38 fix rather than asserting it. The brief deliberately states **no expected pass count
+and no expected design levels**, and tells the agent to derive V3's two criteria from `t30_check.py` and state
+them in its own words first — carrying forward (cp)'s rule that **an expected value written into a brief is
+itself an untested check**.
+
+**Nothing in the T30 averaged arm is cleared by this entry that was not already cleared.** V1 passing means
+the manifests match T21 and no cell is stopped; that is real and it was the thing most likely to go wrong.
+V3 remains open until T61 lands.
+
+- Next: T61 (V3 only) is the newest job. The T32 campaign is at **22 and 23 of 24 running**, so it finishes
+  within the hour; `1328310_15` (T22, the last static cell) is still going at **2 days 00:48**; T48 and T49
+  stay PENDING on it. **17 of 32 CPUs** in flight, 18 once T61 starts.
+
+---
+
+### (cs) 2026-09-18 — T62 ACCEPTED. The clustering check exists, is misnamed, and does not test clustering.
+
+T62 was dispatched off the cluster entirely, after the author pointed out — correctly — that I had claimed
+parallel work while idle. Two questions, read-only, no job. Both answered, and the first one found something.
+
+**Q1. What Section 2 promises.** `manuscript/draft_S2_framework.md:338-340`, inside §2.11:
+
+> "This interval treats households as independent and does not account for households sharing a city or an
+> archetype; **the consequence of that clustering is examined in the Supplementary Information.**"
+
+The main-text interval is a single pooled paired Student-t over all paired households across all 24
+(archetype × city) cells at once (`draft_S2_framework.md:317-320, 335-336`). The promise commits us to a
+second interval, built by a method that respects the grouping, on the same paired deltas, shown side by side.
+It does **not** commit us to replacing the main-text number — "examined", not "corrected". **No number in any
+current draft depends on the sentence being true**, and neither of the two existing SI drafts mentions
+clustering at all. So the sentence is a live, unbacked promise and nothing else rests on it.
+
+**Q2 answered, and it is small and clean.** The campaign used **`create_compact_schedule()` exclusively** —
+`Schedule:Compact` written into the IDF — traced from the real entry point (`main.py:2065-2070`, plus
+`run_fixed_manifest.py`, `step9_idf_gen.py`, `step9_idf_gen_full.py`; none passes `use_schedule_file`, so all
+take the default `False`). `write_8760_schedule_csv()` exists but is switched on in exactly one place in the
+whole repo, a standalone regression test (`eSim/eSim_tests/task21_regression.py:285`). The two are not split
+between the building model and the plotting path; they are two routes to the same job and the campaign took
+one. **WP10 may now name `Schedule:Compact` in the SI.** Recorded caveat, the agent's own and kept: only the
+live tree and one archived snapshot were searched, **not** the commit history — adequate here, because the SI
+describes what the campaign does and the live tree *is* the campaign.
+
+**The finding, new plan §5 item 39 — `method_b_cluster_bootstrap` is a stratified bootstrap, not a cluster
+bootstrap, and it cannot answer the question the sentence asks.** T62 found the check already written, as a
+method-check dispatched under T03: `impl/T03_scripts/ci_reproduction.py:67-83`. It reported the grouped
+interval as **1.0 to 3.3 % narrower** than the plain pooled t-interval. **That direction is wrong, and the
+direction is the tell.** Positive correlation between households in the same cell makes an honest interval
+**wider**, never narrower. So I read the function rather than accept the number, and the code says it plainly
+(`ci_reproduction.py:71-80`):
+
+```python
+cell_arrays = [d["delta"].to_numpy()[idx] for idx in groups.values() if len(idx) > 0]
+for r in range(n_rep):
+    pooled = []
+    for arr in cell_arrays:
+        n = len(arr)
+        draw = rng.integers(0, n, size=n)   # resamples WITHIN a cell
+        pooled.append(arr[draw])
+```
+
+**`cell_arrays` is built once and never resampled.** Every replicate contains all 24 cells, each at its exact
+original size, with households drawn with replacement *inside* each one. That is a **stratified** bootstrap:
+it holds the cell structure fixed and therefore **removes** between-cell variation from the bootstrap
+distribution. Narrower is exactly what it should produce, and it is narrower for a reason that has nothing to
+do with clustering. A genuine cluster bootstrap resamples **whole cells with replacement** — 24 drawn from
+24 — so that between-cell variation propagates into the interval.
+
+**Rulings.**
+
+1. **The sentence at `draft_S2_framework.md:338-340` is NOT cut.** The plan's standing either/or was "deliver
+   it or cut it", and delivering it is now cheap: one added cell-level draw in a script that already exists,
+   already pairs the data correctly, and already runs on frozen CSVs with a fixed seed.
+2. **Nothing from `ci_reproduction.py`'s method B may be quoted anywhere, in either direction.** In
+   particular the **1.0–3.3 % narrower** figure is not evidence that clustering is immaterial; it is an
+   artefact of the wrong resampling unit. It must not survive into the SI as reassurance. It is also
+   measured on an input CSV carrying the defective 2030 rows WP1 is fixing, which on its own would have been
+   enough to bar it.
+3. **The function is renamed at the same time it is fixed.** `method_b_cluster_bootstrap` describing a
+   stratified bootstrap is how the wrong number would have been believed by the next reader; the name did
+   most of the work of the error.
+4. **Ownership: WP8, not WP6.** T62 flagged a real bookkeeping mismatch — the Progress Log says WP6 must
+   deliver this, the plan's own WP table assigns it to WP8, and the code lives in T03's tree, which was
+   dispatched under WP8. **Resolved in favour of WP8.** The manager prompt's Step 9 line is corrected.
+5. **It reruns on corrected runs, not on today's CSV**, and whatever it then shows is what the SI says —
+   wider, narrower or indistinguishable. **No band is moved and no outcome is assumed.** If the honest
+   interval turns out materially wider, the main-text separability claims are re-read against it before
+   anything is quoted.
+
+**What this cost and what it bought.** One read-only worker, no cluster time, off the critical path entirely
+— and it caught a misnamed statistical method that was on course to enter a supplement as "we checked
+clustering and it was small". **The general lesson is one I already hold and nearly missed applying: when an
+effect's sign is opposite to what its mechanism predicts, suspect the method before the data.** It is the
+same shape as item 37, where a systematic deviation across every row meant my expectation was wrong rather
+than the numbers. Here the wrongness was in a name.
+
+- Next: T61 (`1329796`) is scoring V3 and started at 3 minutes. `1328310_15` (T22) is at **2 d 01 h**; the
+  T32 campaign's last two cells are running; T48 and T49 stay PENDING behind T22. **13 of 32 CPUs** running,
+  18 worst case.
