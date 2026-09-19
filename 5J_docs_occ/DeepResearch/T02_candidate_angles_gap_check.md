@@ -1,5 +1,51 @@
 # T02. The ten candidate angles: which are already taken, which are open, and what each would cost us
 
+> **Corrections 2026-09-19 (round 2).** Round 1 of this prompt failed vetting: fourteen of twenty-three DOIs pointed at unrelated papers while the report said every DOI had
+> been checked against CrossRef.
+> These rules add to everything below and win where they differ.
+> * Read only three files: `00_MASTER_BRIEF.md`, `_RESPONSE_TEMPLATE.md` and this prompt. Open no other
+>   file in the project: no `RT` report, no `VETTING_*.md` note, no `*_round1.md`, nothing in `_scan/`,
+>   no `.json`. Where the text below says to build on another prompt's answer, search yourself instead.
+> * Write only two files, in `5J_docs_occ/DeepResearch/`: `RT02_candidate_angles_gap_check.md` and `RT02_pages.log`. Creating,
+>   editing, renaming or deleting any other file in the project voids this report. Scratch scripts go
+>   outside `C:\Users\o_iseri\Desktop\GSSCanada\`. No script may write report text.
+> * Paste the CrossRef-returned title beside every DOI in every table row.
+> * A row without a resolving identifier (DOI, arXiv ID, or a landing page you opened) is not admitted.
+> * Our own papers' rows are copied verbatim from brief section 2; never give one a title yourself.
+> * Author list, year, volume and pages are pasted from the CrossRef record whose call is in the log,
+>   never typed. If CrossRef lists two authors, you list two. One work carries one DOI, the same in
+>   every section.
+> * The page log `RT02_pages.log` has one line per page, API call or search query, written when you
+>   open it, tab-separated: the time as `YYYY-MM-DDTHH:MM:SS`, the full URL or query string, the HTTP
+>   status, and about 200 characters copied verbatim from the body as returned. No quote, number,
+>   licence, deadline or URL may appear in the report without a matching log line. The vetter re-opens
+>   each page and searches for each excerpt.
+> * A CrossRef lookup proves that a paper exists, not what it says. Any sentence about what a paper did,
+>   found or named as future work needs a log line for its abstract or full text. Without one, mark the
+>   row `TITLE ONLY` and say nothing about its content.
+> * A page counts as opened only if it returned 200 and its excerpt is in the log. An error, a bot
+>   block or a login you did not pass is `COULD NOT OPEN`, never "opened", "read" or "verified".
+> * In Section G, the "read in full" and "abstract only" lists name only items whose fetch is in the
+>   log. A negative control that names an item you did not fetch voids the report.
+> * Every `NOT FOUND`, "no study", "remains open" or "unclaimed" lists the queries behind it, and each
+>   query has a log line.
+> * Do not grade your own work: never write "verified", "confirmed", "definitive" or "without
+>   exception" about the report. The log is the evidence.
+> * Name no individuals connected to the fellowship programmes. Never propose a change to the 4J
+>   pre-registered gate, null or threshold. No em dashes and no en dashes, in the report or the log.
+> **For this prompt:**
+> * Scope stays `A1` to `A10`, plus up to three of your own in item 5. `A14` is ranked by another
+>   prompt; leave it out.
+> * Ignore "Run this after wave 1 ... their landscape tables are its raw material". The landscape
+>   comes from your own logged search.
+> * Item 1: the "future work, quoted" column is filled only from a logged abstract or full text;
+>   otherwise write `NOT READ`.
+> * Item 2: `no` needs a Section C row whose logged abstract or full text shows the whole combination;
+>   `yes` needs the three phrasings, each with a log line.
+> * Item 6: write the rule as one formula before any score. Score only from Section C rows admitted
+>   under these rules, and cite the row beside each score. Fewer rows with checked identities beat
+>   more rows.
+
 Paste `00_MASTER_BRIEF.md` first. Answer with the schema in `_RESPONSE_TEMPLATE.md`.
 All sections used. Run this **after** wave 1 (`T03` to `T08`, `T13` to `T17`) has returned, because
 their landscape tables are its raw material. **The most valuable possible answer is that an angle we

@@ -96,6 +96,9 @@ your single recommendation with its reason. End with one line: "Waiting on you: 
 
 ## Resume here (the author left on 2026-09-07 evening with D-5J-0 open)
 
+**Added 2026-09-19.** D-5J-0 was ruled **(a)** and acted on: the five re-runs are set up, `RT38`
+failed its round. Start from the last bullet of this file; nothing below about D-5J-0 is still open.
+
 **Added 2026-09-18.** D-5J-A14 was ruled **(a)** on 2026-09-18 and acted on; see "Round 2 of wave 6"
 at the end. Only D-5J-0 below is still open. Round 2 was running in Gemini when the session closed
 (2026-09-18, about 23:00); the author will return when all six are done. Vet them first as that
@@ -246,6 +249,80 @@ ask for D-5J-0.
   against the 117-entry inventory (rule 12), then read Gemini's final chat line counts against
   `wc -l` of each log, then spawn one fresh sonnet agent per report. Do not vet before all six are
   back; do not state any report number in chat before vetting.
+* **Intake done 2026-09-19.** All six back (reports 22:56 to 23:29 on 2026-09-18). Folder = 129
+  entries = 117 + 6 reports + 6 logs; README and every `T` file untouched. Log line counts match
+  Gemini's chat (50, 54, 152, 83, 35, 70). **Rule 12 breach to weigh at verdict:** `RT27`, `RT28`,
+  `RT32`, `RT36` were written by `assemble_t<NN>_draft.py` scripts holding the report prose as a
+  hard-coded string (Gemini's scratch folder, outside the project); `RT20` and `RT23` were written
+  directly. For `RT27` and `RT32`, Gemini fetched "missing" URLs after the text was composed, to fill
+  the log. Six fresh sonnet checkers launched on 2026-09-19 against spec
+  `scratchpad/VET_SPEC_WAVE6_R2.md` (session scratch); each writes `VETTING_RT<NN>.md` with
+  "VERDICT: pending (manager)". If a note is missing when you resume, re-launch that checker only.
+* **Verdicts 2026-09-19 (all six).** One
+  rule applied to all six: a row survives only if the checker confirmed it at its source, and a log
+  line written after the text was composed does not count as reading. Rule 12's script clause was
+  recorded in each note but voided nothing, because the scripts held text the tool wrote itself and
+  every backfilled page was re-checked.
+  - `RT23` ACCEPTED WITH STRIKES: UK low-voltage feeder data (UK Power Networks, CC BY 4.0,
+    registration needed) is confirmed; Section C is struck. A separate check opened the Hydro-Québec
+    LCPR file: 3 Montréal substations, hourly 2022 to 2024, with setpoint, indoor temperature,
+    thermostat and customer counts, CC BY-NC 4.0.
+  - `RT27` ACCEPTED WITH STRIKES: coupling an agent-based travel model to building occupancy already
+    exists (a 2026 co-simulation paper, Tokyo, Japan). The open part is Canada.
+  - `RT28` FAILED ROUND: the variable names are not on their pages. Do not re-run it in Gemini; have a
+    cheap agent check variables in the downloaded codebooks.
+  - `RT32` FAILED ROUND with the Doma row kept. Correction to "daily-total level": the thesis compares
+    **hourly** probabilities in aggregate, with no split by household or dwelling type and no
+    arrival or departure times, and says it is not an accuracy check.
+  - `RT36` FAILED ROUND: invented licence quotes and altered statute text. Do not re-run; the author
+    reads each data agreement when applying.
+  - `RT20` ACCEPTED WITH STRIKES: all six DOIs match; thermostat schedules already exist for Canada
+    (Doma et al. 2024) and the US (Jung et al. 2023), so the bare form is done. The false "403"
+    claims, the unquoted ecobee licence and the "no occupant count" claim are struck (ecobee holds
+    a user-entered "Number of occupants"). Open part: household and dwelling splits, arrival and
+    departure times, population matching.
+  README status cells updated for all six; T38 row set to "ready to run".
+* **T38 filled 2026-09-19.** The fallback table is replaced in place by the vetted table: rows 1 to
+    4 have vetted support (thermostat, diary bias via the Doma row, activity model, feeder), rows 5
+    to 12 are `route only`. Licence score (c) uses only licences named in the table, because `RT36`
+    failed. Next: hand `T38` to the author alone, then ask D-5J-0.
+* **RT38 round 2 returned 2026-09-19 10:50.** No stray files (folder 135 = 129 + six new vetting
+  notes). Old void note kept as `VETTING_RT38_round1.md`; README T38 status set to "round 2 returned,
+  vetting". The pasted transcript shows the tool only read local files and ran CrossRef on 35 DOIs:
+  no page, search, arXiv or data-portal fetch, yet its negative control lists nine works "opened in
+  full". Manager-visible issues to weigh: form 3 given licence score 5 from the GPL-3.0 on model
+  code while the table says the population's terms are unknown; item 3 names `A5`, outside the
+  allowed four; a "3 % to 4 %" overstatement not in any note. One fresh sonnet checker launched on
+  spec `scratchpad/VET_SPEC_T38.md`; it writes `VETTING_RT38.md` with "VERDICT: pending (manager)".
+  If the note is missing when you resume, re-launch it. Then write the verdict and ask D-5J-0.
+* **RT38 vetted 2026-09-19: FAILED ROUND** (`VETTING_RT38`). The checker found none of the nine
+  "opened in full" items fetched in the transcript, so the negative control is false. Form 3's licence
+  score rests on the model-code licence (should be 0, total 19 becomes 14); no (a), (b), (d) or (e)
+  score cites a row; `A5` is out of scope; "3 % to 4 %" and the brief claims about ecobee have no
+  source. Kept: identity of 34 identifiers (32 exact CrossRef match) and the Jin et al. 78 % to 93 %
+  pointer. **No form changes status; no ranking exists.** The `A14` shortlist stays the manager
+  table in `T38` lines 23 to 36. Do not re-run `T38` in Gemini as it stands; the verdict's item 6
+  lists what to tighten if the author asks for a round 3. README T38 row updated. Next: ask D-5J-0
+  (recommend (a)); the four vetted forms go to `T12` with the rest.
+* **D-5J-0 ruled (a) by the author, 2026-09-19.** Re-run `T02`, `T04`, `T08`, `T09`, `T17`. In
+  progress: tighten each in place (corrections block with the three hard constraints, plus the page
+  log and "read nothing else" rules learned in wave 6 and `RT38`; `T09` gets the angle table), rename
+  each old note to `VETTING_RT<NN>_round1.md`, set README status to "written 2026-09-19, round 2",
+  then tell the author the paste order. One prompt per session, brief first; no runner file.
+* **Round 2 of the five set up, 2026-09-19.** Each of `T02`, `T04`, `T08`, `T09`, `T17` carries a
+  "Corrections 2026-09-19 (round 2)" block at its top: read only the brief, the template and the
+  prompt; write only `RT<NN>_<slug>.md` and `RT<NN>_pages.log` (any other file voids it); CrossRef
+  title beside every DOI; no row without a resolving identifier; our papers copied from brief
+  section 2; authors pasted from CrossRef; page log with verbatim excerpts; CrossRef metadata alone is
+  `TITLE ONLY`; Section G may list as read only what the log shows fetched (the `RT38` failure); every
+  negative lists its logged queries; no self-grades. Prompt-specific lines follow. Dependencies on
+  other reports are cut (`T02` on wave 1, `T09` on `T01`/`T02`, `T17` on `T06`). `T09` carries the
+  angle table with all eleven brief angles (`A1` to `A10` and `A14`), labels fixed. Round-1 reports
+  and notes renamed `*_round1.md` (10 files); README status of the five = "written 2026-09-19, round
+  2". Folder inventory now **136 entries**. Paste order, one fresh Gemini session each: brief,
+  template, then `T02`, `T04`, `T08`, `T17`, `T09`. **At intake:** re-count the folder (136 + 5
+  reports + 5 logs = 146), check no other file changed, then one fresh sonnet checker per report
+  against its page log; verdict rule as for wave 6 round 2. Next: wait for the author's return.
 
 ## Reply shape, every time
 

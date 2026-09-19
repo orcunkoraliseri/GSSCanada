@@ -17,17 +17,27 @@ Paste below, as a table, the forms of `A14` that survived vetting, one per row: 
 sentence, the `RT` report and row that proposed it, the vetting verdict for that row. If a report
 failed its round, its forms are pasted as `route only`.
 
-Fallback list, used **only** if the vetted table is not ready, and to be replaced before running:
+Vetted table, filled by the manager on 2026-09-19. Every `RT19` to `RT37` report is now vetted.
+Forms with vetted support are rows 1 to 4; rows 5 to 12 come from failed rounds and are `route only`.
 
-| Form | Proposed in |
-|---|---|
-| Thermostat presence as validation for time-use occupancy | `T20` |
-| Multi-dataset measured-presence benchmark of occupancy generators and standard baselines | `T21`, `T29` |
-| Phone-derived at-home profiles as a calibration target | `T24` |
-| Regional travel surveys as a larger, local occupancy source | `T26` |
-| Activity-based travel populations as the occupancy engine of a UBEM | `T27` |
-| The measured diary bias on presence and its energy consequence | `T32` |
-| Open high-frequency signals bridging time-use waves | `T33` |
+| # | Form, in one sentence | Report and row | Vetting verdict for that row |
+|---|---|---|---|
+| 1 | Smart-thermostat presence (ecobee Donate Your Data) as a source for, and check on, time-use occupancy schedules | `RT20` round 2, Section C rows 1 and 2, card 1 | ACCEPTED WITH STRIKES (`VETTING_RT20`). Narrowed: the bare form is done for Canada (Doma, Prajapati, Ouf 2024, DOI 10.1016/j.buildenv.2024.111713) and the US (Jung, Wang, Hong, Jazizadeh 2023, DOI 10.1016/j.buildenv.2023.110628). Open: splits by household and dwelling type, arrival and departure times, matching the homes to the Canadian population. ecobee licence terms unread |
+| 2 | The measured bias of time-use diaries on presence at home, and its energy consequence | `RT32` round 2, Section C, Doma row only | FAILED ROUND, Doma row kept (`VETTING_RT32`). The Doma comparison is hourly in aggregate (71 % against 68 %), with no household or dwelling split and no arrival or departure times. The energy consequence is unassessed |
+| 3 | Activity-based travel-model populations as the occupancy engine of an urban building energy model | `RT27` round 2, Section C rows 1 to 3 | ACCEPTED WITH STRIKES (`VETTING_RT27`). Narrowed: the coupling is done abroad (a 2026 UrbanSim, POLARIS and CityBES co-simulation; Binder et al. 2020 for Tokyo; Yamaguchi et al. 2023 for Japan). Open: a Canadian version. Toronto model code is GPL-3.0; use of a Toronto or Montreal synthetic population is unknown |
+| 4 | Open low-voltage feeder or substation load as a check on occupancy-driven residential load | `RT23` round 2, cards 1, 6, 15 and the LCPR addendum | ACCEPTED WITH STRIKES (`VETTING_RT23`). Open, narrower: open half-hourly feeder data is confirmed only for UK Power Networks (CC BY 4.0, free after registration); Liander is yearly by postcode; Hydro-Québec is system level, plus one hourly file for 3 Montréal substations (CC BY-NC 4.0, 2022 to 2024, no per-home rows, no presence field). Prior art in Section C was struck |
+| 5 | Presence inferred from household smart-meter data | `T22` | route only (round 1 failed, `VETTING_RT22`) |
+| 6 | A multi-dataset measured-presence benchmark of occupancy generators and standard baselines | `T21`, `T29` | route only (round 1 failed, `VETTING_RT21`, `VETTING_RT29`) |
+| 7 | Phone-derived at-home profiles as a calibration target | `T24` | route only (round 1 failed, `VETTING_RT24`) |
+| 8 | Day and night population grids as a residential headcount | `T25` | route only (round 1 failed, `VETTING_RT25`) |
+| 9 | Regional household travel surveys as a larger, local occupancy source | `T26` | route only (round 1 failed, `VETTING_RT26`) |
+| 10 | Frequent non-time-use surveys asking about presence or telework, bridging time-use waves | `RT28` round 2 | route only (FAILED ROUND, `VETTING_RT28`) |
+| 11 | Open high-frequency signals of time at home bridging time-use waves | `T33` | route only (round 1 failed, `VETTING_RT33`) |
+| 12 | Non-residential and mixed-use presence data | `T30` | route only (round 1 failed, `VETTING_RT30`) |
+
+Licence score (c) in item 2: `RT36` failed its round (`VETTING_RT36`), so score (c) only from a licence
+named in the table above (CC BY 4.0, CC BY-NC 4.0, GPL-3.0). Where no licence is named, score (c) as
+`licence unread` and give it 0, and say so beside the score.
 
 ## What we need
 

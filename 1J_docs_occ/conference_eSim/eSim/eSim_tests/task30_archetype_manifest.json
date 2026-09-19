@@ -1,0 +1,23 @@
+[
+  {
+    "archetype": "Student",
+    "batch_dir": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\BEM_Setup\\SimResults\\Comparative_HH1p_1775736411",
+    "hh_id": "7846",
+    "sql_count": 6,
+    "ran_ok": true
+  },
+  {
+    "archetype": "Retiree",
+    "batch_dir": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\BEM_Setup\\SimResults\\Comparative_HH2p_1775736483",
+    "hh_id": "82116",
+    "sql_count": 6,
+    "ran_ok": true
+  },
+  {
+    "archetype": "ShiftWorker",
+    "batch_dir": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\BEM_Setup\\SimResults\\Comparative_HH3p_1775736556",
+    "hh_id": "53057",
+    "sql_count": 6,
+    "ran_ok": true
+  }
+]

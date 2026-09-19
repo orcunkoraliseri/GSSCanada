@@ -1,5 +1,66 @@
 # T09. Fellowship and funding alignment: what the five programmes actually reward, what they funded before, and which angle a fifth paper should evidence
 
+> **Corrections 2026-09-19 (round 2).** Round 1 of this prompt failed vetting: six of fifteen pages it said it had opened or read in full returned 404, five of the ten
+> angle names were changed, and the award history had no identifiers.
+> These rules add to everything below and win where they differ.
+> * Read only three files: `00_MASTER_BRIEF.md`, `_RESPONSE_TEMPLATE.md` and this prompt. Open no other
+>   file in the project: no `RT` report, no `VETTING_*.md` note, no `*_round1.md`, nothing in `_scan/`,
+>   no `.json`. Where the text below says to build on another prompt's answer, search yourself instead.
+> * Write only two files, in `5J_docs_occ/DeepResearch/`: `RT09_fellowship_and_funding_alignment.md` and `RT09_pages.log`. Creating,
+>   editing, renaming or deleting any other file in the project voids this report. Scratch scripts go
+>   outside `C:\Users\o_iseri\Desktop\GSSCanada\`. No script may write report text.
+> * Paste the CrossRef-returned title beside every DOI in every table row.
+> * A row without a resolving identifier (DOI, arXiv ID, or a landing page you opened) is not admitted.
+> * Our own papers' rows are copied verbatim from brief section 2; never give one a title yourself.
+> * Author list, year, volume and pages are pasted from the CrossRef record whose call is in the log,
+>   never typed. If CrossRef lists two authors, you list two. One work carries one DOI, the same in
+>   every section.
+> * The page log `RT09_pages.log` has one line per page, API call or search query, written when you
+>   open it, tab-separated: the time as `YYYY-MM-DDTHH:MM:SS`, the full URL or query string, the HTTP
+>   status, and about 200 characters copied verbatim from the body as returned. No quote, number,
+>   licence, deadline or URL may appear in the report without a matching log line. The vetter re-opens
+>   each page and searches for each excerpt.
+> * A CrossRef lookup proves that a paper exists, not what it says. Any sentence about what a paper did,
+>   found or named as future work needs a log line for its abstract or full text. Without one, mark the
+>   row `TITLE ONLY` and say nothing about its content.
+> * A page counts as opened only if it returned 200 and its excerpt is in the log. An error, a bot
+>   block or a login you did not pass is `COULD NOT OPEN`, never "opened", "read" or "verified".
+> * In Section G, the "read in full" and "abstract only" lists name only items whose fetch is in the
+>   log. A negative control that names an item you did not fetch voids the report.
+> * Every `NOT FOUND`, "no study", "remains open" or "unclaimed" lists the queries behind it, and each
+>   query has a log line.
+> * Do not grade your own work: never write "verified", "confirmed", "definitive" or "without
+>   exception" about the report. The log is the evidence.
+> * Name no individuals connected to the fellowship programmes. Never propose a change to the 4J
+>   pre-registered gate, null or threshold. No em dashes and no en dashes, in the report or the log.
+> **For this prompt:**
+> * Item 1: every programme quote and deadline comes from a page that returned 200 on the day, with
+>   its log line. Otherwise `COULD NOT OPEN` and no quote. Describe how the Berkeley fellowship relates
+>   to the UC President's programme only as a page you opened states it.
+> * Item 2: each funded project carries the identifier its programme publishes (for example a CORDIS
+>   project ID, or the URL of the listing page), with title and abstract as published and no names.
+>   An entry without an identifier is not admitted.
+> * Item 3: fill the table below. The rows are the brief's angles, labels copied from brief section 4;
+>   do not rename, merge, reorder or add rows. The brief now lists eleven angles, so score all eleven.
+>   Each cell is `strong`, `partial` or `weak` plus the one item-1 criterion that decides it, quoted.
+>
+>   | ID | Angle (brief section 4) | Berkeley Climate Futures | Digital Futures | MSCA PF | NSERC PDF | Schmidt AI in Science | Fit across all five |
+>   |---|---|---|---|---|---|---|---|
+>   | `A1` | Agentic UBEM | | | | | | |
+>   | `A2` | Occupancy under heat | | | | | | |
+>   | `A3` | Closing the transfer gap | | | | | | |
+>   | `A4` | The scenario axis | | | | | | |
+>   | `A5` | Activity-resolved demand flexibility | | | | | | |
+>   | `A6` | Occupancy-resolved energy burden | | | | | | |
+>   | `A7` | Language models reading building records with abstention | | | | | | |
+>   | `A8` | Canadian transfer | | | | | | |
+>   | `A9` | Passive survivability under power failure, with occupants | | | | | | |
+>   | `A10` | Reference bands for stacked mixed-use buildings | | | | | | |
+>   | `A14` | Occupancy from open data beyond national statistics | | | | | | |
+>
+> * Item 5: ignore "From `T01` item 4" and "the top three angles from `T02`". Map the calls for the
+>   angles you scored `strong` at two or more programmes in item 3.
+
 Paste `00_MASTER_BRIEF.md` first. Answer with the schema in `_RESPONSE_TEMPLATE.md`.
 Sections A, B, D, E, F, G, H used. Run in wave 2, after `T01` (whose funding table it extends) and
 after `T02` (whose ranking it tests against the programmes).
