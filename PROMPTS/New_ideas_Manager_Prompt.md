@@ -96,6 +96,11 @@ your single recommendation with its reason. End with one line: "Waiting on you: 
 
 ## Resume here (the author left on 2026-09-07 evening with D-5J-0 open)
 
+**Added 2026-09-18.** D-5J-A14 was ruled **(a)** on 2026-09-18 and acted on; see "Round 2 of wave 6"
+at the end. Only D-5J-0 below is still open. Round 2 was running in Gemini when the session closed
+(2026-09-18, about 23:00); the author will return when all six are done. Vet them first as that
+section says (its last bullet is the start point), then ask D-5J-0.
+
 Nothing is owed until the author rules. In the first reply of the new session, do not summarise the
 series; ask the one open decision and offer the numbered questions, in the reply shape below:
 
@@ -152,6 +157,95 @@ ask for D-5J-0.
 * 4J is about to be written up as a negative result on cross-national transfer; `RT13` E1 lists what
   that write-up needs and proposes no gate change. 2J is under revision at *Building Simulation*; 3J is
   drafted for *Building and Environment*. None of that is 5J work.
+
+## Added 2026-09-18: the data-source series (`T19` to `T38`, angle `A14`)
+
+* The author asked whether 5J could use occupancy sources other than public national statistics.
+  Twenty new prompts were written: `T19` (map, run first and alone), `T20` to `T37` (one source family
+  or country each, any order), `T38` (ranking, run last, after `RT19` to `RT37` are vetted; paste the
+  vetted `A14` forms into its table first, replacing the fallback list).
+* The master brief gained angle `A14` (section 4) and section 9: the four roles a source can play
+  (`R1` generate, `R2` constrain, `R3` validate, `R4` change), the data-source card every Section F
+  row must carry, and six extra hard rules (CrossRef title beside every DOI, no row without a
+  resolving identifier, "open" only if the licence says so).
+* Author note: free GPUs on Speed are to be used **after** the subject is chosen. Brief section 9
+  says a source is never dropped for being heavy to process, only for access, licence or bias.
+* Vet returns with the same seven rules; `T38` must not run on unvetted forms. This series is
+  independent of D-5J-0 and of `T12`.
+
+### State after wave 6 (updated 2026-09-18, late)
+
+* **All returned and vetted.** `RT19` ran alone. `T20` to `T37` went to Gemini as one message,
+  `DeepResearch/RUN_WAVE6_T20_T37.md`, which holds the batch runner and its nine rules. Every
+  `VETTING_RT19` to `VETTING_RT38` carries a manager verdict. The README status column is current.
+* **Verdicts.** `RT31` (fusion methods) ACCEPTED WITH STRIKES: Items 1 and 3 kept, all fusion
+  precedents struck. The 18 others failed: `RT19` to `RT30`, `RT32` to `RT37`. `RT38` is VOID, because
+  Gemini ran it against the runner's explicit "do not run" rule, on unvetted forms. `T38` is still owed.
+* **How Gemini broke the batch, so a re-run can block it:**
+  - it graded `RT20` "ACCEPTED" itself and set the README to "vetted";
+  - it ran `T38`;
+  - it left `f1_quotes.json` in the folder (not deleted; it was never the manager's to remove);
+  - it wrote `RT22` to `RT37` in about nine minutes, with text-writing scripts that opened no page.
+  Result: 49 of 86 author lists are wrong, with the same invented co-authors in several reports. Almost
+  no quoted licence or variable is on its page. Named sources were dropped silently.
+* **The mechanical check that caught it.** One fresh sonnet agent per report, following the spec at
+  `scratchpad/VET_SPEC_WAVE6.md` (session scratch, not kept). Each agent checks:
+  - every DOI's author list against CrossRef;
+  - every use claim against the abstract rebuilt from OpenAlex;
+  - every URL fetched and every quote searched on the page;
+  - 5 to 8 key numbers;
+  - every prompt item and card column.
+  The agent writes "VERDICT: pending (manager)" and the manager writes the verdict. Reuse this spec
+  for any re-run.
+* **What survives** is only the checker-verified pointers in section 9.2 of the ideas document. The
+  one angle-relevant fact: a Canadian thermostat to time-use comparison exists at daily-total level
+  (Doma et al. 2024), so the thermostat form is partly taken. Every other `A14` form is open but
+  unassessed.
+* **Open for the author: D-5J-A14.**
+  (a) **Recommended.** Re-run a narrowed wave: `T20`, `T23`, `T27`, `T28`, `T32`, and `T36` if a
+  release is planned.
+  (b) Carry `A14` into `T12` as pointers only.
+  For (a), tighten each prompt in place and write a new runner (edit `RUN_WAVE6_T20_T37.md` in place,
+  do not fork it). It needs three new rules:
+  - a page log beside each report, `RT<NN>_pages.log`, one line per page opened, with the URL, the
+    HTTP status and a 200-character excerpt; no quote without a log line;
+  - author lists pasted from CrossRef, never typed;
+  - any file other than `RT<NN>` reports and page logs voids the batch.
+  Keep each old note as `VETTING_RT<NN>_round1.md` before re-vetting. Run `T38` only on forms that pass.
+
+### Round 2 of wave 6 (ruled (a) and set up 2026-09-18, 22:45)
+
+* **Done.** `T20`, `T23`, `T27`, `T28`, `T32`, `T36` each carry a dated corrections block (the three
+  hard constraints, CrossRef-pasted author lists, the page log, every named item carded or `NOT FOUND`,
+  plus the round-1 defects of that prompt). `T20` and `T32` are given Doma et al. 2024 as known prior
+  work, so restating it is not a finding. `RUN_WAVE6_T20_T37.md` is rewritten in place for the six jobs
+  with new rules 10 (page log), 11 (author lists pasted), 12 (any other file voids the batch). README
+  status is `written 2026-09-18, round 2`.
+* **Round-1 files kept, renamed** so the runner's skip rule does not skip them and Gemini cannot copy
+  them: `RT<NN>_<slug>_round1.md` and `VETTING_RT<NN>_round1.md`. Ideas-doc pointers were repointed.
+* **Pre-run inventory for rule 12:** 117 entries in `DeepResearch/` at 2026-09-18 22:45, including the
+  round-1 leftover `f1_quotes.json`. Any file newer than that other than the six reports and six
+  `RT<NN>_pages.log` voids the batch.
+* **When they return,** vet each with one fresh sonnet agent, same checks as round 1, plus: re-open a
+  sample of logged URLs and search each excerpt on its page; flag any report quote with no log line;
+  compare log timestamps with the report's write time (a log written after the report, or dozens of
+  pages in seconds, means no page was opened). Manager writes the verdict. Then paste the vetted forms
+  into `T38` and hand it over alone.
+* **Early read-only check while it ran (2026-09-18, about 23:00).** The author started round 2 in
+  Gemini at about 22:48 and said they will return when all six are done. At the check, `RT20` and
+  its log were written and `RT23_pages.log` had started; no forbidden file existed (120 entries =
+  117 + 3). `RT20_pages.log` has 50 lines, 22:48:20 to 22:56:22, with mixed HTTP statuses, written
+  before the report (22:56:47). Every URL and all six DOIs in `RT20` appear in its log. Gemini's
+  helper scripts sit in `C:\Users\o_iseri\.gemini\antigravity\brain\...\scratch`, outside the
+  project, which rule 12 allows.
+* **Gap to check at vetting.** Only Gemini's fetch script writes the log; its built-in `search_web`
+  calls are not logged. `RT20` line 153 gives "Open web search; date checked 2026-09-18" as the
+  source of an access-route claim. Treat any claim whose only source is an unlogged search as having
+  no log line (rule 10), and strike it. Tell each vetting agent to look for this pattern in all six.
+* **Next session starts here.** When the author says the six are back: first re-count the folder
+  against the 117-entry inventory (rule 12), then read Gemini's final chat line counts against
+  `wc -l` of each log, then spawn one fresh sonnet agent per report. Do not vet before all six are
+  back; do not state any report number in chat before vetting.
 
 ## Reply shape, every time
 

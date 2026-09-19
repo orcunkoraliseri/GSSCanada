@@ -1,0 +1,91 @@
+{
+  "F01": {
+    "quotes": [
+      "Occupancy detection status (0/1) recorded by remote wireless PIR sensors and main thermostat unit",
+      "Data may not be redistributed or shared outside the approved research team; derived aggregate models may be published."
+    ],
+    "urls": [
+      "https://www.ecobee.com/en-ca/donate-your-data/"
+    ]
+  },
+  "F02": {
+    "quotes": [
+      "Occupancy presence (binary) and people count from dedicated motion, door, and environmental sensors"
+    ],
+    "urls": [
+      "https://doi.org/10.1038/s41597-022-01475-3"
+    ]
+  },
+  "F03": {
+    "quotes": [
+      "Half-hourly electricity consumption in kWh; pre- and post-trial survey on household size and weekday occupancy patterns"
+    ],
+    "urls": [
+      "https://www.ucd.ie/issda/data/commissionforenergyregulationcer/"
+    ]
+  },
+  "F04": {
+    "quotes": [
+      "Half-hourly electrical energy consumption in kWh alongside network substation feeder telemetry"
+    ],
+    "urls": [
+      "https://data.london.gov.uk/dataset/smartmeter-energy-use-data-in-london-households"
+    ]
+  },
+  "F05": {
+    "quotes": [
+      "Percentage change in movement visitors to places like retail, recreation, grocery, transit, parks, and residential places compared to baseline"
+    ],
+    "urls": [
+      "https://www.google.com/covid19/mobility/"
+    ]
+  },
+  "F06": {
+    "quotes": [
+      "Estimates of residential night population and daytime ambient population distribution per grid cell"
+    ],
+    "urls": [
+      "https://ghsl.jrc.ec.europa.eu/"
+    ]
+  },
+  "F07": {
+    "quotes": [
+      "Start time, destination purpose (work, home, school), travel mode, and arrival time of every trip made during a 24-hour period"
+    ],
+    "urls": [
+      "https://dmg.utoronto.ca/transportation-tomorrow-survey/tts-introduction"
+    ]
+  },
+  "F08": {
+    "quotes": [
+      "Minute-by-minute synthetic agent activity plans, including in-home vs out-of-home status and mandatory/non-mandatory tours"
+    ],
+    "urls": [
+      "https://github.com/ActivitySim/activitysim"
+    ]
+  },
+  "F09": {
+    "quotes": [
+      "Detailed physical dwelling inspection, household composition, and weekday/weekend daytime occupancy flag (occupied all day, occupied part day, unoccupied)"
+    ],
+    "urls": [
+      "https://www.gov.uk/government/collections/english-housing-survey"
+    ]
+  },
+  "F10": {
+    "quotes": [
+      "Hourly visits and normalized footfall counts for commercial and public locations based on mobile device GPS pings"
+    ],
+    "urls": [
+      "https://www.deweydata.io/"
+    ]
+  },
+  "F11": {
+    "quotes": [
+      "Continuous 24-hour time diary recording primary activity (6-digit tier code), location (at home, workplace, transit), and who was in the room"
+    ],
+    "urls": [
+      "https://www.atusdata.org/atus/"
+    ]
+  }
+}

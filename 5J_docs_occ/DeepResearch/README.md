@@ -29,6 +29,13 @@ every prompt. Add an angle there, not in a prompt.
 2. Paste the `T<NN>_*.md` prompt after it.
 3. The tool answers using the schema in `_RESPONSE_TEMPLATE.md` (Sections A to H).
 4. Save the answer here as `RT<NN>_<topic>.md`, same topic slug as the prompt.
+5. The tool writes nothing else: no `VETTING_RT<NN>.md`, no edit to this README. If it has file access
+   and does so anyway, its note is kept only as an appendix and the manager vets from scratch (added
+   2026-09-18, after `RT19` was self-graded).
+
+**Wave 6 in one go.** For an agentic tool with file access, paste `RUN_WAVE6_T20_T37.md` instead. Round 1 ran
+`T20` to `T37`; since 2026-09-18 it holds round 2: `T20`, `T23`, `T27`, `T28`, `T32`, `T36`, each with a page
+log `RT<NN>_pages.log`. Round-1 reports and notes of those six are kept as `*_round1.md`.
 
 **One prompt per session.** The master brief tells the assistant to answer only what follows it, and
 the response template is per prompt.
@@ -63,6 +70,34 @@ the response template is per prompt.
 
   WAVE 4 -- ADJUDICATION (write it after RT01..RT18 are vetted; not yet written)
     T12  contradictions and ranking ....... reserved number; written from the vetted reports
+
+  --- added 2026-09-18: occupancy data beyond national statistics (angle A14, brief section 9) ---
+
+  WAVE 5 -- the source map, run alone first
+    T19  occupancy sources field map ...... which source families were used for occupancy, counted
+
+  WAVE 6 -- one source family or one country each, any order, after T19
+    T20  smart thermostats ................ ecobee DYD and peers; measured presence in Canadian homes
+    T21  open home sensor datasets ........ registry of homes with measured presence labels
+    T22  smart meters ..................... presence inferred from meters; meter sets with surveys
+    T23  feeder and grid load ............. open LV feeder and system load as an aggregate check
+    T24  phone mobility ................... aggregated at-home signals, hourly profiles by area
+    T25  day and night population grids ... ENACT-POP, LandScan; headcount by hour and area
+    T26  household travel surveys ......... Montreal OD, TTS, NHTS, NTS; hours away from home
+    T27  activity-based travel models ..... MATSim, eqasim, ActivitySim populations as occupancy
+    T28  other surveys with presence ...... LFS, RECS, ACS, EWCS; between-wave updates
+    T29  simulators and reference schedules the baselines a new source must beat
+    T30  non-residential and mixed use .... opening hours, footfall, office and hotel data
+    T31  fusion and calibration methods ... combining diaries with measured sources, no circularity
+    T32  diaries versus measured presence . how wrong are time-use surveys about being home
+    T33  work-from-home in open signals ... continuous signals after 2020 versus two diary waves
+    T34  Canadian open data inventory ..... everything Canadian, by custodian
+    T35  European data, four districts .... Madrid, Lyon, London, Bologna, like for like
+    T36  licences, privacy, release ....... what may be published from each source class
+    T37  unconventional sources ........... night light, water, EV, LLM diaries; mostly closed doors
+
+  WAVE 7 -- after RT19..RT37 are vetted
+    T38  gap check and ranking of A14 forms  fixed scoring rule; manager pastes the vetted forms first
 ```
 
 `T10` and `T11` name a fallback trio (`A2`, `A3`, `A9`) for use only if `RT02` is not back. Replace
@@ -93,6 +128,26 @@ in place, dated.
 | **T16** | `T16_mixed_use_reference_bands.md` | Does any validated mixed-use reference band exist; has area-weighted composition been tested; is this a paper or an appendix | `A10` | **Yes** for `A10`, expected | vetted 2026-09-07, with strikes |
 | **T17** | `T17_llm_reading_records_and_conformal_ubem.md` | LLM extraction from building records with abstention; conformal bounds on a physics-based UBEM; what the registers in six countries contain | `A7` | Data could | failed 2026-09-07 (VETTING_RT17) |
 | **T18** | `T18_privacy_of_synthetic_microdata.md` | Is privacy auditing of generators on microdata standardised; do custodians treat a fine-tuned model as a disclosive output; is a release protocol a paper | Every corpus-trained angle | No | vetted 2026-09-07, with strikes |
+| **T19** | `T19_occupancy_sources_field_map.md` | Which non-survey source families were used for building occupancy, counted by year with true-positive share | Every `A14` prompt reads against it | No | failed 2026-09-18 |
+| **T20** | `T20_smart_thermostat_presence_data.md` | Can a Canadian researcher obtain thermostat presence data; has it been compared with a time-use survey | `A14` thermostat form | Access could | written 2026-09-18, round 2 (round 1 failed: VETTING_RT20_round1) |
+| **T21** | `T21_open_home_sensor_occupancy_datasets.md` | Registry of open datasets with measured residential presence; home-day counts | `A14` benchmark form | Counts could | failed 2026-09-18 (VETTING_RT21) |
+| **T22** | `T22_smart_meter_inferred_occupancy.md` | Accuracy of presence inferred from meters against ground truth; meter sets with household surveys | `A14` meter form | Accuracy could | failed 2026-09-18 (VETTING_RT22) |
+| **T23** | `T23_network_feeder_and_grid_load_signals.md` | Which operators publish geolocated sub-hourly feeder load; has occupancy been tested against it | `A14` feeder form | No | written 2026-09-18, round 2 (round 1 failed: VETTING_RT23_round1) |
+| **T24** | `T24_aggregated_mobile_phone_mobility.md` | Which phone-based sources give hourly at-home profiles by area; use in building energy | `A14` mobility form | Resolution could | failed 2026-09-18 (VETTING_RT24) |
+| **T25** | `T25_day_night_population_grids.md` | Open day-night grids for our cities; is residential day population separated | `A14` headcount form | Yes, if not separated | failed 2026-09-18 (VETTING_RT25) |
+| **T26** | `T26_household_travel_surveys.md` | Access to Montreal and Toronto travel surveys; presence derived from trips | `A14` travel form | Access could | failed 2026-09-18 (VETTING_RT26) |
+| **T27** | `T27_activity_based_models_synthetic_populations.md` | Open synthetic populations with daily plans for our cities; any coupled to a UBEM | `A14` activity-model form | Taken could | written 2026-09-18, round 2 (round 1 failed: VETTING_RT27_round1) |
+| **T28** | `T28_non_time_use_surveys_with_presence.md` | Which frequent public surveys ask about presence or telework, quoted | `A14` between-wave form, `A4` | No | written 2026-09-18, round 2 (round 1 failed: VETTING_RT28_round1) |
+| **T29** | `T29_open_occupancy_simulators_and_reference_schedules.md` | Standard schedules and open simulators; what each is built on; any validated against measured presence | Baselines for every `A14` form | No | failed 2026-09-18 (VETTING_RT29) |
+| **T30** | `T30_non_residential_mixed_use_occupancy_data.md` | Open office, retail, hotel presence data; opening hours at scale | `A14` with `A10`, 3J channels | No | failed 2026-09-18 (VETTING_RT30) |
+| **T31** | `T31_data_fusion_and_calibration_methods.md` | Fusion methods with precedent on diary-type plus measured data; keeping a held-out check | Method for every `A14` form | No | vetted 2026-09-18, with strikes |
+| **T32** | `T32_time_use_versus_measured_presence.md` | Measured evidence on how diaries err about presence at home, and the energy consequence | `A14` diary-bias form | Yes, if already done | written 2026-09-18, round 2 (round 1 failed: VETTING_RT32_round1) |
+| **T33** | `T33_work_from_home_shift_in_open_signals.md` | Continuous open signals of time at home after 2020 and their agreement with diaries | `A14` with `A4` | No | failed 2026-09-18 (VETTING_RT33) |
+| **T34** | `T34_canadian_open_data_inventory_for_occupancy.md` | Every Canadian source bearing on presence or residential load, by custodian | Canadian arm, `A8` | No | failed 2026-09-18 (VETTING_RT34) |
+| **T35** | `T35_european_open_data_for_the_four_districts.md` | Local open sources for Madrid, Lyon, London, Bologna, like for like | European arm | No | failed 2026-09-18 (VETTING_RT35) |
+| **T36** | `T36_legal_licence_privacy_of_non_survey_sources.md` | Licences, TCPS 2, Law 25, GDPR: what may be released per source class | Every `A14` form | **Yes**, per source class | written 2026-09-18, round 2 (round 1 failed: VETTING_RT36_round1) |
+| **T37** | `T37_emerging_and_unconventional_occupancy_sources.md` | Night light, water, EV, Wi-Fi, LLM-written diaries: real, closed or hype | Closes doors early | Yes, expected | failed 2026-09-18 (VETTING_RT37) |
+| **T38** | `T38_source_angles_gap_check_and_ranking.md` | Prior work and one fixed-rule ranking of the vetted `A14` forms | The `A14` shortlist | **Yes**, per form | void 2026-09-18 (run against the rule, on unvetted forms; VETTING_RT38), still owed |
 
 ## Rules that hold for every prompt in this series
 

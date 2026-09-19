@@ -100,6 +100,7 @@ them.
 | `A8` | **Canadian transfer.** OpenUBEM extended to Canadian archetypes (NECB) for Montreal and Toronto districts, with GSS-derived occupancy, validated against Canadian disclosure data at the aggregation the data allows, under cold and heat extremes | GSS pipeline, OpenUBEM, Speed | Canadian archetype library; Canadian building-level ground truth |
 | `A9` | **Passive survivability under power failure, with occupants.** Hours a neighbourhood stays inside a habitable indoor band after loss of supply, winter and summer, with uncertainty, and with occupancy that says who is actually inside | OpenUBEM, GSS or HETUS occupancy, validation discipline | Outage physics validation; the habitability band standards |
 | `A10` | **Reference bands for stacked mixed-use buildings.** Validation bands constructed for buildings that stack several uses, the opening 3J names | 3J campaign and channels | Measured mixed-use benchmarks |
+| `A14` | **Occupancy from open data beyond national statistics.** Generate, constrain or validate occupant presence and activity with open or academically obtainable sources other than national time-use surveys and censuses: smart thermostats and home sensors, smart meters and network feeders, aggregated mobile-phone mobility, household travel diaries, activity-based travel models and their synthetic populations, day and night population grids. Added 2026-09-18; see section 9 | All corpora and pipelines, OpenUBEM, validation discipline | Any non-survey occupancy source in hand; data agreements; measured presence to validate against |
 
 ## 5. The fellowship programmes the paper should serve (themes only)
 
@@ -186,4 +187,65 @@ with the assumption it rests on.
 | **Report-only gate** | A validation check whose threshold is fixed before the run and never tuned so that it passes. |
 | **Zero fitted parameters** | Every constant in the engine traces to a cited standard or measurement; nothing is calibrated to the validation target. |
 | **Frozen frame** | An EnergyPlus campaign in which building, weather and household panel are held constant and only the occupancy time series varies, isolating the occupancy effect. |
-| **Angle** | One of `A1` to `A10` in section 4. |
+| **Angle** | One of `A1` to `A10` or `A14` in section 4. |
+
+## 9. Occupancy data sources beyond national statistics (prompts `T19` to `T38` only)
+
+Added 2026-09-18. Ignore this section for `T01` to `T18`.
+
+**Why.** Every paper in section 2 draws occupancy from the same class of source: a national time-use
+survey (GSS, HETUS, ISTAT) joined to a national census. Those are public statistics, collected once
+every five to ten years, from a sample of one or two diary days per person, with no measured
+presence at all. Prompts `T19` to `T38` ask what **other** open or academically obtainable data
+describe when people are at home, how many, and doing what, and whether any of it has been used for
+building energy modelling. They scout sources; they do not choose the paper.
+
+**What we already hold, so do not propose it as new:** Statistics Canada GSS time use (four cycles,
+2005 to 2022), Canadian Census PUMF, NRCan SHEU 2019, HETUS national files for Spain, UK, Italy (and
+France, held but excluded), ISTAT census. Everything else is new to us, including ATUS and MTUS,
+which are named in `A3` but not yet used.
+
+**Compute for this wave.** GPU nodes on the Concordia Speed cluster are free to us (section 3, item 5),
+and are to be used once the subject is chosen. A source is therefore **not** ruled out because it is
+large or heavy to process (billions of mobility pings, years of one-minute meter data, sensor
+streams from thousands of homes). It is ruled out by access, licence, redistribution terms or bias.
+Where processing cost matters, state it as a compute shape (records, storage, GPU or CPU hours,
+labelled `INFERENCE`), never as a reason to drop the source.
+
+**The four roles a source can play.** Every source row states which roles it can serve, and why.
+
+| Role | Meaning |
+|---|---|
+| `R1` generate | The source itself yields per-person or per-household schedules that could drive a simulation |
+| `R2` constrain | The source gives aggregate targets (share at home by hour, counts by area) that a generated population can be raked or calibrated to |
+| `R3` validate | The source gives measured presence that a generated schedule could be scored against without having been fitted to it |
+| `R4` change | The source records how presence changed over time (for example the work-from-home shift after 2020) at a frequency time-use surveys cannot |
+
+**The data-source card.** In `T19` to `T38`, every row of Section F carries these columns, in this
+order, in addition to the template's own: source name and custodian; country and geography;
+years covered and whether it is still updated; unit (person, household, dwelling, device, grid cell,
+area); **what occupancy variable it actually contains**, quoted from its documentation (presence,
+count, motion events, activity code, trip times, load); temporal resolution; spatial resolution;
+sample size; roles `R1` to `R4`; access route and **eligibility for a researcher at a Canadian
+university**, quoted with the date checked; licence and **whether derived schedules may be
+redistributed**, quoted; known selection bias (who owns the device, who answers the survey); one
+verified example of its use in building energy research, or `NONE FOUND`.
+
+**Extra hard rules for `T19` to `T38`.**
+1. Paste the CrossRef-returned title beside every DOI in every table row. A row without a resolving
+   identifier (DOI, arXiv ID, or a dataset landing page you opened) is not admitted to Sections C
+   or F.
+2. Our own papers are described only as section 2 describes them; never give one a title, a number
+   or a result the brief does not state.
+3. A dataset is `reachable` only if you opened its landing or download page on the date checked. A
+   dataset described in a paper but not reachable is listed in Section G as `COULD NOT OPEN`.
+4. Never call a source "open" unless its licence text says so. "Free for researchers on
+   application" is `application`, not `open`. Terms of service that forbid scraping or
+   redistribution are quoted, not summarised.
+5. A source that cannot distinguish residential presence from any other presence (for example a
+   count of phones in a grid cell) says so in its card; do not describe it as residential occupancy.
+6. Proposals that would identify individuals, re-identify households, or scrape data against terms of
+   service are out of scope. Say they exist if relevant and stop there.
+7. (Added 2026-09-18 after `RT19`.) Write only your report, `RT<NN>_<topic>.md`. Never write a
+   `VETTING_RT<NN>.md` note, never edit `README.md` or any other file, and never give your own report
+   a verdict. Vetting is done by someone else, after you finish.

@@ -24,6 +24,11 @@ competition caution is unverified either way. The ten OpenAlex counts in `RT01` 
 `RT06` "579 papers" count did not. Section 6 lists the defects found by reading; the vetting notes add
 the identity failures row by row.
 
+**Added 2026-09-18.** The data-source series (`T19` to `T38`, angle `A14`) was run and vetted the same
+day. 18 of 19 returned reports failed, `RT31` passed with strikes, and `RT38` is void. Section 9 holds
+the verdicts, the few checker-verified pointers, and what they mean. Sections 1 to 8 are unchanged by it,
+apart from the new `A14` ledger row and item 4 of section 8.
+
 The angle codes `A1` to `A10` are those of `00_MASTER_BRIEF.md` section 4. `A11`, `A12`, `A13` are
 new formulations proposed by `RT02` and are defined in section 3 below.
 
@@ -95,6 +100,7 @@ Verdicts and rows are as reported. "Lacks" is the asset the reports say we do no
 | `A11` zoning bias benchmark (new) | Open, rank 4 (`RT02` 93) | `RT06` E thesis 1, `RT06` B8, B9 | "Room-scale zoning effects are known; does stock aggregation erase them" (`RT02` D) | paired multi-room sensors | partial | Zero external data; see section 5 on the overlap with 4J Step 10 |
 | `A12` privacy-utility and release protocol (new) | Open, rank 9 (`RT02` 64) | `RT18` A, B8, E2 | "Withholding weights after a failed audit is ethics, not a finding" (`RT18` D) | custodian sign-off | Schmidt only | Short paper for *Journal of Privacy and Confidentiality* or *Scientific Data*, derived from 4J's audit |
 | `A13` counterfactual shock synthesis (new) | Open, rank 10 (`RT02` 64) | `RT13` E2 | "Extrapolation beyond training bounds is hallucination, not projection" (`RT02` D) | any ground truth for the shock | partial | Hold; the only use of the generator that `RT13` leaves it |
+| `A14` occupancy sources beyond national statistics (added 2026-09-18) | Open, not ranked. 18 of 19 reports failed (`RT19` to `RT37`), `RT38` void | only checker-verified pointers, section 9.2 | none that survived vetting | an unbroken search; every "nobody has done X" in wave 6 rests on a weak search | not assessed | Thermostat form partly taken, at daily-total level only (Doma et al. 2024, `VETTING_RT32_round1`); see section 9 |
 
 ---
 
@@ -358,5 +364,82 @@ finds every input for `A9` downloadable, every output shippable and compute negl
    each contradiction, the row on each side, "do not split the difference", then one ranking of the
    surviving angles under `RT02`'s rule, no new angle.
 3. After `RT12` is vetted, write `DECISION_5J_angle.md` and stop.
+4. Added 2026-09-18, for `A14`: `T38` is still owed, but one accepted report is not enough to rank on.
+   Waiting on the author (D-5J-A14, section 9.4): re-run a narrowed wave with a page-log requirement
+   (recommended), or carry `A14` into `T12` as the section 9.2 pointers only.
 
 Nothing in this document decides the paper.
+
+---
+
+## 9. Angle `A14`: occupancy sources beyond national statistics (added 2026-09-18)
+
+### 9.1 Verdicts
+
+| Verdict | Reports | What it means |
+|---|---|---|
+| ACCEPTED WITH STRIKES | `RT31` (fusion methods) | Items 1 and 3 may be quoted (six method families, three rules against circular validation); Item 2, every fusion precedent, is struck |
+| FAILED ROUND | `RT19`, `RT20` to `RT30`, `RT32` to `RT37` | routes only; quote nothing from the report, only what its vetting note verified |
+| VOID | `RT38` | run against an explicit "do not run" rule, on unvetted forms; no rank may be quoted |
+
+The same failures repeat in every report, which points to how the batch was produced, not to each
+topic:
+
+* **Author lists.** 49 of 86 wave-6 author lists are wrong, and the same invented names travel between
+  reports. Dong et al. 2022 gains the non-authors "Mortezazadeh" and "Ouf" in four reports (Ouf is a
+  co-author of the Doma paper, not of this one). Gerike et al. 2015 gains "Schulz" in two.
+* **Pages never opened.** The tool's scratch folder holds no page-fetch script after `RT20`. `RT22` to
+  `RT37` (16 reports) were written by text-writing scripts in about nine minutes. Almost no licence or variable quote is on its
+  page, and many URLs are 404, dead domains or homepages.
+* **Items dropped silently.** Named sources vanish with no `NOT FOUND` line, and the card columns of
+  brief section 9 are mostly missing.
+* **Rules broken.** The tool graded `RT20` "ACCEPTED" itself, set the README status to "vetted", and ran
+  `T38`. It also left a stray file, `f1_quotes.json`, in the folder. All three break runner rule 1.
+
+### 9.2 What survives: checker-verified pointers only
+
+These were read by the vetting agents on official pages or abstracts on 2026-09-18. They are leads,
+not a literature position. None of them shows that a gap exists.
+
+| Form | Verified pointer | Note |
+|---|---|---|
+| Thermostats | Doma, Prajapati and Ouf 2024, *Building and Environment* 261, 111713: rule-based generator, over 8,000 Canadian ecobee homes, "validated by comparing them with residential occupancy profiles generated from the Canadian Time Use Survey (TUS)", "3% difference in the aggregated daily occupied hours" | `VETTING_RT32_round1`, `RT20` |
+| Thermostats, access | ecobee research route is an email to research@ecobee.com; no stated fee or agreement | `VETTING_RT20_round1` |
+| Between-wave surveys | SHEU 2019 question F17 "was there someone at home all day?" (already held); RECS 2020 `ATHOME`, `TEMPHOME`, `TEMPGONE`, `TEMPNITE`; ACS `JWDP`, `JWMNP`, `JWTRNS` code 11 "Worked from home"; EU-LFS `HOMEWORK` | `VETTING_RT28_round1` |
+| Work from home, Canada | Labour Force Survey: about 40 % worked mainly from home in April 2020, about 20 % in November 2023 (Daily 2024-01-18) | `VETTING_RT33` |
+| Feeder load | SSEN half-hourly LV feeder data, CC BY 4.0 (`data.ssen.co.uk`); UK Power Networks half-hourly LV feeder data, CC BY 4.0 or OGL 3.0 by dataset (`ukpowernetworks.opendatasoft.com`); IESO hourly and 5-minute Ontario demand; Hydro-Quebec open data is CC BY-NC 4.0, non-commercial | `VETTING_RT23_round1`, `RT36` |
+| Feeder load, method | Baetens and Saelens 2016: above 20 houses, 95 % of outcomes within 0.88 to 1.3 times expected | `VETTING_RT23_round1` |
+| Travel-model populations | eqasim open synthetic populations with activity chains: Ile-de-France (Horl and Balac 2021), Lyon case, Switzerland; GPL-2.0, not MIT | `VETTING_RT27_round1`, `RT35` |
+| Phone mobility | Google and Apple feeds ended in 2022; Spain's open data gives daily, not hourly, residence counts on 3,909 base zones; Barbour et al. 2019 is the one verified building-occupancy use (Boston, commercial records) | `VETTING_RT24` |
+| Home sensor datasets | REFIT (20 homes), IDEAL (255 homes, no presence ground truth), UK-DALE, ECO (6 homes, occupancy for 5, about 8 months; no licence on its page); the first three CC BY 4.0; the world stock of ground-truth home-days is small and its total is unknown | `VETTING_RT21` |
+| Office data | UCI office occupancy dataset (Candanedo and Feldheim 2016), CC BY 4.0 | `VETTING_RT30` |
+| Canadian rules | Montreal by-law 21-042 (2,000 m2 or 25 homes); Ontario O. Reg. 506/18 (50,000 sq ft); both cover large buildings only | `VETTING_RT34` |
+| Ethics | TCPS 2 Article 5.5B: secondary use of non-identifiable data still needs REB review, only consent is waived | `VETTING_RT36_round1` |
+
+### 9.3 What `A14` looks like now
+
+* **Thermostat to time-use comparison: partly taken.** A Concordia group has compared ecobee presence
+  with the Canadian time-use survey. The comparison is verified only as one daily-total number. A
+  comparison by hour of day, by household or dwelling type, or with census reweighting of the owner-heavy
+  sample is not found in any source that survived. Its openness is unproven until the full text of
+  Doma et al. 2024 is read. Any 5J use must cite that paper and say what it adds.
+* **Every other form: open but unassessed.** "Nobody has done it" in wave 6 rests on searches that
+  dropped most named sources, so it is not evidence of a gap.
+* **The most concrete leads for a paper that keeps our time-use engine:**
+  - survey questions that constrain schedules between waves (role `R2`, SHEU F17 already held);
+  - UK half-hourly feeder data as an outside check (role `R3`, for the London district);
+  - the open eqasim populations for Lyon (role `R1` or `R3`, for the Lyon district).
+* **The licence and ethics answers are all unverified** except the TCPS 2 rule above. Read each licence
+  directly before any release plan.
+
+### 9.4 Decision owed (D-5J-A14)
+
+(a) **Recommended.** Re-run a narrowed wave of four to six prompts that hold the leads above:
+`T20`, `T23`, `T27`, `T28`, `T32`, and `T36` if a release is planned. Two rules are added:
+- the tool writes a page log beside each report, one line per page opened, with the URL, the HTTP
+  status and a 200-character excerpt;
+- no author list may be typed, only pasted from CrossRef.
+
+Then run `T38` on what passes.
+
+(b) Carry `A14` into `T12` as the section 9.2 pointers only, with no re-run.
