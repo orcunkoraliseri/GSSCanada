@@ -621,8 +621,16 @@ too — cost **+3,600 runs** (2005/2010/2015 on the new panel). Recommended if W
     for every HighRise and MidRise row and `light_zone_shift` is -19 or -20 everywhere.** A6 as
     pre-registered is the `equip_bldg` check and only that, so these columns are not gate values and do
     not change any verdict; they are recorded here so nobody later mistakes them for an A6 result.
-26. **OPEN QUESTION, must be answered before any multi-unit energy number is used: does the published
-    campaign pass its own SHEU gate?** T45 measured A5 (report-only, +/-15 percent) on its 4-cell,
+26. **CLOSED 2026-09-20 by option unforeseen at the time this item was written — see Progress Log (cw),
+    (cz): NEITHER "the T21 all-pass line is wrong" NOR "the rebuild broke the multi-unit basis" is what
+    happened. The published campaign DOES pass 48/48 (T48 Step 5 confirmed it); the rebuild's own
+    equipment-injection code was deliberately, correctly changed on 2026-07-13 to fix an earlier
+    load-shape defect, and the validator was never updated to match the new, more-correct physics. This
+    item is REPLACED by item 40 (the validator fix), tracked there, not here.** [original text kept
+    for the record below]
+
+    OPEN QUESTION, must be answered before any multi-unit energy number is used: does the published
+    campaign pass its own SHEU gate? T45 measured A5 (report-only, +/-15 percent) on its 4-cell,
     15-household sample and found SingleD clean (-0.0 percent) but OtherDwelling, MidRise and HighRise
     between **5x and over 80x** the target, with one raw HighRise household file alone showing about
     156,105 kWh/year of interior equipment against a 1,922 kWh target, before any averaging. The manager
@@ -639,8 +647,16 @@ too — cost **+3,600 runs** (2005/2010/2015 on the new panel). Recommended if W
     no MidRise, HighRise or OtherDwelling energy-intensity number goes into the manuscript.** SingleD is
     unaffected either way.
 
-27. **OPEN QUESTION, pre-registered before the number exists: is the WP3 static-schedule arm paired with
-    the diary arm at all?** While building the T49 checker the employee spot-checked one cell by hand and
+27. **CLOSED 2026-09-20, see Progress Log (cx). The remedy is now chosen: it is (b), not (a).** T49's
+    re-run on the fully clean T22 array found **0 of 24 cells matching, 24 of 24 mismatching** — every
+    archetype, not just a five-row spot check. This is not a paired comparison anywhere, and re-running
+    T22 against the published draw (option (a)) is NOT authorized (cost/scope decision, open if the
+    author wants it later). **Checklist item c8 is reported as an unpaired comparison in the
+    limitations, or not reported at all, never as a within-household effect.** [original text kept for
+    the record below]
+
+    OPEN QUESTION, pre-registered before the number exists: is the WP3 static-schedule arm paired with
+    the diary arm at all? While building the T49 checker the employee spot-checked one cell by hand and
     found **three different household sets for the same cell** (`SingleD__Toronto_5A`): T22's static arm
     drew `HH32815` as its `sample_001`, the published campaign's own `step9_manifest.csv` has `HH33298`,
     and T17's staged tree has yet a third, `HH33188`. None of the first five IDs matched. T22's Design
@@ -715,7 +731,11 @@ too — cost **+3,600 runs** (2005/2010/2015 on the new panel). Recommended if W
     remaining collectors (T48, T49, the T32 campaign collector) should read these files as a matter of
     course once it is.
 
-32. **OPEN, small but unexplained: `BEM_Schedules_2030.csv` carries 43 households whose `DTYPE` is the
+32. **CLOSED, see Progress Log entry after (cm) ("Item 32 — CLOSED"). `DTYPE == '8'` is the Census's own
+    code for "structural dwelling type not available"** (`cen21.sps:360-364`), not a mystery value — a
+    harmless legacy code, not a parsing artefact. [original text kept for the record below]
+
+    OPEN, small but unexplained: `BEM_Schedules_2030.csv` carries 43 households whose `DTYPE` is the
     literal value `8`.** Found in T52's Q2 population breakdown, which reports per-archetype figures for
     `{'8': 43 households, 'HighRise': 18505, 'MidRise': 30716, 'OtherDwelling': 18835, 'SingleD':
     76366}`, total 144,465. `STOCK_WEIGHTS` in `t29_check.py` has exactly four keys and the stock-weighted
@@ -727,7 +747,12 @@ too — cost **+3,600 runs** (2005/2010/2015 on the new panel). Recommended if W
     it before the supplement describes the dwelling-type classification**, and if it is an artefact,
     check whether it reaches any other file. Do not "fix" it by dropping the rows.
 
-33. **OPEN: the household drop is systematic, not a one-off — the same household is dropped again in a
+33. **CLOSED as a bounded SI footnote, see Progress Log (cn); RE-CONFIRMED by direct measurement 2026-09-20,
+    see (cy).** Ruled a footnote, not manuscript-blocking, at (cn); T64 today found the exact
+    `undelivered.csv` file itself (not just the log-entry claim) and reproduced the same one household,
+    same reason string, byte for byte. [original text kept for the record below]
+
+    OPEN: the household drop is systematic, not a one-off — the same household is dropped again in a
     second, independent campaign.** T53's sweep found that only two campaign trees write an
     `undelivered.csv` at all, and **both of them have rows**: T29 (49 cell directories, all 49 files
     present, 2 with rows) and **T32** (10 cell directories built so far, all 10 present, **1 with a
@@ -3045,3 +3070,268 @@ than the numbers. Here the wrongness was in a name.
 - Next: T61 (`1329796`) is scoring V3 and started at 3 minutes. `1328310_15` (T22) is at **2 d 01 h**; the
   T32 campaign's last two cells are running; T48 and T49 stay PENDING behind T22. **13 of 32 CPUs** running,
   18 worst case.
+
+### (ct) 2026-09-20 — fresh cluster read after the session closed; T32 campaign finished clean; T22's last
+cell found stuck (not slow) and restarted; T48/T49 released.
+
+**T32 campaign (`1329220`) finished overnight, 24 of 24, exit `0:0` on every task.** No collector sent yet
+(carries item 30's common-household rule and must read `undelivered.csv` per item 33).
+
+**`1328310_15` (T22, cell `MidRise__Montreal_6A`) was not slow, it was hung.** Its own stdout
+(`T22/logs/t22_1328310_15.out`) shows all 50/50 samples run and the cell's own `DONE` line printed at
+**2026-09-16 14:59**, then nothing — the file was never written to again. `sacct`/`squeue` still reported it
+`RUNNING` past **3 d 23 h**. `sstat -j 1328825` showed only **04:35:21** of accumulated CPU time over that
+whole span — a live cell normally finishes in 30 min to ~4.5 h (compare tasks `_0`-`_23` in the sacct table).
+Three independent signals (own log silent, elapsed vs CPU-time mismatch, neighbour cells' typical duration)
+agreed this was a hang, not slow I/O. **Ruling, with the author's go-ahead: cancelled and resubmitted as its
+own single-task array, no script or data changed.**
+
+- `scancel 1328825` — the cancellation immediately satisfied both `--dependency=afterany:1328310` gates
+  (a cancelled array task still ends the array's dependency condition), and **T48 (`1329258`) and T49
+  (`1329278`) started running within seconds**, unblocked days early. Neither depends on cell 15's own
+  output, only on the array as a whole having ended, so this is legitimate, not a race condition.
+- Resubmitted as `sbatch --array=15 t22_array.sh` from `/speed-scratch/o_iseri/2J_revision/T22/T22_scripts`
+  (same script, same flags, only `--array` overridden on the command line) → **new job `1340507_15`**,
+  confirmed `RUNNING` immediately. Its own log will land at `T22/logs/t22_1340507_15.out` (new `%A`, so it
+  cannot collide with the old `t22_1328310_15.out`, which is left in place as the hang's own evidence).
+- **Group C item c8 (T22 vs main-run comparison) still needs all 24 cells** — T48/T49 running early does
+  not close T22 itself. Do not read the WP3 static-arm comparison as complete until `1340507_15` finishes
+  and T22 is 24/24 again.
+- CPU accounting at this read: 4 (`1340507_15`) + 4 (T48) + 1 (T49) = **9 of 32**, no exception needed.
+
+**New standing note:** this is the first job in the whole revision suspected of *hanging* rather than
+*failing outright* — `sacct`/`squeue` state alone was not enough to catch it; the tell was the job's own
+log going silent while wall-clock kept climbing. Worth checking on any future job that sits `RUNNING` far
+longer than its neighbours: read the log's own last line and timestamp, not just the scheduler state.
+
+- Next: read `T48/logs/t48_a5a6_1329258.out` and `T49/logs/t49_check_report.txt` when they finish (both
+  started running today); watch `1340507_15`, expect it in the 30 min–4.5 h range like its neighbours; once
+  it lands, T22 is 24/24 and its own comparison (item c8) can be scored; T32 still needs a collector.
+
+### (cu) 2026-09-20, later — root cause of the (ct) hang found; the same bug is live in the resubmit right now.
+
+**Found in `t22_1328310_15.out:924-930`, the only place this appears in any T22 log (grepped, 0 hits in
+neighbour cells `_10`, `_20`):**
+```
+Starting 50 simulations with 32 parallel workers
+[SIM] Running... [0/50 complete] Elapsed: 00:00
+[WARN] ProcessPoolExecutor failed (OSError: [Errno 12] Cannot allocate memory).
+[WARN] Falling back to sequential single-process execution (Windows fallback).
+```
+`simulation.py:run_simulations_parallel()` sets `max_workers = os.cpu_count()` whenever `ESIM_WORKERS` is
+unset (it defaults, `simulation.py:154-157`) — and `t22_array.sh` never sets `ESIM_WORKERS`, although the
+job only requests `--cpus-per-task=4 --mem=16G`. `os.cpu_count()` returns the **whole compute node's** core
+count (32 on `magic`), not the SLURM cgroup's 4. So every T22 cell tries to fork 32 EnergyPlus workers into
+a 16G box. Cell 15 (`MidRise__Montreal_6A`) is a **27-zone apartment building** — the heaviest IDF in the
+set — and this is the one that actually blew the memory ceiling before all 32 forks completed, raising the
+`OSError`. The code's own `except Exception` catch is real and worked: it fell back to sequential, ran all
+50 households one at a time, finished cleanly, printed its `DONE` line, and called `sys.exit(0)`
+(`run_static_arm.py:239-244`, confirmed nothing follows that line but the exit). **The multi-day hang itself
+is not proven, because the job was cancelled and its cgroup reaped before it could be inspected live** — but
+a crashed `ProcessPoolExecutor` leaving its internal multiprocessing cleanup unable to complete at interpreter
+exit is a documented Python failure mode, and it is consistent with every symptom read in (ct): the log
+silent from the moment work finished, and `sstat` showing almost no further CPU burned while wall-clock kept
+climbing. **Recorded as the best-supported explanation, not a proven one.**
+
+**The same bug is live in the resubmit right now.** `t22_1340507_15.out` shows the identical
+`Starting 50 simulations with 32 parallel workers` line, no `OSError` this time, but **0 of 50 complete after
+nearly 6 minutes** (`sacct`: `00:05:51` elapsed) — consistent with 32 processes fighting over 4 real cores
+rather than a second crash. Nothing was changed before the resubmit, so this was expected to recur in some
+form. **Fix, not yet applied, needs a go/no-go:** export `ESIM_WORKERS=4` in `t22_array.sh` (matches
+`--cpus-per-task=4`) so the pool never asks for more workers than the job actually has, cancel `1340507_15`,
+resubmit. This is a one-line script change, no science/data touched, same command otherwise. **This is a
+latent bug in every T22 cell**, not just this one — the other 23 happened not to hit the memory ceiling, but
+they were all oversubscribing CPUs the same way, and it should be considered for T19 too if it shares this
+`simulation.py`.
+
+- Next: waiting on the author for a go-ahead to apply `ESIM_WORKERS=4` and re-resubmit cell 15 a second time.
+
+### (cv) 2026-09-20, same session — fix applied with author go-ahead; T49 landed early and needs a re-run.
+
+`ESIM_WORKERS=4` added to `T22/T22_scripts/t22_array.sh` (downloaded via `scp`, edited locally, re-uploaded,
+confirmed present at line 47 before resubmit — no python/sed on the login node). The oversubscribed
+`1340507_15` (32 workers on a 4-CPU job, 0/50 complete after 6 min) was cancelled and cell 15 resubmitted
+clean as **`1340509_15`**, now running with the cap in place.
+
+**T49 finished while this was happening (`1329278`, 00:01:25, report `T49/logs/t49_check_report.txt`) and
+its own verdict is `B1=FAIL, B2=PASS, B3=PASS, B4=FAIL`.** Read, not adjudicated — flagging both, not ruling
+on either:
+- **B1 FAIL is almost certainly stale timing, not a real finding:** its own offender line says
+  `1328310_15 state=CANCELLED+`, i.e. T22 was 23/24 with the cell mid-cancel when T49 ran. Re-run T49 once
+  `1340509_15` lands and T22 is a clean 24/24.
+- **B4 FAIL looks real and matches the risk item c8 already flagged on the checklist:** every MidRise and
+  HighRise cell it printed (Montreal, Calgary, Winnipeg, Vancouver, Toronto, Kelowna) shows the T22
+  static-arm sample and the published campaign's sample as **two different household lists for the same
+  cell**, no overlap in the IDs printed. SingleD/OtherDwelling not confirmed either way from this read. If
+  this holds, the WP3 static-schedule comparison (group C, item c8) is not home-for-home for these building
+  types and no number from it may be quoted until that is resolved — same shape as item 27/30's earlier
+  household-set mismatches. **Not yet fully read or ruled on; needs its own pass**, ideally after the T49
+  re-run confirms B1 clears and B4 still fails.
+
+- Next: wait for `1340509_15` (expect 30 min-4.5 h); re-run T49 once T22 is 24/24; then give B4 a real read
+  before touching item c8 in the manuscript.
+
+### (cw) 2026-09-20, later — T22 landed 24/24 clean; T48 landed with a real A5 regression, bigger than item 26 expected; item 26's own hypothesis was wrong.
+
+**T22.** `1340509_15` finished `exit=0`, `Successful: 50/50, Failed: 0/50`, `DONE cell=MidRise__Montreal_6A`
+printed once (`T22/logs/t22_1340509_15.out`). T22 is now **24/24 clean** for the first time this project.
+
+**T48 (`1329258`, COMPLETED 00:36:42).** Read from the report file, not `sacct`, per standing rule.
+
+- **A6 (peak-shift detector): trusted and PASS.** The seen-failing control (`+3h` activity rotation) was
+  detected correctly before the real check ran (step `2-compare-rotated-vs-step1` OK). On the real grid,
+  rebuild vs published agree within +/-1 h on **all 48** cell x year rows, 0 disagreements >1 h. **A6 stays
+  ARMED and is now also PASSED at full grid on the rebuild** — item 25's ruling (A6 does not fire) is
+  unchanged and now has full-grid support instead of a 15/50 local sample.
+- **A5 (SHEU +/-15% energy gate): FAILED, and the failure is new, not old.** Step `4-validate-full-rebuild`
+  exited 1: only **12/48** cell x year rows pass. Every SingleD row passes (equip/light within +/-2%). Every
+  MidRise, HighRise and OtherDwelling row fails by **514% to 8055%** on both equip and lighting energy
+  (`T48/t21_a5_results.csv`). **This is not item 26's predicted gap.** Item 26 assumed the validator's known
+  structural gap (no per-unit correction for MidRise/HighRise) would fail those archetypes on *both* trees
+  alike. Step `5-validate-full-published` ran the identical, unmodified script over the published tree and
+  got **48/48 PASS**, including every MidRise/HighRise/OtherDwelling row (`T48/pub_a5_results.csv`). The
+  `5-compare-A5-provenance` step lines this up cell by cell: e.g. `HighRise__Montreal_6A` 2022 equip is
+  `-0.07%` (PASS) on published vs `+8052.6%` (FAIL) on rebuild for the *same cell definition, same script,
+  same gate*. **So the rebuild itself is producing wildly inflated equip/lighting energy for every
+  multi-unit archetype, and SingleD is unaffected on both trees.** Item 26's own gap (no per-unit MidRise/
+  HighRise correction) is real but is not what is firing here — it cannot explain why published passes and
+  rebuild does not with the very same uncorrected formula.
+- **Ruling: item 26 is CLOSED as originally framed (its hypothesis was wrong) and REPLACED by new item 40.**
+  **No MidRise, HighRise or OtherDwelling energy-intensity or A5 number may be quoted from the rebuild until
+  item 40 is resolved.** SingleD is unaffected and may be quoted. A6/peak-shift numbers are unaffected by
+  this finding (a shift-hour metric, not an absolute energy one) and stay usable per item 25.
+- Also noted, not yet acted on: **T19's own array script (`t19_smoke.sh`) never sets `ESIM_WORKERS` either**
+  — the same latent gap (cu) found in T22. T19's full run already completed without a hang (per the (br)
+  closure), so this is a **dormant risk, not a live incident**; record it, do not re-run T19 speculatively.
+
+**New plan §5 item 40 — diagnose why the rebuild's multi-unit (MidRise/HighRise/OtherDwelling) meter output
+is inflated 5x to 80x versus the published tree, while SingleD is unaffected.** Candidate causes to check,
+in order: (i) the rebuild's `hourly_meters.csv` for a multi-unit cell reports the whole-building meter while
+the validator divides by household count expecting a per-unit value already baked in (or vice versa); (ii)
+the number of dwelling units read from the rebuilt IDF differs from the published one for these archetypes;
+(iii) a unit-conversion or duplication bug specific to the multi-unit E+ output path introduced by the T21
+rebuild's schedule change. Dispatched as **T65**, diagnosis only, one exemplar cell first
+(`HighRise__Montreal_6A`, the largest overshoot), before generalizing.
+
+- Next: T63 re-runs T49 now that T22 is 24/24 (clear B1, give B4 a full read for item c8); T64 is the T32
+  collector (owes item 30's common-household rule and reading `undelivered.csv` per item 33); T65 diagnoses
+  item 40. All three dispatched fresh, cluster-only, no waiting.
+
+### (cx) 2026-09-20, later — T63 confirms B4 is a universal FAIL: T22 shares no household with the published campaign in any of the 24 cells. c8 is closed as not home-paired.
+
+**T49 re-run (`1340675`, COMPLETED 00:01:26) on the now-clean T22.** All three controls fired again
+(`CONTROL_B2/B3/B4_FIRED: YES`) — the checker is trusted. Full report read (`T49/logs/t49_check_report.txt`):
+
+- **B1 "FAIL" is explained and is not a real problem.** The checker's B1 gate calls `sacct -j 1328310`
+  only — the *original* array ID — and cell 15 there still shows `CANCELLED+` because it was cancelled and
+  the real, successful run happened under a *different* job ID (`1340509_15`), which this checker was never
+  told to look at. Manually confirmed both job IDs together give 24/24 `COMPLETED 0:0`. **This is a known,
+  narrow limitation of an otherwise-trusted checker, not a live problem** — no code fix needed, just do not
+  read B1 from this report; read `sacct` on both job IDs directly, as done here.
+- **B4 is a real, total FAIL — bigger than previously read.** `cells_matching=0/24, cells_mismatching=24/24,
+  cells_not_evaluable=0/24`. Every one of the 24 cells, across all four archetypes (SingleD, OtherDwelling,
+  MidRise, HighRise), shows T22's 50 (or reduced-n) household IDs and the published campaign's IDs as
+  **completely disjoint sets, zero overlap, in every single cell** (full offender list in the report, one
+  line per cell). The earlier partial read (entry (cv)) only checked a few MidRise/HighRise cells and
+  called SingleD/OtherDwelling "not confirmed either way" — **they now are, and they fail exactly like
+  every other archetype.**
+- **Ruling: item c8 (WP3 static-fixed-schedule vs diary-schedule comparison) is CLOSED as NOT
+  HOUSEHOLD-PAIRED, full stop — not a per-archetype or per-cell question any more.** T22 evidently drew its
+  own independent household sample rather than reusing the diary-arm's manifest (no `run_fixed_manifest.py`
+  equivalent was used for T22, unlike T29's reuse of T21's manifest). This is the same family of hazard as
+  T21's own basis-change finding (entry (ak)): different schedule content changes which households pass
+  `validate_household_schedule`, so the same seed draws a different sample from a different eligible pool.
+  **No number from the T22-vs-published (or T22-vs-T21) comparison may be quoted as if the same households
+  were simulated both ways.** If the manuscript wants this comparison at all, it must be described as a
+  population-level (aggregate, unpaired) comparison and say so plainly, or T22 would need to be re-run
+  against T21's manifest via a fixed-manifest wrapper — **that re-run is NOT authorized here**; it is a
+  scope/cost decision left open, not defaulted to yes. The main 2022/2030 runs (T21) are unaffected.
+- Employee process note (not a scientific finding): the dispatched employee did not write its findings to
+  this project's task doc before pausing on its first turn (`impl/2026-09-20_T63_...md` sat at "NOT
+  STARTED" with an empty Ledger after its first turn ended, despite job `1340675` already being submitted
+  and finished). The manager back-filled the Ledger from a direct cluster read so the finding was not lost;
+  the employee's own resumed turn later confirmed the same numbers independently. No data or ruling above
+  depends on the employee's doc write-up — it was re-derived from the report file directly.
+
+- Next: T64 (T32 undelivered/common-household) and T65 (A5 multi-unit regression diagnosis) still running,
+  neither waited on. Once T65 lands, decide on item 40 (fix + re-run, or a different resolution). c8 needs
+  no further job — it is closed as stated above unless the author later asks for the population-level
+  variant to be written up.
+
+### (cy) 2026-09-20, later still — T64 lands; item 33 CONFIRMED (not just claimed), item 30 does NOT bite T32's own accepted numbers.
+
+**Job `1340676` (COMPLETED 00:00:58).** Full report read
+(`T32... via T64/logs/t64_report.txt`, walked from a fresh `os.walk` inside the job, not taken on faith):
+
+- **Item 33 is now directly confirmed, not merely repeated from an earlier log entry.** T32's own driver
+  scripts and every shared module they import (`t26_scenario.py`, `t20_d1.py`, the rake/aug/BEM-integration
+  chain) never contain the literal string `undelivered` — the mechanism lives in a shared library the
+  sweep did not have to open to find the *files* themselves. A full walk of T32's tree found the actual
+  `undelivered.csv` in a directory T53's earlier sweep never looked in:
+  `T32/step8_std/out/<cell>/undelivered.csv` (24 files, one per cell — `step8_std/` was not among the
+  paths T53 checked, so T53's "T32 has no `sample_*` structure" finding was about `out/std` and
+  `out/guard_primary` only, which are a *different*, population-level part of T32, not this per-cell
+  simulation tree). 23 of the 24 files are header-only (0 rows). **Exactly one has a row, and it is exactly
+  the household item 33 said it would be:** `OtherDwelling__Vancouver_5C`, sample 9, household `129937`,
+  same reason string as T29's. Confirms item 33's cross-campaign, reproducible-exclusion finding by direct
+  measurement rather than carrying it forward on trust.
+- **Item 30's common-household rule does NOT bite T32's own population-level numbers.** T32's `std` and
+  `guard_primary` variants and all three of T26's household sets (`lambda_0.0`, `lambda_0.5`,
+  `lambda_1.0`/main-2030) are **byte-identical in membership** — every pairwise symmetric difference is
+  **0 of 144,465 households**, checked directly, not assumed. G0/SC1/SC4/SC5 (log (br)) stand exactly as
+  accepted; nothing about their basis changes.
+- **What the one dropped household DOES affect:** T32's own 1,200-run per-cell energy campaign (job
+  `1329220`, checklist item b4b) delivers 49/50, not 50/50, for `OtherDwelling__Vancouver_5C` — the same
+  shape and same cause as T29's earlier shortfall, already understood and already logged (items 30/33). No
+  new job needed for this; it is one household in one cell, disclosed the same way T29's was.
+
+### (cz) 2026-09-20, later still — T65 lands. Item 40 is NOT a rebuild bug: it is a validator that never caught up with a deliberate, already-QA'd physics fix. Ruling made; fix dispatched as T66.
+
+**T65 found the exact mechanism, fully evidenced, no cluster job needed (login-node spot checks plus a
+local IDF `diff`).** Full detail in `impl/2026-09-20_T65_A5_multiunit_regression_diagnosis.md`, `## Verified`
+items 1-7. Summary:
+
+- **The raw rebuild output is genuinely bigger, confirmed at the single-household level before any
+  validator math**: `HighRise__Montreal_6A`, one household, hour 0: rebuild
+  `InteriorEquipment:Electricity` = 40,529,113.67 J vs published 449,966.81 J, ratio 90.1x. IDF zone/
+  equipment-object *counts* are identical between trees (rules out a regenerated-with-more-zones theory) —
+  the difference is in *which zones* the per-household equipment objects target.
+- **Root cause, found in `eSim_bem_utils_2J/integration.py:1541-1621`:** on 2026-07-13 this code was
+  changed, **on purpose, with its own comment recording why**, to fix an earlier "phantom-peak" load-shape
+  defect found during manuscript QA: injecting a household's calibrated equipment/fridge load into only
+  its own zone was "collapsing whole-building equipment to ~1/N_units of its physical total for multi-zone
+  archetypes." The fix broadcasts the calibrated load into **every dwelling-unit-equivalent zone in the
+  building** (physically correct — an N-unit building's whole-building meter should read N households'
+  worth of equipment, not one). **The published/frozen campaign ran the pre-fix, single-zone version; the
+  rebuild ran the post-fix, correct version.** `step9_validate_full.py`'s SHEU per-dwelling target check
+  was never updated to match — it still compares a **whole-building** meter against a **per-dwelling**
+  target with no unit-count division (only OtherDwelling gets a partial, fridge-only correction,
+  `OD_N_UNITS=7`).
+- **The overshoot ratio is arithmetically exact, not "some things are bigger":** counting real
+  dwelling-unit-equivalent zones (with zone multipliers) from each archetype's own `eplusout.eio` —
+  HighRise 80 units -> measured 81.5x (match ~2%), MidRise 32 units -> measured 33x (match ~3%),
+  OtherDwelling 7 units (partially offset by the existing fridge correction) -> measured 6.14x, SingleD 1
+  zone -> no inflation. This is a per-zone duplication whose multiplier equals the building's own unit
+  count, not noise.
+- **Ruling: this is GOOD NEWS, not a regression, and item 40 is closed as originally framed.** The rebuild's
+  physics is the *more correct* one; the published tree under-counted whole-building multi-unit energy by
+  construction, and per author ruling (ay)(b) the published/old campaign is superseded regardless — no old
+  number may appear in the manuscript next to a rebuilt one anyway. **Reverting `integration.py`'s broadcast
+  is explicitly REJECTED** — it would reopen the already-QA'd phantom-peak defect. The one real remaining
+  task is generalizing the validator's existing `OD_N_UNITS`-style per-unit correction from OtherDwelling
+  only to MidRise and HighRise too, computed from each cell's own real unit-equivalent zone count (not a
+  hard-coded ratio guessed from one exemplar city) — **T65 only checked Montreal for HighRise/MidRise**, so
+  the per-city unit-equivalent counts still need computing for all 24 cells before the fix can be trusted
+  everywhere.
+- **A6 (peak-shift) is unaffected and stays PASSED as ruled in item 25/(ce, bw)** — it measures timing
+  (argmax hour), and a uniform per-hour broadcast of the same calibrated shape does not move when the peak
+  falls.
+- **Dispatched as T66**: compute the real per-cell unit-equivalent count for every MidRise/HighRise/
+  OtherDwelling cell from its own IDF/`eplusout.eio`, generalize the correction in a **copy** of
+  `step9_validate_full.py` (never edit the shared original in place), re-score A5 on the **rebuild only**
+  (the published tree is superseded, not a target to match), with the old, uncorrected logic run alongside
+  as a seen-failing control on the same data. Fresh Sonnet, cluster-only, no waiting.
+- Next: once T66 lands, if the corrected gate passes at full grid, MidRise/HighRise/OtherDwelling
+  energy-intensity numbers from the rebuild become quotable (SingleD already was). Update checklist and
+  resume prompt.
+- Next: only T65 (A5 multi-unit regression diagnosis, item 40) is still outstanding.

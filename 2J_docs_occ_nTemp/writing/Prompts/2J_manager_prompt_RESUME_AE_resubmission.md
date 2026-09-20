@@ -1,61 +1,152 @@
 # 2J manager prompt — RESUME the Applied Energy resubmission (paste whole into a new session)
 
 First written 2026-09-15 by the outgoing manager session. **Kept current: the manager rewrites §2 and §3
-after every task completion** (author request, 2026-09-15). Last updated: **2026-09-18, plan log
-entry (cs)**.
+after every task completion** (author request, 2026-09-15). Last updated: **2026-09-20, plan log
+entry (cz), job `1340682` (T66) still running**.
 
 ---
 
-## 0. COLD START — the session was closed on 2026-09-18 evening with four jobs live. Do this first.
+## 0.0 CURRENT STATE (2026-09-20, plan log entries (cw)-(cz)) — read this before the (cv) block below, which is now history
 
-**The author closed the session deliberately.** Nothing was abandoned: every `sbatch` job runs without a
-session, and both workers out at the time reported to disk before closing. **Do not re-dispatch anything
-below on the assumption it was lost.**
+**All four 2J jobs that were live at the last close (`1340509_15`/T22, `1329258`/T48, `1329278`/T49,
+`1329220`/T32) finished clean, exit `0:0`, nothing queued or pending.** Confirmed by a fresh `squeue`+`sacct`
+read: the queue holds only unrelated jobs (`histnu`-named tasks and `1339757`, the separate 1J project).
 
-**Step 0.1 — re-read the cluster before trusting one word of this file's job table.** Entry (cr)
-exists because I carried a job's state forward in my head and told the author a finished job was running.
-**A job's state is a thing to re-read, not a thing to remember.** One command:
+- **T22 is now 24/24 clean.** `1340509_15`: `Successful: 50/50, Failed: 0/50`, `exit=0`.
+- **T48 (A5/A6 full-grid) landed with a real, new finding — not the one item 26 predicted.** A6
+  (peak-shift) is trusted and PASSES 48/48 on the rebuild. **A5 (energy gate) fails 36/48 on the rebuild
+  (514% to 8055% overshoot) for every MidRise/HighRise/OtherDwelling cell, while the identical script
+  passes 48/48 on the published tree, and SingleD passes on both.** This is a real regression in the
+  rebuild's own data, not the old known validator gap (that gap is real but present on both trees, so it
+  cannot explain why only one of them fails). **No MidRise/HighRise/OtherDwelling energy number may be
+  quoted from the rebuild until this is diagnosed.** Full detail: plan log (cw), `T48/t21_a5_results.csv`
+  vs `T48/pub_a5_results.csv`.
+- **Three fresh employees dispatched, all cluster-only. Two have landed and are CLOSED:**
+  - **T63 — CLOSED.** Re-ran the existing T49 checker clean. Result: **all 24 cells, every archetype,
+    show completely disjoint household ID sets** between the static-schedule arm (T22) and the published
+    campaign — 0/24 matching. **Item c8 (WP3 static-vs-diary comparison) is closed as not
+    household-paired**; no number from it is quotable as-is. Plan log (cx).
+  - **T64 — CLOSED.** Found T32's own `undelivered.csv` directly (confirms item 33 by measurement, not
+    just carried-forward text): one row, `OtherDwelling__Vancouver_5C` household `129937`, same as T29's.
+    T32's population-level household set is byte-identical to all three of T26's (0 symmetric difference
+    everywhere) — **item 30's rule does not touch T32's already-accepted G0/SC1/SC4/SC5 numbers.** Only
+    T32's own 1,200-run energy campaign is 49/50 for that one cell, same known shape as T29. Plan log (cy).
+  - **T65 — CLOSED. Good news, not a bug.** Found the exact mechanism with no cluster job needed
+    (login-node spot checks + a local IDF `diff`): a deliberate 2026-07-13 fix in
+    `eSim_bem_utils_2J/integration.py` (to correct an earlier "phantom-peak" defect) now broadcasts each
+    household's calibrated equipment load across every dwelling-unit-equivalent zone in a multi-unit
+    building — physically correct — but `step9_validate_full.py`'s SHEU energy gate (A5) was never
+    updated to divide the resulting whole-building meter by the real unit count. The overshoot ratio
+    matches each archetype's real unit-equivalent zone count almost exactly (HighRise 81.5x measured vs
+    80 units counted, MidRise 33x vs 32, OtherDwelling 6.14x vs 7 partially offset by an existing fix,
+    SingleD no inflation). **Reverting the simulation fix is rejected** (it would reopen the phantom-peak
+    defect); the validator needs the fix instead. Plan log (cz).
+  - **T66 — dispatched, running now.** Computes the real per-cell unit-equivalent count for all 24 cells
+    (T65 only checked Montreal exemplars), writes a corrected copy of the validator (never edits the
+    original in place), and re-scores the rebuild with the old logic run alongside as a seen-failing
+    control.
+- **Next:** T66 (job `1340682`) has been running ~7+ minutes as of this write-up — plausible for a
+  full-grid rescore (comparable to T48's own streaming step), not yet a concern. A background watcher is
+  armed on it; read its report the moment it lands. If the corrected gate passes at full grid, MidRise/
+  HighRise/OtherDwelling energy numbers become quotable (SingleD already was). Checklist republished
+  three times today (now Version 71).
+- **Documentation cleanup done the same session, no new findings:** plan items 26, 27, 32 and 33 still
+  carried their original "OPEN QUESTION" headers even though later Progress Log entries had already
+  closed all four. Each header now carries a short closure pointer to the log entry that actually
+  resolved it ((cw)/(cz) for 26, (cx) for 27, the post-(cm) entry for 32, (cn)+(cy) for 33), with the
+  original text kept below for the record. **The plan's log is still the state; this only fixed stale
+  headers so a cold reader does not re-open closed questions.**
+
+---
+
+## 0. COLD START (2026-09-20 morning, plan log entry (cv)) — now HISTORY, kept for the record only. See §0.0 above for the current state.
+
+**The author is stepping away deliberately, mid-session, not at a natural closure point.** Nothing is
+abandoned: every `sbatch` job runs without a session. **Do not re-dispatch anything below on the assumption
+it was lost — re-read the cluster first, the same rule (cr) and (ct) both exist to enforce.**
+
+**Step 0.1 — re-read the cluster before trusting one word of this file's job table.**
 
 ```
-ssh -o BatchMode=yes o_iseri@speed.encs.concordia.ca "squeue -u o_iseri -h -o '%.12i %.18j %.9T %.5C %.11M' | grep -v histnu; sacct -j 1329796,1328310,1329220,1329258,1329278 -X -n -o JobID%16,State%12,ExitCode%8,Elapsed%12"
+ssh -o BatchMode=yes o_iseri@speed.encs.concordia.ca "squeue -u o_iseri -h -o '%.12i %.18j %.9T %.5C %.11M' | grep -v histnu; sacct -j 1340509,1329258,1329278 -X -n -o JobID%16,State%12,ExitCode%8,Elapsed%12"
 ```
 
-**Live at close (13 of 32 CPUs running, 18 worst case):**
+**What happened this session (full detail in plan entries (ct), (cu), (cv) — read those, this table is a
+summary only):**
+
+1. Fresh cluster read found `1328310_15` (T22's last static cell) had been `RUNNING` past **3 d 23 h**
+   while its own log (`T22/logs/t22_1328310_15.out`) showed all 50/50 homes finished and a `DONE` line
+   printed on **16 September, 14:59** — nothing written since. `sstat` showed only ~4.5 h of real CPU time
+   burned in that whole span. **Diagnosed as hung, not slow**, cancelled with author go-ahead.
+2. **Root cause found (entry (cu)):** `T22/T22_scripts/t22_array.sh` never sets `ESIM_WORKERS`, so
+   `simulation.py:run_simulations_parallel()` defaults `max_workers` to `os.cpu_count()` — the **whole
+   compute node** (32), not the job's actual `--cpus-per-task=4`. Cell 15
+   (`MidRise__Montreal_6A`, a 27-zone apartment model, the heaviest IDF in the set) is the one cell that
+   blew the 16G memory ceiling trying to fork 32 workers (`OSError: Cannot allocate memory`,
+   `t22_1328310_15.out:924-930`), fell back to sequential, ran fine, then likely never closed cleanly — a
+   known Python failure mode when a `ProcessPoolExecutor` crashes mid-spawn, though this last step is
+   inferred, not proven (the process was gone by the time it was checked). **This is a latent bug in every
+   T22 cell**, not just this one; worth checking whether T19 shares `simulation.py` and has the same gap.
+3. First resubmit (`1340507_15`, before the fix) **visibly repeated the crowding** — 0 of 50 done after
+   6 minutes, 32 workers again. Cancelled a second time.
+4. **Fix applied (entry (cv)):** `export ESIM_WORKERS=4` added to `t22_array.sh` (downloaded via `scp`,
+   edited locally, re-uploaded — no edits on the login node). Resubmitted clean as **`1340509_15`**, running
+   with the cap in place as of this write-up.
+5. Cancelling `1328310_15` (step 1) satisfied `--dependency=afterany:1328310` for both T48 and T49, so
+   **both started running immediately, days earlier than the array's actual completion.** T48 (`1329258`)
+   is still running. **T49 (`1329278`) already finished** (00:01:25) with verdict
+   `B1=FAIL, B2=PASS, B3=PASS, B4=FAIL` — read but **not yet adjudicated**:
+   - **B1 FAIL is very likely stale timing, not a real finding** — its own offender line names
+     `1328310_15 state=CANCELLED+`, i.e. T22 was mid-cancel when T49 ran. **Re-run T49 once `1340509_15`
+     lands and T22 is a clean 24/24.**
+   - **B4 FAIL looks real.** Every MidRise/HighRise cell it printed (6 cities x 2 archetypes) shows the T22
+     static-arm household sample and the published campaign's sample as two different ID lists for the
+     same cell, no overlap shown. Matches the risk item c8 on the checklist already flagged before this
+     session. SingleD/OtherDwelling not confirmed either way from this read. **If this holds, no WP3
+     static-schedule number (checklist item c8) may be quoted until it is resolved — same family as items
+     27/30's earlier household-set mismatches.** This is entry (cs)'s own prediction ("Expect B4 to fail")
+     landing true; still needs its own full read, not just this flag.
+6. T32 campaign (`1329220`) finished clean, 24 of 24, overnight before this session started. **No collector
+   sent yet** — still owes item 30's common-household rule and reading `undelivered.csv` (item 33).
+
+**Live at close:**
 
 | job | what | state at close |
 |---|---|---|
-| `1329796` | **T61** — re-runs T55's V3 alone with `IDD_FILE` exported | RUNNING, 3 min in |
-| `1328310_15` | **T22**, the last static cell | RUNNING, **2 d 01 h** — holds T48 and T49 |
-| `1329220_22`, `_23` | **T32** campaign, last two cells | RUNNING |
-| `1329258` | **T48**, full-grid A5/A6 | PENDING on `afterany:1328310` |
-| `1329278` | **T49**, WP3 static-arm collector | PENDING on `afterany:1328310` |
+| `1340509_15` | **T22**, cell 15, third attempt, `ESIM_WORKERS=4` now set | RUNNING, well under an hour in |
+| `1329258` | **T48**, full-grid A5/A6 | RUNNING |
+| `1339757` | `wp9_stage3_RC6` — **1J project, not 2J**, unrelated, do not touch | RUNNING (own session) |
 
-**Step 0.2 — adjudicate in this order, controls-first, one fresh Sonnet per collector, never
-resume a finished employee.**
+**Step 0.2 — what to do next, in order.**
 
-1. **T61** — read `/speed-scratch/o_iseri/2J_revision/T61/logs/t61_v3_report.txt`, **never
-   `sacct`**, for the verdict. Four controls must all be visibly fired in that one file, including the new
-   fourth: `IDD_FILE` pointed at nothing must print **NOT_EVALUABLE, not FAIL**. If V3 comes back clean it
-   closes the **last** open gate on the T30 averaged arm and **nothing else** — it says nothing
-   about T22, T48, T49 or T32.
-2. **T22 collector** (Step 6) when `1328310_15` ends. **Expect B4 to fail.**
-3. **T48** and **T49** the moment they leave PENDING. **No MidRise/HighRise/OtherDwelling energy-intensity
-   number enters the manuscript until T48 closes** (SingleD unaffected); **no WP3 static-vs-diary number
-   until T49 closes.**
-4. **T32 campaign collector** (Step 2 remainder) — it **must read `undelivered.csv`** and
-   inherits item 30's common-household rule.
+1. Read `T22/logs/t22_1340509_15.out` and `sacct -j 1340509`. Expect it in the same 30 min–4.5 h range as
+   its 23 clean siblings, now that the worker count is capped. If it crashes or hangs again, the
+   `ESIM_WORKERS=4` fix did not address the real cause and this needs a fresh look, not a third blind
+   resubmit.
+2. Once it lands, T22 is 24/24. **Re-run T49** (fresh Sonnet, same brief as before) so its B1 line is read
+   on a clean array rather than a mid-cancel one, and give **B4 a real, full read** — this is the item that
+   decides whether checklist item c8 (WP3 static-schedule comparison) can be used at all.
+3. Read `T48/logs/t48_a5a6_1329258.out` (**never `sacct`** for its verdict — same rule as every other
+   collector in this project) when it finishes.
+4. Dispatch a T32 collector (Step 2 remainder) — must read `undelivered.csv`, inherits item 30's
+   common-household rule.
+5. Consider whether T19's array script shares the same uncapped-`max_workers` gap as T22 and needs the
+   same `ESIM_WORKERS` fix pre-emptively (not yet checked this session).
 
-**Step 0.3 — after every one of those, run the full closure cycle, no exceptions.** Append a
-Progress Log entry to `00_REVISION_PLAN.md` (now 3,047 lines, last entry **(cs)**); update §2/§3 and the "Last updated" line of **this file**; read the live checklist page, diff it, `node --check` the
-extracted script, republish in place (now **Version 64**); then send the author **one short reply**.
+**Step 0.3 — after every one of those, run the full closure cycle, no exceptions.** Append a Progress Log
+entry to `00_REVISION_PLAN.md` (now **3,147 lines** per `wc -l`, last entries **(ct), (cu), (cv)**); update §2/§3 and
+the "Last updated" line of **this file**; read the live checklist page, diff it, `node --check` the
+extracted script, republish in place (now **Version 68**); then send the author **one short reply**.
 
-**Step 0.4 — two standing habits the author corrected this session, both binding.**
-- **Never say "in parallel" unless an agent or job is live at that moment.** The author kept a session open
-  on that word while I was idle. Idle is a fine answer; a false yes costs them their evening. **And a session
-  never needs to stay open for cluster jobs.**
-- **If there is unblocked non-cluster work in the plan, dispatch it before being asked.** T62 —
-  which found the clustering defect (item 39) — cost no cluster time and had been sitting behind
-  the queue for no reason at all.
+**Step 0.4 — standing habits, all binding.**
+- **Never say "in parallel" unless an agent or job is live at that moment.** Idle is a fine answer; a false
+  yes costs the author their evening. **A session never needs to stay open for cluster jobs.**
+- **If there is unblocked non-cluster work in the plan, dispatch it before being asked.**
+- **When a job sits `RUNNING` far longer than its neighbours, don't trust the scheduler state alone —
+  read the job's own log for its last line and timestamp.** That is what caught (ct); `sacct`/`squeue`
+  alone never would have.
+- **Editing a script on the cluster: download with `scp`, edit locally, re-upload with `scp`.** Never edit
+  in place on the login node (no `sed`/`vi` in the allowed command list).
 
 ---
 
@@ -426,6 +517,10 @@ top panel "Right now" holds one progress bar per cluster job (cells done of tota
 counts on every waiter wake (author asked for it, Version 15).
 
 ## 2. State (2026-09-17 morning, plan log entry (br))
+
+**Superseded by §0 above for anything cluster-related (job states, T22/T48/T49/T32) — §0 is the 2026-09-20
+read and this section's job table below is stale by three days. §2.1/§2.1b (closed, non-cluster
+deliverables) still hold.**
 
 ### 2.1 Done and trusted
 - T01–T19, T23–T25, T27 (see log). T17: Speed reproduces the local campaign. T18: control arm reproduces the

@@ -3,11 +3,16 @@
 First written 2026-09-19 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6,
 §7 and §8 change only when a rule or a design changes.
-Last updated: **2026-09-19, plan log entry (ak). Gate 3 PASSED. Gate 2 real manifest FAILED on G2.0 (70,281
-multi-dwelling-type households) — Stage 4 does NOT start; needs the author's read, no ruling made.
-R7 (job 1339757) still RUNNING (estimate: could take until Sunday evening, one 5-simulation batch running
-sequentially, one CPU). F-1J-8 DONE: d=0.007813, in the in-between band, a second open item for the author
+Last updated: **2026-09-20, plan log entry (al). Nothing new decided since (ak) — this is a check-in only.
+Gate 3 PASSED. Gate 2 real manifest FAILED on G2.0 (70,281 multi-dwelling-type households) — Stage 4 does
+NOT start; still needs the author's read, no ruling made. R7 (job 1339757) still RUNNING, now 22h00m
+elapsed, log shows 3 of 5 simulations complete (60%) — same estimate as before (could take until Sunday
+evening 2026-09-21). F-1J-8 DONE: d=0.007813, in the in-between band, a second open item for the author
 (does not block anything). Section 4.1 recompute DONE. Author is away, returns Sunday evening (2026-09-21).
+**New this session: the progress page gained a small live simulation-percentage tracker** (reads a new
+`sim` field on the same `revision/progress` document; shows R7's 3/5 = 60%), page republished as version 4
+after a syntax check and a DOM-shim smoke test (empty case hidden, real-data case renders correctly), both
+seen passing before publish.
 A background Haiku agent (dispatched 2026-09-19 evening) is polling R7 hourly and will run the full closure
 ritual itself when it ends — if a fresh manager session opens before then, check this file and the plan log
 first; if R7 is already scored, the agent finished; if not, either poll it yourself or trust the agent is
@@ -19,9 +24,12 @@ still running (do not double-dispatch another watcher for the same job).**
 
 1. Read the **last three entries of §7 (Progress log)** in `1J_docs_occ/IMP/00_REVISION_PLAN.md`
    (`tail -60 00_REVISION_PLAN.md`). **The log is the state. This file is only a pointer; where the two
-   disagree, the plan wins.** The last entry written is **(ak)**; the next letter you write is **(al)**.
+   disagree, the plan wins.** The last entry written is **(al)**; the next letter you write is **(am)**.
 2. Read the progress page's database (`ArtifactData` `get`, url `https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn`,
-   collection `revision`, doc `progress`) and note its `version`. It was **38** when this file was written.
+   collection `revision`, doc `progress`) and note its `version`. It was **40** when this file was written
+   (the document now also carries a `sim` field: `{done, total, label, note, updated}`, read by the page's
+   new tracker box — keep it when you next write the whole document, or update `done`/`total`/`note` if a
+   different job's simulation count becomes the one worth showing).
 3. Check the live cluster job by hand, once:
    `ssh -o BatchMode=yes o_iseri@speed.encs.concordia.ca "sacct -j 1339757 -X --format=JobID,State,Elapsed,MaxRSS,ExitCode"`
    (1339756, 1339951, 1339964 and 1339963 are already DONE and scored, see §4.) The previous session's
