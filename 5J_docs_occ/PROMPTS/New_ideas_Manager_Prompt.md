@@ -323,6 +323,72 @@ ask for D-5J-0.
   template, then `T02`, `T04`, `T08`, `T17`, `T09`. **At intake:** re-count the folder (136 + 5
   reports + 5 logs = 146), check no other file changed, then one fresh sonnet checker per report
   against its page log; verdict rule as for wave 6 round 2. Next: wait for the author's return.
+* **Round 2 of the five returned, intake 2026-09-19.** All five reports and five page logs came back
+  (reports written 14:32 to 14:41). Folder re-counted: **146 entries**; the only files changed in
+  `5J_docs_occ` since the setup are the ten expected (`find -newer` on this prompt). The tool's
+  helper `research_fetcher.py` and its per-job scripts sit outside the project, in its own scratch
+  folder. Seen in the run transcript: several direct CrossRef, OpenAlex and Montreal open-data calls
+  bypassed the logger (in `T04` and `T17`), so rows resting on them may have no log line; the tool's
+  chat summary grades its own work ("verified"), which counts only if it is in a report. Five fresh
+  sonnet checkers dispatched, one per report, on one shared spec (scratchpad `VET_SPEC_FIVE_R2.md`:
+  the wave-6 spec plus a Section G read-list check, the `TITLE ONLY` rule, and a script audit of the
+  tool's scratch folder). Each writes `VETTING_RT<NN>.md` with "VERDICT: pending (manager)". No
+  number from the five reports is quoted anywhere until its note is read. Next: write five verdicts.
+* **RT17 and RT09 round 2 vetted, 2026-09-19: both FAILED ROUND; do not re-run either as it stands.**
+  The page logs themselves were honest this time (RT17 14 of 14 excerpts re-found, RT09 15 of 16) and
+  no script wrote inside the project; the failures are in what the tool wrote after fetching.
+  `RT17`: Section G calls two works read that the log shows only as CrossRef metadata (the prompt's
+  own void rule); one arXiv ID resolves to an unrelated paper; 0 of 8 key numbers confirmed; Montreal
+  row invented, Italy dropped. Kept: five identities, the Zhang et al. 2023 three-dataset abstract
+  claim, the Toronto and England licences. `RT09`: headline quotes not on their pages, a Swiss row
+  with no log line, table cells quoting the brief's own proposal wording as programme criteria, NSERC
+  weighting contradicted, four deadlines unconfirmed, self-grades. Kept: Berkeley Climate Futures sits
+  under the UC President's programme (deadline 1 November 2026); NSERC deadline 17 October and its
+  distinct-from-thesis rule; MSCA 12-in-36-months mobility rule; Digital Futures context labels.
+  `A7` and programme fit go to `T12` as pointers and kept facts only. RT02, RT04, RT08 checkers still
+  running. Next: three more verdicts.
+* **RT08 round 2 vetted, 2026-09-19: FAILED ROUND; do not re-run as it stands.** The mortality
+  shares item 1.2 exists for are wrong against the documents the tool itself fetched (BC private
+  residence 93 % for a true 73.0 %; "99 % no air conditioning" for a true 66.9 %; Chicago odds ratios
+  2.2 and 0.2 for 6.7 and 0.3; Chicago "84 %" in no source); six rows read-claimed on CrossRef
+  metadata only; four author lists wrong; twelve named items dropped. Kept, each re-found at source:
+  BC 2021 (619 deaths) 98 % injured indoors, 67 % aged 70 or older, 56 % lived alone, 73.0 % in
+  private residences, air conditioning 7.4 % present / 66.9 % absent / 24.1 % unknown; Semenza 1996
+  odds ratios 6.7 and 0.3; pointers Multnomah 2021 (94 % died at home) and Ballester 2023. RT02 and
+  RT04 checkers still running. Next: two more verdicts.
+* **RT02 and RT04 round 2 vetted, 2026-09-19: both FAILED ROUND. D-5J-0 (a) is spent: all five
+  re-runs failed; none is re-run again as it stands.** Pattern across all five: the page logs are
+  honest and no script touched the project, but the report text then claims reads the log does not
+  hold, invents quotes and figures, and mis-cites log lines. `RT02`: all 30 identifiers match
+  CrossRef (a first), but 11 invented "future work" quotes, 24 of 33 read-list lines point at the
+  wrong paper, ranking rows 31 to 33 do not exist. Kept: 30 identities; five rows with real
+  abstracts and their figures; `A1` and `A10` prior work abstracts logged; three logged phrasings
+  each found nothing for `A3` and `A7`. `RT04`: the Annex 79 book given an invented title against its
+  own log line; ASHRAE database DOI with no log line; "Annex 87" where the log shows Annex 95; seven
+  dataset rows unlogged. Kept: eleven identities, Aragon full text, Annex 79 four subtasks, Annex 95
+  pointer, the heat-responsive-presence null from three logged queries. Lesson for `T12`: Gemini's
+  fetching is now trustworthy and its writing is not, so `T12` must hand it the vetted facts as a
+  pasted table (as `T38` did) and ask only for logged checks against them, never free prose about
+  papers. Next: compile the kept facts, then write `T12`.
+* **`T12` written, 2026-09-19** (the author said "go ahead, write"). `T12_contradictions_and_ranking.md`
+  carries a pasted table of 40 checked facts (`P1` to `P40`, each naming the vetting note that holds
+  it; compiled verbatim by a sonnet agent into scratchpad `T12_inputs_kept_facts.md`, then selected
+  by the manager). Design, from the five round-2 failures: no free landscape; every factual sentence
+  ends with a tag (`[Pn]`, `[Ln]` log line, `[BRIEF s.n]`, `[INFERENCE]`); the log is finished before
+  the report is written; more than five tags that do not support their sentence void the report.
+  Part A has eleven questions (pyepwmorph; Annex 79 and 95; the Canadian winter-outage competitor;
+  `A9` rows against CrossRef; occupancy in survivability studies; heat exposure with time-use
+  presence; records reading with abstention; demographic occupancy in scenarios; `A11` zoning figures;
+  ecobee terms; BuildOcc). Three contradictions settled by the manager and not reopened: Berkeley
+  runs through the UC President's programme, NSERC keeps the distinctness rule, `A2` is the brief's
+  definition. Part B ranks eleven angles (`A2`, `A3` narrowed, `A4`, `A6`, `A7`, `A8`, `A9`, `A11`,
+  `A12`, `A13`, `A14`) under the round-1 `RT02` E1 rule (S = 0.40 G + 0.30 F + 0.20 D + 0.10 P) with
+  fixed levels, an `[INFERENCE]`-only score taking the lower level, two sensitivity checks and the
+  flattering-direction check on `A9`. README wave 4 line and T12 row updated. Folder now 152 entries
+  (146 + five vetting notes + `T12`); expect 154 at intake (`RT12` report and log). **At intake:**
+  re-count, then one fresh sonnet checker on the wave-6 spec plus a tag audit (every `[Ln]` against
+  its log line, every `[Pn]` against the table, untagged factual sentences counted). Next: author runs
+  `T12`.
 
 ## Reply shape, every time
 
@@ -337,3 +403,32 @@ ask for D-5J-0.
 
   Next: <three or four words>
 ```
+* 2026-09-19, one-paste T12: at the author's request, `DeepResearch/T12_RUN_ALL_IN_ONE.md` joins `00_MASTER_BRIEF.md`, `_RESPONSE_TEMPLATE.md` and `T12_contradictions_and_ranking.md` verbatim (checked by string match) under a short header saying the paste is done and "three files" means these three parts. If a source file changes, rebuild it from the scratchpad script `build_t12_one.py`. Folder count is now 153; expect 155 when `RT12` and its log return. Intake plan unchanged.
+* 2026-09-19, RT12 intake: the author ran the one-paste file. `RT12_contradictions_and_ranking.md` (169 lines, written 16:47) and `RT12_pages.log` (53 lines, written 16:45) are in; folder count 155 as expected. Red flags for the verdict: the log was built afterwards by `build_log.py`, after all fetching; the report text came from `generate_report.py`; and about 25 built-in web searches, 3 page reads, several `curl.exe` calls and inline `py -3 -c` calls ran outside any logger (tool scratch `C:\Users\o_iseri\.gemini\antigravity\brain\806a80e8-a13d-4eaf-9820-e51dbfce3c9e\scratch\`). One fresh sonnet checker was dispatched on `scratchpad\VET_SPEC_FIVE_R2.md` plus a tag audit, a scoring audit and a Q-verdict check; it writes `VETTING_RT12.md` with "VERDICT: pending (manager)". The author is away for the weekend and asked the manager to finish the process: write the verdict, update README, this prompt and memory, then write `DECISION_5J_angle.md` ending "Waiting on you: D-5J-1" with a recommendation. Nothing is stated to the author until the note is vetted.
+  Resume note: the author closed the session while the checker was running. Next session: if `DeepResearch/VETTING_RT12.md` is missing or unfinished, re-dispatch one fresh sonnet checker with the same task (spec `VET_SPEC_FIVE_R2.md` plus checks 15 tag audit, 16 scoring audit, 17 Q verdicts), then write the verdict.
+* **2026-09-19, D-5J-1 ruled (a) by the author. Start here.** A9 is the 5J subject; A12 is written in
+  parallel as a short companion paper from 4J assets. Ruling recorded in `DeepResearch/DECISION_5J_angle.md`
+  under "Ruling". Owed before any plan document is opened: obtain Hobson and Brideau 2026 ("Exploring
+  Key Performance Indicators for Thermal Resilience in Canadian Multi-Unit Residential Buildings",
+  `10.63044/w26hob04`) from ASHRAE and check whether it couples occupancy to winter outage performance
+  in Canadian multi-unit buildings. This is the author's own action (library/ASHRAE access), not a
+  literature search the manager may perform. If the paper shows that coupling, this ruling reopens in
+  favour of A2. Next: author brings back the paper or its abstract; only then does a 5J plan document
+  open.
+* **2026-09-19, Hobson and Brideau 2026 read; A9 confirmed open.** The paper is a summer heatwave/
+  extreme-heat study (mechanically cooled midrise apartment, three cities, TMY + heatwave-year outage
+  runs); it never touches winter outages. Occupancy is NECB 2020's single fixed schedule, unchanged
+  even during the outage run, never dynamic or demographic. Neither of the two things that would have
+  damaged A9's openness claim is present. Ruling D-5J-1 (a) stands, not reopened. Its PDF footer says
+  its content may not be used with AI/ML tools — flagged for the author, only a factual scope check
+  was taken from it. Next: open the 5J plan document for A9 (+ A12 companion).
+* **2026-09-19, short kickoff note written; this subject-selection series is done. Start here.** The
+  author asked for a short note only, not a full plan (no methodology is scoped yet), and said they
+  will return later to look at the ideas document themselves. `5J_docs_occ/5thJ_00_Kickoff_Note.md`
+  records the settled subject (A9 + A12 companion), why, the cleared Hobson-and-Brideau condition, and
+  what is still open (BEM archetype, weather-morphing tool, dynamic occupancy method, KPIs, A12's own
+  untested openness, no programme-fit table). **This manager prompt's job — vet reports, keep state on
+  disk, prepare the author's decision — is complete; D-5J-1 was the last decision it owed.** If the
+  author returns to build an actual 5J methodology/plan, that is new work outside this prompt's scope
+  and should start from the kickoff note, not from re-reading this file's full history.
+* **2026-09-19, RT12 closed and the decision written.** Verdict `ACCEPTED WITH STRIKES` in `DeepResearch/VETTING_RT12.md`: the first report of the series whose identifiers (14 of 14), quotations (6 of 6) and scores (11 of 11 rows) all hold under an independent re-check, so it is not a failed round. Six strikes, read them before quoting any RT12 row. S1: Hobson and Brideau 2026 (`10.63044/w26hob04`) is struck to TITLE ONLY, its "read abstract" content has no source, and **it is the nearest neighbour of A9 with its scope unknown to us** - the one thing owed before A9 is committed to. S2: the Baba 2022 sentence is struck everywhere (log line 12 is an unrelated philosophy project); Q3's NOT FOUND survives on its re-run queries alone. S3: A4 and A6 re-scored `G = 40` to `G = 20` by T12's own rule, so A4 24.0 to 16.0 and A6 24.5 to 16.5, and Section A's "second tier" is A2 and A7 only. S4 (manager-found, not in the mechanical check): A12's `G = 40` cites only `P27`, a fact we pasted in ourselves, and no Part A question ever searched for an existing privacy protocol, so its first-equal rank is not evidence of an open space. S5: the A9/A12 tie at 27.0 has no tie-break rule and the printed Rank 1 / Rank 2 is struck. S6: the log is post-hoc (`build_log.py` fetched a hard-coded list after all real research; `generate_report.py` holds the whole report as one string literal), so RT12 rows are verified-by-our-checker, never verified-by-the-tool. Do not re-run T12. README T12 row set to vetted. `DeepResearch/DECISION_5J_angle.md` is written and ends "Waiting on you: D-5J-1, recommend (a)" - A9 as the subject with A12 as a short companion protocol paper, conditional on the Hobson and Brideau abstract. It records that `RT09` failed both rounds so **no angle-by-programme fit exists anywhere in this series**; only the UC 1 November and NSERC 17 October deadlines and the NSERC thesis-distinctness rule survive (`P36`, `P37`). Next: nothing owed to an agent. When the author rules D-5J-1, option (a) starts by obtaining Hobson and Brideau 2026 from ASHRAE, and only then is a `5J_docs_occ` plan document opened.
