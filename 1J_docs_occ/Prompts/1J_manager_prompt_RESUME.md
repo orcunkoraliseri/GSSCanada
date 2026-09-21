@@ -3,37 +3,36 @@
 First written 2026-09-19 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6,
 §7 and §8 change only when a rule or a design changes.
-Last updated: **2026-09-20, plan log entry (al). Nothing new decided since (ak) — this is a check-in only.
-Gate 3 PASSED. Gate 2 real manifest FAILED on G2.0 (70,281 multi-dwelling-type households) — Stage 4 does
-NOT start; still needs the author's read, no ruling made. R7 (job 1339757) still RUNNING, now 22h00m
-elapsed, log shows 3 of 5 simulations complete (60%) — same estimate as before (could take until Sunday
-evening 2026-09-21). F-1J-8 DONE: d=0.007813, in the in-between band, a second open item for the author
-(does not block anything). Section 4.1 recompute DONE. Author is away, returns Sunday evening (2026-09-21).
-**New this session: the progress page gained a small live simulation-percentage tracker** (reads a new
-`sim` field on the same `revision/progress` document; shows R7's 3/5 = 60%), page republished as version 4
-after a syntax check and a DOM-shim smoke test (empty case hidden, real-data case renders correctly), both
-seen passing before publish.
-A background Haiku agent (dispatched 2026-09-19 evening) is polling R7 hourly and will run the full closure
-ritual itself when it ends — if a fresh manager session opens before then, check this file and the plan log
-first; if R7 is already scored, the agent finished; if not, either poll it yourself or trust the agent is
-still running (do not double-dispatch another watcher for the same job).**
-
+Last updated: **2026-09-21, plan log entry (ao). The age-88 question is ANSWERED and the fix-and-rebuild
+chain is DISPATCHED.**
+- **Author ruling (ao): remove only the code-88 person, keep the home; state it as a limitation.** Costs
+  4.1 % of persons in 2010, 10.0 % in 2022 (raw-census base; the paper quotes the sampled base instead,
+  see §7.3); 2005/2015 unaffected; 2025 untouched.
+- **G2.0: kept and disclosed (an).** Stays a recorded FAIL, no longer blocks anything.
+- **Live:** one Sonnet employee on `IMP/impl/2026-09-21_WP9_f1j8_fix_rebuild.md` submits one dependency
+  chain on Speed: backups -> 2010 and 2022 rebuilds (patch P6a/b/c) -> age-88 check -> Stage 2 manifest +
+  Gate 2. **Its Ledger holds the job IDs; that doc, not any agent, is the state.**
+- (Unrelated `histnu`/1340317 under `/nfs/speed-scratch/rhlab/hist_nu_z7a` is not 1J; ignore it.)
+- Progress page db version **44** (log line added, `waiting.age88rule` removed, `sim` box now shows the
+  2-year rebuild at 0/2).
+**A fresh session's first action:** read the fix-rebuild doc's Status + Ledger, `sacct` its jobs (no more
+than once every 30 min), and when the chain is done score it with §5.5's pre-registered rules.
 ---
 
 ## 0. Cold start: do these five things, in this order, before anything else
 
 1. Read the **last three entries of §7 (Progress log)** in `1J_docs_occ/IMP/00_REVISION_PLAN.md`
    (`tail -60 00_REVISION_PLAN.md`). **The log is the state. This file is only a pointer; where the two
-   disagree, the plan wins.** The last entry written is **(al)**; the next letter you write is **(am)**.
+   disagree, the plan wins.** The last entry written is **(ao)**; the next letter you write is **(ap)**.
 2. Read the progress page's database (`ArtifactData` `get`, url `https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn`,
-   collection `revision`, doc `progress`) and note its `version`. It was **40** when this file was written
+   collection `revision`, doc `progress`) and note its `version`. It was **44** when this file was written
    (the document now also carries a `sim` field: `{done, total, label, note, updated}`, read by the page's
    new tracker box — keep it when you next write the whole document, or update `done`/`total`/`note` if a
    different job's simulation count becomes the one worth showing).
-3. Check the live cluster job by hand, once:
-   `ssh -o BatchMode=yes o_iseri@speed.encs.concordia.ca "sacct -j 1339757 -X --format=JobID,State,Elapsed,MaxRSS,ExitCode"`
-   (1339756, 1339951, 1339964 and 1339963 are already DONE and scored, see §4.) The previous session's
-   background watchers died with it. **Poll no more than once every 30 minutes.**
+3. **One 1J job chain is live (ao):** the F-1J-8 fix-and-rebuild, job IDs in the Ledger of
+   `IMP/impl/2026-09-21_WP9_f1j8_fix_rebuild.md`. Poll it with `sacct` no more than once every 30 minutes.
+   Earlier jobs (1339756, 1339757, 1339951, 1339963, 1339964) are all DONE and scored. (Unrelated
+   `histnu`/1340317 under `/nfs/speed-scratch/rhlab/hist_nu_z7a` is not 1J; confirm by `WorkDir`, then ignore.)
 4. Read the `Status:` line and the `## Ledger` section of every doc in `1J_docs_occ/IMP/impl/` whose name
    starts with today's date. **Do not re-dispatch a task because you cannot see its agent** — the previous
    session's employees are invisible to you, and the doc, not the agent, is the state. Re-dispatch only
@@ -139,23 +138,42 @@ data section auditable; drop "first", "nationally representative" and "replicabl
   and cooling **45.6120** — an exact match to April. The job itself exited FAILED after finishing (crash in
   a downstream plotting step, missing output folder for a PNG, unrelated to the numbers) — read the verdict
   from the CSV, not the exit code. Checkbox 6 ticked.
+- **R7: DONE** (plan log (am)). Job 1339757's `aggregated_eui.csv` gives RC6 Default heating **150.7800**
+  and cooling **26.2210** — heating matches the 150.780 threshold exactly, so **the cluster reproduces
+  April; the pilot ran older code**, not an environment cause. Same FAILED-exit-but-numbers-are-good pattern
+  as Gate 3 (5/5 sims succeeded, CSV written, crash was the same unrelated plotting-folder issue). Wall
+  time/memory read: RC1 04:03:38 / 11,028,788K, RC6 1-04:12:44 / 38,758,716K.
 
-**BLOCKED — needs the author, do not guess or invent a rule (plan log (ai)):**
-- **Gate 2 real manifest FAILED G2.0.** 70,281 households across the rebuilt files carry more than one
-  dwelling-type label: 2005=17,362, 2010=15,100, 2015=19,757, 2022=18,061, 2025=1 — far bigger than the
-  one known case (household 71748). G2.0 is trusted (it also FAILs alone on the April 2025 reference file).
-  G2.1, G2.2, G2.3, G2.4, G2.5 all PASS on the real manifest; the control correctly FAILs G2.3 and G2.4
-  (the gate has power on real data). **Per §5.1's own rule, this means Stage 4 does not start.** No cause
-  is investigated anywhere and no exclusion rule exists for a multi-label household — none is invented
-  here. Give the author the numbers above and wait; do not design a fix or a workaround yourself.
+**RULED (plan log (an)) — read this before touching Stage 2 or Stage 4:**
+- **G2.0 (70,281 multi-dwelling-type households, 2005=17,362, 2010=15,100, 2015=19,757, 2022=18,061,
+  2025=1): author says KEEP and DISCLOSE.** No exclusion. `G2.0` stays a recorded FAIL (gate verdicts keep
+  FAIL; the paper's prose says "limitation"). This no longer blocks Stage 4 by itself — `G2.1-G2.5` still
+  need to PASS, which they already did on the current manifest (plan log (ai)).
+- **F-1J-8 (age code 88 mapped into 75+, d=0.007813 in the in-between band): author says FIX AND REBUILD,
+  2010 and 2022 only** (2005/2015 unaffected by construction; 2025 different pipeline, unaffected).
 
-**Live right now (check with `sacct`, then act as §5 says):**
+**RULED (ao): age code 88 -> remove the person, keep the home, disclose as a limitation.** Fix = P6
+(staged copies only): P6a maps 88 -> 95 at alignment without dropping; P6b reuses the existing
+`<year>_LINKED.csv` (assembly is unseeded, so re-assembling would reshuffle every home); P6c drops
+`AGEGRP == 95` right after the seeded 25 % sample. Same sampled homes; only homes whose every sampled
+member is code 88 vanish, and they are counted. Old outputs are backed up as `*.preF1J8`.
 
-| Job | What it decides | Where to read it |
-|---|---|---|
-| 1339757 | **R7**: RC6 Default against 150.780 | `/speed-scratch/o_iseri/1J_rerun/logs/wp9_stage3_RC6_*.out` |
+**Live right now:** the F-1J-8 fix-and-rebuild chain (`impl/2026-09-21_WP9_f1j8_fix_rebuild.md`, job
+IDs in its Ledger): T0 `1341248` -> rebuilds `1341249` (2010), `1341250` (2022) -> age check `1341251`
+-> Stage 2 `1341252`, submitted 2026-09-21 (page db now version 45). Last session closed 2026-09-21
+evening with both rebuilds RUNNING (~41 min) and T3/T4 PENDING on dependency; a mid-run read is in plan
+log after (ao): P6a/P6b/P6c lines PRESENT in both rebuild logs, homes-before equals the old sampled
+count, persons dropped 1,885 (2010) / 3,844 (2022), homes emptied 39 / 119; P5 line not yet printed.
+**First act of the next session:** `sacct -j 1341249,1341250,1341251,1341252 -X` (states only), then
+score by grepping the logs listed in the task doc's Next section (never `tail` them, tqdm bars):
+P5 line + `JOB DONE` + Gate 1 PASS in both rebuilds; T3 M2=0 both years, old-minus-new homes = 39 / 119,
+no new homes; Gate 2 G2.0 FAIL accepted, G2.1-G2.5 PASS; read sampled-person totals to compute the
+limitation share (never quote 4.1 % / 10.0 %); look at the 2022 +4 persons. Then closure entry (ap)
+across plan log, page db (read live first), this prompt and REVISION_STEPS; then Stage 4 per §5.5/§7.1.
+Also waiting on the author: deep-research prompts `IMP/deepResearch/dr_1J-07` and `dr_1J-08`
+(missing-age handling); vet any returned report before quoting it. Nothing else for 1J.
 
-**Done, closed out (aj, ak):**
+**Done, closed out (aj, ak, am):**
 - **Section 4.1 recompute: DONE.** Job 1339964, exit 0:0, 37s. All five years' numbers are in
   `impl/2026-09-19_WP9_section41_recompute.md` Verified section and plan log (aj). These are **shares
   of households present (0-1), not hours** — do not compare them to the old paper's hours-style numbers
@@ -168,11 +186,6 @@ data section auditable; drop "first", "nationally representative" and "replicabl
   log (ak).
 
 **Open questions nobody has answered yet** (record them, do not close them by guessing):
-- **New (ai): what a multi-dwelling-type household (G2.0's FAIL, above) should mean for Stage 2/3/4** —
-  disclose only, exclude from the pool, or something else. Nothing rules on this yet.
-- **New (ak): F-1J-8's `d=0.007813` sits between the two pre-registered thresholds** — fix the age-88
-  mapping and rebuild 2010/2022, or leave it and name it as a limitation. Does not block anything;
-  purely informational until the author answers.
 - The 2005 outlier: 98.4 % of 2005 households have a grid for every member, against 64 to 70 % elsewhere.
 - R6: where the two `PR` values per household came from (Gate 2's first check answers it for the rebuilt files).
 - The cause of the April Default gap (R7 decides it).
@@ -185,20 +198,21 @@ data section auditable; drop "first", "nationally representative" and "replicabl
 Each item says what to run, what to read, and what each outcome means. After every finished item, do the
 closure ritual in §6 **in the same turn**.
 
-### 5.1 Score Stage 2 when job 1339951 ends — DONE (plan log (ai))
-Scored: real manifest G2.0=FAIL, G2.1=PASS, G2.2=PASS, G2.3=PASS, G2.4=PASS, G2.5=PASS. **G2.0 FAIL is a
-real finding (70,281 multi-dwelling-type households) and Stage 4 does NOT start** — see §4 "BLOCKED".
-Nothing further to do here except wait for the author to read it; do not guess a fix or an exclusion rule.
+### 5.1 Score Stage 2 when job 1339951 ends — DONE (plan log (ai)); ruling applied (an)
+Scored: real manifest G2.0=FAIL, G2.1=PASS, G2.2=PASS, G2.3=PASS, G2.4=PASS, G2.5=PASS. Author ruled (an):
+**keep the multi-dwelling-type households, disclose as a limitation.** `G2.0`'s FAIL is now accepted and
+expected, not a blocker. This manifest is nonetheless stale for Stage 4 once 2010/2022 are rebuilt under
+F-1J-8's fix (5.5) — it will need rebuilding and re-scoring at that point, same six checks, same expected
+pattern (G2.0 FAIL, G2.1-G2.5 PASS).
 
-### 5.2 Gate 3 (DONE, PASS) and R7 when 1339757 ends
+### 5.2 Gate 3 and R7 — both DONE (plan log (ai), (am))
 - Gate 3: **DONE, PASS** (plan log (ai)) — RC1 Default heating 35.1170 / cooling 45.6120, exact match,
   read from `aggregated_eui.csv` (job 1339756's own exit code was FAILED from an unrelated plotting-folder
   crash after the numbers were already written; ignore the exit code). Checkbox 6 already ticked.
-- R7 (job 1339757, still running): if RC6 Default comes out **150.780**, the cluster code reproduces April
-  and the pilot ran older code; if it comes out **157.568**, the cause is the environment. Record whichever
-  it is. Log: `/speed-scratch/o_iseri/1J_rerun/logs/wp9_stage3_RC6_1339757.out`.
-- Read wall time and peak memory when 1339757 ends: `sacct -j 1339756,1339757 --format=JobID,Elapsed,MaxRSS,State`
-  (1339756's own numbers: Elapsed 04:03:38, MaxRSS 11028788K). Stage 4's job sizing uses them.
+- R7: **DONE** (plan log (am)) — RC6 Default heating 150.7800 / cooling 26.2210, exact match to the
+  150.780 threshold: **the cluster reproduces April; the pilot ran older code.** Same ignore-the-exit-code
+  pattern as Gate 3. Wall time/memory read: RC1 04:03:38 / 11,028,788K, RC6 1-04:12:44 / 38,758,716K —
+  kept for Stage 4 job sizing. Nothing further to do here.
 
 ### 5.3 F-1J-8 — DONE (plan log (ak))
 `d = 0.007813` (2021), strictly between the two thresholds. **Rule applied exactly as written: in
@@ -212,24 +226,29 @@ transcribed into `impl/2026-09-19_WP9_section41_recompute.md` Verified section a
 threshold applied** — this replaced the old numbers, it did not test them. Nothing further to do here
 except have the actual Section 4.1 prose rewritten at Step 7, using the shares (not "hours") language.
 
-### 5.5 Stage 4: the simulations — BLOCKED, do not start
-**Blocked by the G2.0 finding in §4 until the author rules on it**, in addition to needing 5.2 (R7) and
-5.3 (F-1J-8) settled. Do not start Stage 4 even once R7 and F-1J-8 are individually resolved — the G2.0
-block stands on its own.
-**Write the stopping rule into the plan log BEFORE Block 1's results are read.** The rule is already
-decided, so paste it as written in §7.1 below; do not restate it in your own words.
-Then, in this order:
-1. Dispatch an employee to patch a **staged** copy of `main.py` so the simulation reads
-   `stage2/draw_manifest.csv` instead of choosing households itself. The patch prints its own line
-   (`MANIFEST READ: <path>, rows=<N>`) and the employee must see that line in the log.
-2. The same employee writes Gate 4, seen failing first on a deliberately wrong manifest:
-   - G4.0 every finished run's household ids equal the manifest's row for that neighbourhood, draw, year
-     and building;
-   - G4.1 the old chooser is never called (make the staged copy raise if it is);
-   - G4.2 the expected number of result files exists and none is empty;
-   - G4.3 the six Default runs still give Gate 3's numbers.
-3. Run the **six Default tasks first** (one per neighbourhood; they use no drawn households).
-4. Then draws in **blocks of 5**, 1 CPU per job, and score the stopping rule after each complete block.
+### 5.5 Stage 4: the simulations — waiting on the F-1J-8 rebuild chain (dispatched (ao))
+1. **Age-88 rule: ANSWERED (ao).** Remove the person, keep the home.
+2. **Score the rebuild chain when it ends** (rules pre-registered in plan log (ao) and the task doc, never
+   moved): each year's log shows the **P6a, P6b, P6c and P5 lines** (a missing line = patch did not run =
+   year not accepted); Gate 1 PASS on both files; the age-88 re-measurement gives **0 affected households**
+   in 2010 and 2022 (it was seen failing at 1,782 / 3,502); old-minus-new sampled homes equals P6c's "homes
+   emptied" count exactly, with no new home. Re-measure two or three of the employee's claims yourself.
+3. **Gate 2 on the rebuilt manifest:** expect `G2.0` FAIL (accepted, (an)) and `G2.1-G2.5` PASS. Any other
+   pattern: record it, diagnose, ask the author; do not start Stage 4.
+4. Only then does Stage 4 itself start. **Write the stopping rule into the plan log BEFORE Block 1's
+   results are read.** The rule is already decided, so paste it as written in §7.1 below; do not restate
+   it in your own words. Then, in this order:
+   a. Dispatch an employee to patch a **staged** copy of `main.py` so the simulation reads
+      `stage2/draw_manifest.csv` instead of choosing households itself. The patch prints its own line
+      (`MANIFEST READ: <path>, rows=<N>`) and the employee must see that line in the log.
+   b. The same employee writes Gate 4, seen failing first on a deliberately wrong manifest:
+      - G4.0 every finished run's household ids equal the manifest's row for that neighbourhood, draw,
+        year and building;
+      - G4.1 the old chooser is never called (make the staged copy raise if it is);
+      - G4.2 the expected number of result files exists and none is empty;
+      - G4.3 the six Default runs still give Gate 3's numbers.
+   c. Run the **six Default tasks first** (one per neighbourhood; they use no drawn households).
+   d. Then draws in **blocks of 5**, 1 CPU per job, and score the stopping rule after each complete block.
 Detail and job shapes: Fable report §6 Stage 4.
 
 ### 5.6 Stage 5: what may be written in the paper
@@ -243,7 +262,7 @@ Rewrite the paper, response letter, upload. The wording still owed is listed in 
 ## 6. The closure ritual: four records, every single step, same turn
 
 1. **Plan log** `1J_docs_occ/IMP/00_REVISION_PLAN.md` §7: append one entry, next letter in sequence
-   (last written: **(ak)**, so next is **(al)**). Say what was read, what it means, and what is next.
+   (last written: **(ao)**, so next is **(ap)**). Say what was read, what it means, and what is next.
    **Append only. Never rewrite an old entry; correct it in a new one.**
 2. **Progress page.** The document is `revision`/`progress` at
    https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn. Its fields: `log` (a list of
@@ -293,6 +312,13 @@ Back up a record before editing it (`cp <file> "$TEMP/<name>_bakN"`).
 - **Children under 15 have no time-use diary, so they are not counted in the occupancy fraction**; the
   denominator is the household members who have a schedule. This sentence is still unwritten
   (`checks.s6a[2]`), and it belongs with the other limitations.
+- **Age code 88 (ruling (ao)), a limitation:** census persons whose age is "not available" are removed
+  before matching and their homes are kept with the remaining members; quote the share of the SAMPLED
+  persons removed (P6c: 1,885 in 2010, 3,844 in 2022, over the sampled total read at scoring), never the
+  raw-census 4.1 % / 10.0 % (different base, plan log (ao) addendum); homes emptied 39 (2010) and 119
+  (2022); 2005 and 2015 are unaffected.
+- **Multi-dwelling-type households (ruling (an)), a limitation:** 70,281 households carry more than one
+  dwelling type across their records; they are kept in the drawing pool.
 - One home in the 2025 April file carried two dwelling types; the rebuilt file gives it one.
 - Detached-house schedules drive apartment units: say so and justify it.
 - The "Default" daytime occupancy is quoted three different ways in the submitted paper; one value only.

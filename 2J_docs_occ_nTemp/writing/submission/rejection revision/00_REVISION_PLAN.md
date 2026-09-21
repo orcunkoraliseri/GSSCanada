@@ -3334,4 +3334,671 @@ items 1-7. Summary:
 - Next: once T66 lands, if the corrected gate passes at full grid, MidRise/HighRise/OtherDwelling
   energy-intensity numbers from the rebuild become quotable (SingleD already was). Update checklist and
   resume prompt.
-- Next: only T65 (A5 multi-unit regression diagnosis, item 40) is still outstanding.
+
+(da) 2026-09-20: **T66 landed clean, job `1340682` COMPLETED in 54:58, item 40 fully closed.** Seen-failing
+control (the original, unmodified `step9_validate_full.py`, run on the same T48 staged tree) reproduced
+T48's ground truth exactly: **12/48 PASS** — proof the tree is unchanged since T48 and the comparison is
+apples-to-apples. Per-cell unit-equivalent divisors were computed from each cell's own `eplusout.eio`
+(not guessed from one exemplar city): SingleD = 1 (all 6 cities), OtherDwelling = 7 (all 6 cities),
+MidRise = 33 (equipment) / 36 (lighting), HighRise = 81 (equipment) / 90 (lighting) — uniform across all
+6 cities within each archetype, so one divisor per archetype covers all 24 cells. The corrected validator
+(new file `step9_validate_full_corrected.py`, original left untouched) scored **48/48 PASS** at full grid.
+Before/after table shows the old whole-building-vs-per-dwelling mismatch was enormous and systematic
+(OtherDwelling ~+515%, MidRise ~+3,205-3,222%, HighRise ~+8,013-8,055% overshoot before the fix; all
+collapse to single-digit percent or less after dividing by the real unit count) — confirms T65's diagnosis
+was exactly right, not a coincidence.
+**Ruling: MidRise, HighRise, and OtherDwelling energy-intensity numbers from the rebuild are now
+QUOTABLE in the manuscript, on the same footing as SingleD.** Item 40 CLOSED. A5 gate: use the corrected
+script's 48/48 PASS as the reported number; the original script's 12/48 is the seen-failing control only,
+never quoted as a result. A6 (peak-shift) unaffected, stays PASSED per (ce)/(bw).
+- Next: with item 40 closed, re-check whether Wave 4 (WP6/WP8 on corrected runs, WP11 figures, WP10
+  rewrite, WP13 package) has any other blocker left before WP13 packaging can start. Update checklist
+  and resume prompt.
+
+(db) 2026-09-20 night: **T67 (item 39's WP8 fix) dispatched and its first two jobs report in; the third
+(the real, quotable number) is still running.** No corrected `agg_annual.csv` existed anywhere in the
+rebuild (T21) tree — the employee found that the documented aggregator (`08_simulation_plots.py`)
+would have silently written an EMPTY file against T21 (it needs a legacy overlay tag T21 doesn't have),
+so it wrote a small new stdlib-only script instead, cross-checked line-for-line against the original
+formulas and against T45's independently hand-verified kWh number (matched to 6 decimal places). Genuine
+cell-level cluster bootstrap written as a new function in a new copy of the script (whole cells resampled
+with replacement, no double-resampling inside a cell), method A left byte-identical.
+**Seen-failing control (job 1340721, COMPLETED, numbers read and confirmed on the cluster) on the OLD
+defective data**: load_factor flips WIDER than method A as theory predicts (0.009161 vs 0.007601, +20.5%)
+— a clean reversal of the old buggy function's narrower result. midday_share does NOT flip (0.010662 vs
+0.011145, still 4.3% narrower) — reported honestly, not forced; the code was re-checked against spec and
+matches, and a real cluster bootstrap is not guaranteed to widen every metric, so this is left as an
+open, plainly-stated result, not treated as a bug. **Old retired (do-not-quote) numbers reproduced exactly**
+(1.05%/3.3% narrower, matching this doc's own item-39 figure) — confirms the control is scored on the
+right retired run.
+Job 1340720 (building the corrected `agg_annual.csv` from T21's raw tree) was still RUNNING at last
+check; job 1340722 (the real cluster-bootstrap run on that corrected data — the number the manuscript
+actually needs) is PENDING on it. **No number from 1340722 exists yet — nothing is quotable from this
+task until it lands.**
+
+**All three jobs landed clean minutes later, read directly by the manager (all `sacct` exit `0:0`).**
+`1340720`: corrected `agg_annual.csv` built with 2,400 rows, 24 cells, 50 households/cell/year, zero
+missing or short series — full grid, no gaps. `1340722` (the real number): on this corrected data,
+**midday_share's genuine cluster-aware interval is 39.8% WIDER than the plain pooled method A
+interval** (width 0.002433 vs 0.001741) — a real, material effect of household clustering — while
+**load_factor is only 2.3% narrower (negligible, method A is fine on its own)**. Both metrics'
+intervals exclude zero either way, so no existing conclusion flips, but midday share's honest
+uncertainty is meaningfully larger than the plain interval alone would suggest. The retired,
+mislabeled stratified-bootstrap number is confirmed invalid and kept do-not-quote only. **Item 39
+Ruling 1 (deliver the promised SI clustering check) is fulfilled**: written up in full, with the
+side-by-side table and the do-not-quote historical control, at
+`manuscript/draft_SI_clustering_ci.md` (new SI section S.10). **Item 39 CLOSED.**
+**Ruling 5 check: no main-text point estimate or separability claim for midday_share/load_factor
+exists yet anywhere in the manuscript drafts (WP6/WP11 have not started)**, so nothing needed
+re-reading today — the SI section instructs whichever future task writes that sentence to cite the
+wider, cluster-aware interval for midday share specifically.
+- Next: with item 39 closed, re-check Wave 4 once more for the next unblocked task — WP6
+  (end-use x hour decomposition on the corrected 2030/scenario runs) and WP11 (figures) are both
+  still unstarted and unblocked; consider dispatching one of them next, checking `squeue` first for
+  CPU headroom under the shared 32-CPU ceiling. Update checklist and resume prompt.
+
+(dc) 2026-09-20 late night, manager session after a context clear: **every 2J job on Speed is finished
+and clean, the queue holds no 2J work at all, and WP6 Part A is dispatched as T68.** First act was a
+fresh `squeue` + `sacct` read rather than trusting the resume file's own table (the rule that caught
+(ct)). `squeue -u o_iseri` returns **only `histnu`-named tasks** — 32 running at 1 CPU each plus 1
+pending — which belong to the other project the author reserved the second 32 CPUs for, not to 2J.
+`sacct` from 2026-09-19 onward confirms every 2J job COMPLETED with exit `0:0`: `1340509_15` (T22's
+third attempt, 01:31:24, so **T22 is 24/24 clean**), `1329258` (T48), `1329278` and `1340675` (T49 and
+its clean re-run), `1340676` (T64), `1340682` (T66, 00:54:58), and T67's three (`1340720`, `1340721`,
+`1340722`). The only `CANCELLED` rows are `1328310_15` and `1340507_15`, both the known hung/crowded
+T22 attempts already superseded by `1340509_15`, and both already written up in (ct)-(cv). **Nothing
+is owed on any 2J job and nothing is waiting in the queue.**
+
+**Not ours, but recorded because the author will see it:** `1339757` (`wp9_stage3_RC6`) **FAILED 1:0**
+after 1 d 04 h, ending 2026-09-20T17:07:34, as did `1339756` (`wp9_stage3_RC1`, 04:03:38). These are
+**1J project** jobs with their own session and their own manager prompt; they are named here only so
+the 2J record shows they were seen and deliberately not touched.
+
+**T68 dispatched — WP6 Part A, end use x hour on the corrected 2022 AND 2030 rebuild.** Task doc
+`impl/2026-09-20_T68_wp6_enduse_hour_corrected.md`, fresh Sonnet employee, cluster-only, submit and
+end the turn. The machinery already exists (T06, `impl/T06_scripts/enduse_hour_2022_v2.py`) but ran on
+the **old campaign and on 2022 only**, so under author ruling (b) none of its numbers may be used; the
+task copies it into `T68_scripts/`, re-points it at `T21/out/step8` (2,400 meter files, both years) and
+leaves its metric definitions untouched. **Scenario arms (T29's lambda arms, T32's S-Revert-std) are
+deliberately NOT in this task** — they carry item 30's common-household rule and item 33's reproducible
+reversion-side exclusion, and they become WP6 Part B once Part A's basis is proven.
+
+**Four rulings were taken by the manager in the brief rather than left to the employee, and the third
+is the one that matters:**
+
+1. The T21 tree has **no overlay manifest**, so `08_simulation_plots.py` must never be run against it
+   unmodified — it would silently return zero rows (T67's finding, carried forward into the brief so
+   the next employee cannot rediscover it the hard way).
+2. The divisors are **not re-derived**: the brief points at T66's already-evidenced per-cell
+   dictionaries (`T66_CELL_EQUIP_DIVISOR`, `T66_CELL_LIGHT_DIVISOR`) and forbids editing that file.
+3. **THE DIVISOR RULING, which decides what WP6 can deliver.** T66 derived unit-equivalent divisors
+   for **equipment and lighting only**. There is no derived divisor for fans, for the HVAC+DHW
+   electricity remainder, for `Electricity:Facility`, or for any `*:EnergyTransfer` thermal meter. So:
+   **relative quantities are divisor-invariant** — percent change, share of the facility total, share
+   of the day's energy in a given hour, load factor, midday share, peak hour, ramp as a fraction — and
+   dividing every hour of a series by one constant changes none of them, so **these are WP6's quotable
+   core and carry no divisor risk at all**. **Absolute per-dwelling kWh exists only for equipment and
+   lighting** (and for everything in SingleD, whose divisor is 1). Every other meter's per-dwelling
+   absolute is written as `NOT_EVALUABLE` with the reason string, and its whole-building raw value is
+   reported under a column plainly named as whole-building. **No divisor may be invented and the
+   equipment divisor may not be reused for fans.** Control C3 demonstrates the invariance rather than
+   asserting it, by computing the same percent change on the raw and the divided series.
+4. Intervals: the brief reuses **T67's own `cell_cluster_bootstrap.py`** rather than writing a third
+   bootstrap, so every interval in WP6 sits on one basis — whole cells drawn with replacement, 24 from
+   24. Item 39's retired stratified number stays do-not-quote in both directions, and the T28/T60 rule
+   is written into the output file itself: **every 2022-to-2030 change row carries its interval and an
+   explicit `excludes_zero` flag, and no per-cell load-shape change may be called a change unless its
+   own interval excludes zero.**
+
+Four controls run inside the same job before any real number is trusted, each recording **did not run
+/ ran and did not fire / ran and fired** as three distinct outcomes: a seen-failing +3 h roll of every
+column except the `hour` column (entry (bx)'s lesson — rolling whole records is a no-op against this
+instrument); a seen-working reproduction of T67's `agg_annual.csv` plus T45's hand-verified
+`SingleD__Montreal_6A` household (8209.333463 kWh, 4.318054 kW peak); the divisor-invariance
+demonstration above; and an order-of-magnitude check that the divisors were actually applied, scored
+against the basis on which T66's corrected validator passed 48/48.
+
+- Next: collect T68 when it lands (read its own report, never `sacct`, for the verdict, and read the
+  controls before any result). Then WP6 Part B (scenario arms) or WP11 (figures), whichever the CPU
+  picture favours. Checklist page and resume prompt updated in the same turn as this entry.
+
+(dd) 2026-09-20 late night, same manager session: **T68 is submitted and running as job `1340956`**
+(8 CPUs, 32 GB, 7-day walltime, `-p ps`, node `speed-07`, started immediately — the 2J half of the
+account was fully idle at submission, confirmed by the employee's own `squeue` read returning no
+non-`histnu` rows). State file `impl/2026-09-20_T68_wp6_enduse_hour_corrected_IMPL.md`; outputs under
+`/speed-scratch/o_iseri/2J_revision/T68/out/` (`enduse_annual.csv`, `enduse_hourly_profile.csv`,
+`grid_metrics.csv`, `closure.csv`, `enduse_change_2022_2030.csv`, `controls.json`, `run_meta.json`),
+log at `logs/t68_run.out`. **Collection order is fixed: `run_meta.json`'s `controls_all_fired` boolean
+first, then `controls.json`, and only then any number** — and `sacct` is never the verdict.
+
+The employee did more than the brief's minimum and it is worth recording **what it decided, because
+four of those decisions are the manager's to rule on at collection, not the employee's to close**:
+
+1. **A new function `stock_weighted_cluster_bootstrap` was written**, because T67's own
+   `cell_cluster_bootstrap` takes a flat pooled mean across resampled households, which is not the
+   stock-weighted archetype mean this project uses everywhere else. The employee states the
+   **resampling unit is copied literally from T67** (draw `n_cells` cell indices with replacement from
+   the `n_cells` available, each drawn cell's household array kept intact) and only the per-replicate
+   statistic changes. **This must be read line by line at collection.** Item 39's whole lesson was a
+   function *named* `cluster_bootstrap` that was in fact stratified; a new function with a similar name
+   written by a different agent is exactly the shape of that failure and gets the same scrutiny before
+   any interval it produces is quoted. **`midday_share` and `load_factor` never touch it** — those two
+   stock-weighted numbers are copied verbatim from T67's `ci_reproduction_t67.csv`
+   (midday_share 0.0073235, CI [0.0061604, 0.0085934]; load_factor 0.0049432, CI [0.0041285,
+   0.0057432]), which is what ruling 6 asked for.
+2. **Per-cell change rows carry a paired household t-interval (T67's "method A" formula), not a cluster
+   bootstrap.** The employee's reasoning is sound and is accepted in advance: the cluster bootstrap's
+   resampling unit is the cell, which is undefined for a single cell in isolation. The consequence must
+   be written into WP6's own text — **per-cell intervals and the stock-weighted interval are not the
+   same statistic**, and the T28/T60 rule applies to both.
+3. **The interval is denominated in percent change, for every meter.** Raw 2022, raw 2030 and raw
+   absolute change stay as their own columns, so nothing is lost; only the CI is on the percent basis.
+   This is the direct consequence of THE DIVISOR RULING — percent change is the one quantity defined
+   and comparable across all meters including the three with no divisor.
+4. **Households with a zero 2022 baseline for a meter are excluded from that meter's percent change**,
+   counted globally per meter in `run_meta.json` and per cell in the change table's
+   `n_zero_2022_denominator_excluded` column, never silently `NaN`. Generalised from T06's real
+   MidRise `WaterSystems:EnergyTransfer` absence. **The employee found and fixed a bug in exactly this
+   column before upload** (the first draft attributed the global count to whichever cell had an empty
+   array) and says the synthetic test would not have caught it — **so spot-check this column on the
+   real data**, and read `run_meta.json`'s per-meter zero-denominator counts before trusting any single
+   cell's interval, in case a cell is left with very few valid pairs.
+
+**Verified before submission, by the employee, on the cluster or against real files** — the `hour`
+column in `hourly_meters.csv` is a 0..8759 row index, not hour of day (so C1 rolls the meter values and
+leaves that column alone, which is what the brief's wording asked for); both divisor dictionaries were
+read verbatim out of T66's corrected validator and match ruling 3 exactly (SingleD 1, OtherDwelling 7/7,
+MidRise 33/36, HighRise 81/90); T67's `agg_annual.csv` is 2,400 rows and carries **no** annual facility
+total, which is why C2 is split into two independent checks. **Locally, on a synthetic tree built to
+make them fire, C1, C3 and C4 were each seen firing and C2 was seen running without crashing** — C2's
+real outcome is therefore genuinely unknown until the job's own `controls.json` is read, and the
+employee says so plainly.
+
+**Two things the employee deliberately did not do, both correct:** the permissive old-campaign
+shape-plausibility comparison against T06 was left out (ruling 1 allowed it, section 3 never required
+it — request it explicitly if wanted), and no number from the real run has been read by anyone.
+Unverified and flagged by the employee itself: whether all 24 T21 cell names have keys in both divisor
+dictionaries was assumed from the shared `<Arch>__<City>` convention, not checked key by key — **check
+it at collection**, because a missing key is the kind of thing that turns into a silent skip.
+
+- Next: collect T68 (`_IMPL.md` Ledger → `run_meta.json` → `controls.json` → results), ruling on
+  decision 1 above before any interval is quoted. Then WP6 Part B or WP11. Checklist page and resume
+  prompt updated in the same turn as this entry.
+
+(de) 2026-09-21, fresh manager session after a context clear: **T68 collected and ACCEPTED. WP6 Part A
+is done.** First act was a fresh `squeue` read (not this file's own table): the queue holds no 2J work
+at all right now, only `histnu`-named tasks. `sacct -j 1340956`: `COMPLETED`, exit `0:0`, 00:01:59 --
+fast because this job re-processes already-simulated files rather than running new simulations, so the
+short runtime is expected, not a red flag.
+
+Collection order followed as fixed in (dd): `run_meta.json`'s `controls_all_fired` read first
+(`true`), then `controls.json` (all four of C1-C4 individually `ran_and_fired`, not just the summary
+boolean), only then the results file. `n_households_year_read_ok = 2400`, `skipped = 0`, matching the
+expected 1,200 households x 2 years exactly. C2's hand-check reproduces the T45-verified household to
+`~3e-7` relative on both annual kWh and peak kW.
+
+**The one thing (dd) flagged as unverified is now closed clean:** `ls` on `T21/out/step8/` gives
+exactly the 24 `<Arch>__<City>` cell directories (plus one non-cell folder, correctly excluded,
+`discover_skipped=0`), and every one of those 24 names is a key in both `T66_CELL_EQUIP_DIVISOR` and
+`T66_CELL_LIGHT_DIVISOR`. No missing key.
+
+**The new `stock_weighted_cluster_bootstrap` was read line by line on the cluster, per item 39's
+standing rule for anything named "cluster bootstrap."** It resamples `n_cells` cell indices WITH
+REPLACEMENT (T67's own resampling unit, unchanged); only the per-replicate statistic changed, to a
+stock-weighted archetype mean. **This is a genuine cluster bootstrap, not a repeat of item 39's
+stratified mistake.** Decision 1 (per-cell rows get a paired t-interval; only the stock-weighted row
+gets the cluster bootstrap, because a cluster bootstrap is undefined on a single cell) is accepted for
+the same reason (dd) gave. `STOCK_WEIGHTS` confirmed unchanged from T06 v2.
+
+`zero_2022_denominator_counts_by_meter` is 0/2400 for all eight meters on this run (T06's old-campaign
+MidRise-water finding does not have to reappear here -- that comparison stays
+`OLD_CAMPAIGN_DO_NOT_QUOTE` per ruling 1). `enduse_change_2022_2030.csv` has the expected 250 rows;
+per ruling 5 only rows the file itself marks `change_quotable = True` may be described as a change
+in manuscript text.
+
+**Verdict: WP6 Part A is ACCEPTED, no red flag found, item 39-style scrutiny applied and passed.**
+IMPL doc closed to DONE with the full checklist at
+`impl/2026-09-20_T68_wp6_enduse_hour_corrected_IMPL.md`.
+
+- Next: dispatch WP6 Part B (T29/T32 scenario arms -- inherits item 30's common-household rule and
+  item 33's reproducible reversion-side exclusion, so its brief is not a copy of T68's) or WP11
+  (figures). Cluster is fully idle (0 of 32 2J CPUs in use), no headroom constraint either way.
+  Recommend WP11 next: it has no open household-set caveat to design around first, while Part B's
+  brief needs the common-household restriction written in before dispatch. Resume prompt and tracker
+  page owed the same update.
+
+(df) 2026-09-21, same manager session: **author says continue autonomously to the end, updating this
+file and the resume prompt at every step. WP6 Part B dispatched as T69, cluster is otherwise idle.**
+Per plan §4's own critical path ("Phase 3: WP6 on corrected 2030 + scenarios, THEN all figures
+(WP11)"), the scenario decomposition is reordered ahead of WP11 after all, since two of WP11's nine
+figures (`intraday load shape by scenario`, `end use x hour difference`) need this output and the
+critical path already says WP6 finishes before WP11 starts.
+
+Two path facts found before writing the brief, neither assumed:
+- **T29's two lambda arms and T32's fourth scenario are 2030-only trees** (`hourly_meters.csv` sits
+  directly under `2030/`, no `2022/` sibling) -- unlike T21, which has both years under one root.
+  T68's `discover_runs()` cannot be pointed at these unmodified; T69's brief requires a new discovery
+  function that pairs each scenario household's 2030 file against the SAME household's 2022 file in
+  `T21/out/step8/`, by folder name, logging any household present on one side and not the other.
+- **T32's per-household hourly files live at `T32/step8_std/out/...`, not `T32/out/...`** (that second
+  path holds only aggregate CSVs and an HTML report) -- found by directory listing before writing the
+  brief, not assumed from T32's other tasks' notes.
+- **Neither `T29/out/t29_p3_deltas.csv` nor `T32/out/std/t32_metrics_std.csv` may be used as a
+  validation reference for T69.** The T29 file's own `n_paired_households=1200` for the lambda=0.0 arm
+  (which item 30 already proved delivers only 1,198) is exactly the not-on-common-basis problem that
+  finding closed as un-quotable -- so T69's brief requires a fresh hand-computed reference household
+  per scenario tree for its seen-working control, the same method T45/T68 used, never a shortcut
+  through either file.
+
+Six rulings fixed in the brief before dispatch (full text: `impl/2026-09-21_T69_wp6_partB_scenarios.md`):
+per-arm household basis vs. a separately-required cross-scenario common-basis table (never conflate
+the two); script reuse via a new `T69_scripts/` copy, never editing T68's original; divisor tables,
+quotable-core rule, percent-change CI and the T28/T60 `excludes_zero` rule carried over unchanged;
+the new hand-check-per-arm requirement for C2; `S-Revert-std` (T32, population mix held fixed) kept
+labelled distinctly from the two lambda arms, never plotted on the same axis as a third lambda value;
+and an output schema matching T68's exactly plus a `scenario` column, so nobody needs to reconcile
+column names later.
+
+Dispatched to a fresh Sonnet employee, cluster-only, submit-and-end-turn per the no-parking rule.
+Awaiting the employee's report (JobID, local verification, any decision flagged for the manager) before
+this entry is updated further.
+
+- Next: collect T69's dispatch report when it lands (JobID, what it verified locally, anything flagged
+  for a ruling), then the job itself once `sacct` shows it done -- same fixed collection order as T68
+  (`run_meta.json`'s `controls_all_fired` first). Meanwhile, advance non-cluster WP10/WP11 prep that
+  needs no scenario data (workflow diagram already accepted; dataset-role table and methods equations
+  already drafted per checklist e3). Resume prompt owed this same update.
+
+(dg) 2026-09-21, same manager session: **T69's dispatch report received. Job `1341180` submitted
+(`-p ps -c 8 --mem=32G -t 7-00:00:00`), confirmed running on speed-21. `sacct` check at write time:
+still RUNNING, 00:01:23 elapsed (T68's single-arm run was 84.8s, so three arms running longer is
+expected, not a red flag by itself).**
+
+What the employee verified locally before upload (its own words, not yet independently checked by the
+manager -- that happens at collection): directory counts matched item 30/33's numbers itself
+(T29 lambda_0.0=1198, lambda_0.5=1200, T32 std=1199, T21 2022=1200); three hand-computed reference
+values for the same household (`sample_001_HH32811`, SingleD Toronto) across all three trees, done
+off-cluster via a separate csv-module code path (not pandas, so it is not just re-running the same
+bug twice); `py_compile` clean; a synthetic-tree functional test covering an orphan household, a
+T21-2022-only household, and an engineered `undelivered.csv` row, all four controls firing correctly
+on all three arms.
+
+Four items flagged for a ruling -- all four RULED, no blocker to the run:
+1. C2 has no aggregate-CSV reproduction, only the hand-check. **Ruling: correct as specified** --
+   Ruling 4 in the brief explicitly required this because T67/T29's aggregates are untrusted here.
+   Not a gap, the designed behaviour.
+2. midday_share/load_factor stock-weighted rows are a NEW bootstrap computation, not a T67 file
+   reuse. **Ruling: correct and necessary** -- T67 never scored these three trees, so there was
+   nothing to reuse.
+3. No three-way combinations in `cross_scenario_common_basis.csv`, only pairwise + four-way.
+   **Ruling: matches Ruling 1's literal text** ("every pairwise and four-way combination"). No
+   three-way rows were ever asked for; leave as built.
+4. T68's file (S-Full) is not concatenated into T69's output. **Ruling: correct** -- Ruling 6 said
+   explicitly this is a manager decision at collection, not the employee's to make. Concatenation
+   decision deferred to collection, once T69's schema is confirmed to actually match T68's.
+
+- Next: wait for `sacct` to show job `1341180` COMPLETED, then collect in the fixed order
+  (`run_meta.json`'s `controls_all_fired` first, then `controls.json`, then results, per scenario arm)
+  before any number from this job is quoted anywhere. Resume prompt updated with this same report.
+
+(dh) 2026-09-21, same manager session: **T69 COLLECTED AND ACCEPTED. Job `1341180` COMPLETED
+(00:03:23 elapsed, exit 0:0). Full controls-first collection done independently by the manager, not
+just the employee's self-report** -- `run_meta.json`'s `controls_all_fired` read first (true for all
+three arms), then `controls.json` for each of C1-C4, then results.
+
+What was verified directly (not from the employee's report): household counts match items 30/33
+exactly (S-None=1198, S-Partial=1200, S-Revert-std=1199, `n_paired_households_own_basis` read, not
+assumed); `n_discover_skipped=0` and empty skip list on all three arms; C2 hand-check relative diffs
+measured at 4.9e-11 to 1.4e-12 (annual) and ~5e-8 (peak) across the three arms -- floating-point noise
+only, far inside the 5e-6 tolerance, and matches the employee's own hardcoded hand-check numbers
+exactly; C3 divisor invariance ~1e-14 (machine precision) on all three arms; `cross_scenario_common_basis.csv`
+(11 rows) matches the run log exactly, four-way intersection = 1198; zero NaN/inf in any of the three
+`enduse_change_2022_2030.csv` files; the scipy `RuntimeWarning` seen in the real run's log (144
+occurrences, counted directly, not the much larger number an early truncated log read momentarily
+suggested) is the same zero-variance artifact the employee already diagnosed in its synthetic test,
+confirmed benign -- no NaN/inf reached any output file. S-Revert-std's one undelivered household is
+`OtherDwelling__Vancouver_5C` sample 9 / `HH129937`, the SAME household item 33 already identified as
+shared between the two reversion-style arms -- confirms, does not contradict, prior findings.
+
+Four flagged items ruled (all correct as built, no rework): (1) C2's pure hand-check with no
+aggregate-CSV reuse -- correct per Ruling 4; (2) the new (non-T67-reuse) midday_share/load_factor
+bootstrap -- correct, T67 never scored these trees; (3) no three-way rows in the cross-scenario
+table -- matches Ruling 1's literal wording, add one later only if a specific figure needs it; (4)
+**T68+T69 concatenation APPROVED** -- schema confirmed identical (T68's `enduse_change_2022_2030.csv`
+columns plus `scenario`), verified by direct header inspection; WP11's figure script may `pd.concat`
+all four scenario files directly, no separate merge task needed.
+
+**WP6 (Parts A + B) is now CLOSED.** Per plan §4's critical path, WP11 (figures) is unblocked and is
+the next work package; then WP10 (manuscript rewrite), then WP13 (submission package) -- continuing
+per the author's "go til the end" instruction.
+
+- Next: begin WP11 (figures). Nine figures total per plan §4; identify which use T69/T68's
+  end-use-by-hour output (at least two do, per the plan's own note) and which use other already-
+  accepted data (Figure 1 workflow diagram already done). Dispatch figure-generation as a fresh
+  employee task, cluster-only where plotting needs the 511 MB hourly profile CSVs, local otherwise.
+  Resume prompt and tracker artifact both owed this update.
+
+(di) 2026-09-21, same manager session: **WP11 triage done against the nine-figure list (plan §4
+WP11 §2), and two tasks dispatched.** Not all nine are dispatch-ready today:
+- **Figures 2, 3, 4, 5** (annual energy by end use; intraday load shape by scenario; peak/load
+  factor/ramp with CIs; end use x hour difference -- the first reviewer's own ask) are built
+  entirely from T68/T69's already-ACCEPTED output, no open data question. **Dispatched as T71.**
+- **Figure 6** (full model vs static vs average profile, WP3) is BLOCKED on a rescoping decision:
+  the static-schedule half (T19/T22) was already ruled "closed, not home-for-home" (checklist c8) --
+  it drew a different household sample than the main runs and cannot be used as a paired comparison.
+  Only the average-profile half (T30) might still qualify, and T30's own scoring is still "runs
+  done, scoring out" (checklist c13), not yet accepted. Not dispatched -- needs T30 collected first,
+  then a manager call on whether a two-way (not three-way) comparison still satisfies R1-D15/M4.
+- **Figure 7** (measured vs simulated 2022 profile, WP5) was flagged as the second reviewer's MAIN
+  point (checklist group D header) and had been sitting at "Later," never dispatched, since mid-
+  September -- found and fixed today. **Dispatched as T70**: redo T15's already-validated
+  measured-vs-simulated method (scale-free stock shape, eplus-calendar day-type fix, IDF-derived
+  dwelling counts) on the REBUILT 2022 runs instead of the retired ones T15 used. Reuses
+  `T02_out/ieso_metrics.csv` (measured side, still trusted) and `T15_scripts/`'s method verbatim;
+  only the simulated-side input tree changes, to `T21/out/step8/.../2022/`.
+- **Figures 1, 8, 9** (at-home by hour across years/scenarios; N=200 convergence, SI; threshold
+  sensitivity, SI) are not dispatched this round -- their exact source files (T20/T26 for figure 1,
+  T28/T48/T54 for figure 8, T04 for figure 9) were not re-confirmed by directory listing before this
+  entry was written, and per this project's own discipline (every task confirms its input paths
+  itself, never assumes), that confirmation belongs in each task's own brief, not guessed here.
+
+**T70** (WP5 redo) and **T71** (the four WP6 figures) dispatched in parallel as fresh employee
+agents, cluster-only, submit-and-end-turn. Briefs: `impl/2026-09-21_T70_wp5_measured_vs_rebuilt.md`,
+`impl/2026-09-21_T71_wp11_figures_wp6_set.md`. Both are independent of each other and of the
+Figures 1/6/8/9 work still to be scoped.
+
+- Next: collect T70 and T71 when their dispatch reports land (JobID, local verification, anything
+  flagged for a ruling), then each job itself once `sacct` shows it done -- same fixed collection
+  order as every prior task (`run_meta.json`'s `controls_all_fired`/seen-working control first).
+  Once T30's scoring is collected, revisit Figure 6's rescoping. Scope Figures 1/8/9 as a follow-on
+  task once T70/T71 land. Resume prompt updated with this same dispatch.
+
+(dj) 2026-09-21, same manager session: **T70 (WP5 redo on the rebuilt runs) job 1341184 collected
+and ACCEPTED.** Fixed order followed (`run_meta.json` first, never `sacct` alone):
+- All 200 Toronto runs loaded clean, zero skipped, across all four archetypes (50/50/50/50).
+- **C5 sanity bound holds for all four archetypes, and tightly** -- the occupancy-only rebuild
+  moved whole-building annual electricity by only 0.1-0.7% versus the old retired runs (ratios
+  0.9997-1.0075), the expected reassuring result (the rebuild changes *when* energy is used across
+  the day, not roughly *how much* is used annually).
+- Both deliverable CSVs match `run_meta.json`'s row counts exactly (880 and 1,760 rows), both
+  calendars (`eplus`/`real2022`) and both measured scopes (`Toronto`/`Ontario`) present, every row
+  correctly tagged `data_vintage=rebuilt_2022`, zero NaN/inf.
+- **Seen-working control fired clean**: independently re-read `T02_out/ieso_metrics.csv` at the
+  Toronto/2022/shoulder/weekday cell and matched all four metrics exactly against the join file's
+  `measured` column (`max_kwh_per_premise`, `load_factor`, `peak_to_avg`, `midday_share`), using a
+  fresh file read, not the employee's own code path.
+- No re-litigation needed on Decisions 1-7 -- consistent with T68's already-accepted precedent on
+  the same T21 tree.
+
+**This is the data behind WP11 Figure 7 and directly answers the second reviewer's main point on
+the rebuilt runs.** Full detail: `impl/2026-09-21_T70_wp5_measured_vs_rebuilt_IMPL.md`'s "Manager
+collection" section.
+
+- Next: T71 (four WP11 figures) still running -- collect on its notification, same fixed order.
+  Once collected, Figure 7 itself (plotting T70's numbers) still needs its own small task -- T70
+  only produced the underlying comparison data, not a figure. Resume prompt owed this update.
+
+(dk) 2026-09-21, same manager session: **T71 (four WP11 figures) job 1341185 collected and
+ACCEPTED.** Fixed order followed, plus two independent from-scratch cross-checks (not just
+re-reading the employee's reported numbers):
+- Grepped `T68/out/enduse_hourly_profile.csv` directly for the seen-working control's household/
+  hour cell and got an exact match to the employee's reported value; separately parsed
+  `enduse_change_2022_2030.csv` with a real CSV reader (not `awk`, which mis-splits this file's
+  embedded-comma column) and got an exact match on the `load_factor` stock-weighted CI row too.
+- Figure 3's household basis (n=1198, four-way common) reproduced independently by the script
+  itself and matches the already-accepted count exactly -- this number has now been reproduced
+  three separate times (T69, T71) with no discrepancy.
+- **Figure 4 finding confirmed real on real data**: `enduse_change_2022_2030.csv` genuinely has no
+  bootstrapped CI for peak demand or ramp, only for the 8 energy meters plus midday_share/load
+  factor. Figure 4 correctly shows this (hatched, labelled, visually distinct from the one real CI
+  panel) -- verified by eye on the actual image, not just asserted in the CSV.
+- All four figures visually inspected: Figure 3 (intraday shape by scenario) is a genuinely
+  informative result -- S-Revert-std shows a flatter midday and a higher evening peak than the
+  other three scenarios, the expected signature of people working from home less. Figure 5 (the
+  first reviewer's own requested end-use x hour figure) has zero cells silently marked as if they
+  were solid data that were actually missing (checked directly in the CSV: 0 of 192 cells
+  NOT_EVALUABLE).
+- All 8 deliverable files + `run_meta.json` present, correct sizes, ~600 dpi confirmed (the
+  599.9988 reading is a harmless PNG rounding artifact, not a shortfall). Files pulled back to
+  `impl/T71_out/` for direct viewing.
+
+**WP11's four T68/T69-derived figures (2, 3, 4, 5 in the plan's numbering) are now DONE.** Full
+detail: `impl/2026-09-21_T71_wp11_figures_wp6_set_IMPL.md`'s "Manager collection" section.
+
+Remaining WP11 work, unchanged from entry (di)'s triage: Figure 7 needs its own small plotting task
+now that T70's data is accepted (dj); Figure 6 stays blocked on T30's scoring; Figures 1/8/9 still
+need their source paths confirmed before they can be scoped.
+
+- Next: dispatch a small task to plot Figure 7 from T70's `sim_vs_measured_toronto_2022_shape_rebuilt.csv`.
+  Check T30's status for Figure 6. Scope Figures 1/8/9's source paths. Update the tracker artifact
+  (currently Version 77, owed T69/T70/T71 acceptances) and the resume prompt.
+
+---
+
+### (dl) 2026-09-21, same manager session: **T61 (`1329796`, V3 gate on the T30 average-profile arm) had
+already finished on 2026-09-18 and was never collected. Its FAIL is real-looking but is a checker bug,
+found and hand-proven by the manager on real data, not a defect in T30 itself.**
+
+Checking T30's status for Figure 6 (per (dk)'s Next) surfaced a job that landed three days ago and sat
+uncollected: `sacct -j 1329796` shows `COMPLETED 0:0`, report present (`T61/logs/t61_v3_report.txt`,
+15,657 bytes). All four of T61's own controls fired correctly (two seen-failing on a shadow copy, one
+seen-working on the real unmodified tree, one crash-vs-verdict) -- the checker ran cleanly, no crash --
+and still reported **`VERDICT: V3=FAIL`, 0 of 48 cells passing `pass_v3_one_profile`** (every household
+showing as carrying a DISTINCT occupancy schedule, when the arm's whole design point is that every
+household in a cell should share ONE averaged schedule).
+
+**Read the checker's own code before trusting the FAIL** (this project's standing rule). `t30_check.py:248`:
+```python
+fields = tuple(occ[0].obj[1:])  # drop Name (index 0)
+```
+The comment is wrong about which index the Name sits at. `integration.py:1448` builds the eppy object as
+`occ_obj.obj = ["Schedule:Compact"] + create_compact_schedule(...)`, and `create_compact_schedule()`
+(`integration.py:550`) returns the Name as ITS OWN first element. So `obj[0]` is the constant eppy
+type-keyword string `"Schedule:Compact"` (same for every object, no information), and `obj[1]` is the
+actual per-household Name (`Occ_Sch_HH_<hh_id>`, which always differs -- IDF requires unique object names).
+The checker's `obj[1:]` slice drops only the constant keyword and keeps the unique Name inside the hashed
+tuple, so every household hashes differently no matter what the real 48 VALUE fields say. **The correct
+slice is `obj[2:]`.**
+
+**Hand-proven, not just reasoned about.** Pulled two real households' actual injected IDFs from the same
+real cell (`SingleD__Toronto_5A__2022`, `sample_001_HH32811` and `sample_002_HH18326`) and read their
+`Occ_Sch_HH_*` blocks side by side. Every field after the Name line -- schedule type limit, `Through:
+12/31`, every `For:`/`Until:`/value line, all 24 weekday hours plus the weekend hours read -- is
+byte-identical between the two households. Only the Name line differs. **T30's actual averaging design
+worked correctly. The FAIL was the checker's own bug, not the data's.**
+
+**This is the last open gate the plan itself flagged on the T30 arm** ("V3 remains open until T61 lands",
+entry (cr)) -- V1 (manifest matches T21), V2 (avg-side/direct-side identity, ~1e-15), V4 (year differs,
+every cell), V5 (no fallback) all already passed. Ruling this checker bug rather than a data defect
+un-sticks Figure 6's rescoping question, which has been blocked on "T30's scoring, not yet accepted"
+since entry (di).
+
+**Not fully closed yet -- one more step, already dispatched, not resting on a 2-household spot check.**
+T72 dispatched (fresh Sonnet employee, cluster job) to fix the one-line index bug in a new script (leaves
+`t30_check.py` untouched as the historical record of the bug), re-run V3 on the FULL 48-cell grid with the
+fix, keep a seen-failing control (old buggy logic reproducing 0/48 on the same real tree) and a
+seen-working control (fixed logic against a deliberately-broken shadow cell, proving the fix still catches
+a real violation), and hand-verify 2 more cell/household pairs by direct field comparison. Brief:
+`impl/2026-09-21_T72_T30_v3_indexing_fix.md`.
+
+**T73 also dispatched in parallel** (fresh Sonnet employee, cluster job) to plot **Figure 7** (measured vs.
+simulated 2022 load shape, the second reviewer's main point) from T70's already-accepted data -- the
+figure itself was still missing, T70 only produced the underlying comparison numbers. Brief:
+`impl/2026-09-21_T73_wp11_figure7_measured_vs_sim.md`.
+
+Both employees follow the no-parking rule: submit `sbatch`, write the JobID to their own task doc, end
+their turn. Neither waits on the other; both are independent of each other and of the still-unscoped
+Figures 1/8/9.
+
+- Next: collect T72 and T73 when `sacct` shows them COMPLETED, same fixed order as always (report file
+  first, controls checked, then numbers). If T72 confirms the fix on the full grid, T30's V3 gate is
+  fully closed and Figure 6's two-way (average-profile vs full-model) rescoping decision can be made.
+  Scope Figures 1/8/9's source paths (T20/T26 for figure 1, T28/T48/T54 for figure 8, T04 for figure 9)
+  once the cluster queue is otherwise quiet. Update the tracker artifact (Version 77, owed T69/T70/T71's
+  acceptances, and now this T61-recovery finding) and the resume prompt with this same update.
+
+---
+
+### (dm) 2026-09-21, same manager session: **T73 (job `1341255`) ACCEPTED -- Figure 7 (measured vs.
+simulated daily-shape metrics, Toronto 2022, rebuilt runs) is done.**
+
+Collected in fixed order: `sacct -j 1341255` showed `COMPLETED 0:0` (7 seconds), then
+`T73/out/figures/run_meta.json` was read directly off the cluster, then the PNG was pulled by `scp` and
+viewed by eye.
+
+**One real finding, not a shortcoming of this task: T70's accepted output has no hourly (24-point) load
+curve.** T70's own script computes an hourly profile internally then discards it before saving -- only
+five whole-day shape numbers per period/day-type cell were ever saved (how peaky the day is, how much
+load sits at midday, what hour the peak falls on, and the day's peak size). T73 could not invent the
+missing hourly numbers (recomputing them was explicitly out of scope), so Figure 7 shows those five
+saved numbers across 12 real-world period/day-type groups (four seasons x three day types) instead of a
+literal 24-hour line. This is flagged plainly in the figure's own caption, not hidden.
+
+**Second finding, also handled correctly, not hidden:** one of the five numbers (the day's single
+highest per-home load) is not on the same measuring scale between measured and simulated sides, despite
+sharing a column name -- confirmed by reading both source scripts directly. That one bar is drawn with a
+hatch pattern and labelled "not comparable" rather than plotted as if it meant the same thing.
+
+**Verified, not just accepted on the employee's word:** the cluster job's own recorded control numbers
+(one hand-picked value re-read directly from the file, and a count confirming all 12 groups made it into
+the figure with none silently dropped) match the employee's own pre-cluster test on the same real file
+exactly, to every decimal place. The manager also opened the actual image and confirms: all three season
+groups, three day types, five clean panels, shared legend, readable labels, the one flagged bar visibly
+hatched.
+
+- Next: collect T72 when `sacct` shows it COMPLETED (still `RUNNING` as of this entry). If it confirms
+  the checker fix on the full 48-cell grid, T30's V3 gate is fully closed and the Figure 6 rescoping
+  decision (two-way, average-profile vs full-model) can be made same session. Scope Figures 1/8/9's
+  source paths once the queue is quiet. Update the tracker artifact and resume prompt with T73's
+  acceptance and, once it lands, T72's.
+
+---
+
+### (dn) 2026-09-21, same manager session: **Figures 1, 8, 9 directory-confirmed and dispatched (T74,
+T75, T76) while T72 (job `1341254`) is still running.**
+
+Rather than wait idly on T72, followed entry (di)'s own "Next": scope Figures 1/8/9's source paths.
+Directory-confirmed all three on the login node (`find`/`head`/`wc -l`/`ls -la`, no computation run):
+
+- **Figure 9 (threshold sensitivity, SI):** `T04/T04_out/threshold_sensitivity.csv`, a small 21-row
+  table, columns confirmed by direct read. Dispatched as **T74** (see brief
+  `impl/2026-09-21_T74_wp11_figure9_threshold_sensitivity.md`).
+- **Figure 8 (N=200 convergence, SI):** `T28/out/t28_b4_convergence.csv` (433 rows, `cell,metric,N,mean,
+  halfwidth`) looks like the main data; `T54` appears to be a checker that already validated T28's B3/B4
+  results (shadow-tree controls visible in its directory names) and must be read FIRST for its verdict
+  before trusting T28's numbers; T48's relevance is NOT confirmed (its files, e.g.
+  `pub_loadshape/peak_shift_summary.csv`, look like a different peak-hour-shift check that may share a
+  task number by coincidence, not necessarily belong to this figure) -- the employee is told to judge
+  this itself, not assume entry (di)'s guess was right. Dispatched as **T75**
+  (`impl/2026-09-21_T75_wp11_figure8_n200_convergence.md`).
+- **Figure 1 (at-home fraction by hour, across years/scenarios -- WP11's own numbering, NOT the
+  manuscript's workflow-diagram Figure 1):** `T20/out/main/` and `T20/out/null/` (each has a 667 MB
+  `BEM_Setup/BEM_Schedules_2030.csv` with a per-hour `Occupancy_Schedule` column -- confirmed by direct
+  header read) and `T26/out/lambda_{0.0,0.5,1.0}/` (same structure, three WFH-persistence scenario arms).
+  **Two things are NOT yet confirmed and are this task's own first job:** what T20's `main`/`null` split
+  actually represents (read its build scripts, don't guess), and where a 2022 at-home-by-hour baseline
+  aggregate exists at all -- the manager looked under `T21/out/step8,step9_activity,step9_baseline/` and
+  found only per-household plot PNGs, no aggregate CSV. Dispatched as **T76**
+  (`impl/2026-09-21_T76_wp11_figure1_athome_by_hour.md`) with an explicit **hard-stop instruction**: if
+  finding/building the 2022 baseline turns out to need a substantial new computation, stop, report back,
+  do not silently expand scope into a new simulation-adjacent job.
+
+All three dispatched as fresh Sonnet employees, cluster jobs, no-parking (submit, write JobID, end turn).
+None depend on each other, on T72, or on each other's files.
+
+- Next: collect T72, T74, T75, T76 as each lands (`sacct` COMPLETED, fixed report-first order). T76 may
+  come back as a "cannot build without a bigger task" report rather than a finished figure -- that is an
+  acceptable, informative outcome, not a failure. Once T72 confirms PASS, close T30's V3 gate and decide
+  Figure 6. Update tracker artifact and resume prompt as each of the four lands.
+
+---
+
+### (do) 2026-09-21, same manager session: **T74 (Figure 9, threshold sensitivity) ACCEPTED.**
+
+Cluster job `1341260` completed in 4.1 seconds. Read `T74/out/figures/run_meta.json` directly off the
+cluster and cross-checked it myself before viewing the picture:
+
+- **Row-count control:** all 21 source rows accounted for (`missing_from_figure: []`); 25 plotted points
+  explained exactly by the shared pct=0 baseline being reused across all 5 panels (21 distinct + 4
+  double-counted baseline reuses = 25).
+- **Seen-working control:** both hand-read rows (baseline and the `at_home_max -20%` row) match the
+  plotted values exactly.
+- **Real finding, load-bearing for the SI text:** the paper's chosen model (J3) is never the *sole* model
+  clearing all four selection gates in any of the 21 threshold scenarios (`matches_J3_only` is False on
+  all 21 rows, including the published baseline) -- J3 wins on lowest composite score among however many
+  models pass (1 to 6). J3 stops being selected at all in only 2 of 21 scenarios, both under a -20%
+  at-home-gap threshold.
+- Pulled the actual PNG via `scp` and viewed it directly (not just the report): 5-panel figure, clean,
+  correctly labelled, legend distinguishes "selected = J3" (green circle) from "selected != J3" (red
+  triangle), scope note in the corner states no confidence interval exists in the source (deterministic
+  threshold re-application) -- matches T71/T73 house style.
+
+No problems found. Figure 9 is DONE.
+
+- Next: collect T75 and T76 as they land; T72 still running.
+
+---
+
+### (do) 2026-09-21, same manager session: **T75 (Figure 8, N=200 convergence) ACCEPTED.**
+
+Cluster job `1341262` completed in 7.2 seconds. Read `T75/logs/t75_run_meta.json` directly off the
+cluster and cross-checked it myself before viewing the picture:
+
+- **T54 precondition re-confirmed before trusting T28's data**: B0/B1/B2/B5 PASS, B3/B4 are REPORT-type
+  (no PASS/FAIL band exists for a convergence curve by the checker's own design) -- correctly treated as
+  cleared, not skipped.
+- **T48 correctly excluded**: the employee checked its three CSVs directly and found them to be an unrelated
+  Step-9 peak-hour-shift check (n_hh=50 fixed, arm=activity/baseline columns), not part of the N-convergence
+  story. Right call, fully explained in the report rather than silently dropped.
+- **Row-count control:** 144/144 expected delta-metric rows found, none missing or duplicated (288 level rows
+  correctly excluded from the plot per this project's "quotable = change only" convention, left untouched in
+  the source CSV).
+- **Seen-working control:** both hand-read rows (`SingleD/elec_facility_kWh_delta` at N=200, `MidRise/
+  mean_peak_hour_delta` at N=100) match the source CSV exactly -- checked myself with `grep` against
+  `T28/out/t28_b4_convergence.csv`, not just trusted from the report.
+- **Real finding, load-bearing for the SI text:** N=200 uses a different statistic (parametric Student-t CI
+  on the real full sample) than N=10-150 (percentile CI of 1000 bootstrap subsample draws from that same
+  200-household pool) -- all 24 of 24 (cell, metric) combinations show the half-width jumping back up at
+  N=200 rather than continuing to shrink. This is a method-switch artifact, not evidence that N=200 is
+  under-converged. The figure marks N=200 with a distinct star marker, a dashed guide line, and says this
+  plainly in the subtitle and caption -- nothing is hidden.
+- Pulled the actual PNG via `scp` and viewed it directly: clean 6-panel grid (one per metric, 4 archetype
+  cell lines each), correctly labelled, legend distinguishes N=200's star marker from the round N=10-150
+  markers, matches house style.
+
+No problems found. Figure 8 is DONE.
+
+- Next: collect T72 and T76 as they land.
+
+---
+
+### (do) 2026-09-21, same manager session: **T76 (Figure 1, WP11 numbering, at-home-by-hour) ACCEPTED.**
+
+Cluster job `1341263` completed in 4 minutes 43 seconds. Read `T76/logs/t76_run_meta.json` directly off
+the cluster before viewing the picture:
+
+- **Hard-stop did NOT fire**: the 2022 at-home baseline turned out to be an existing file already trusted
+  by this project's own acceptance checks (`T18c/nbf/.../BEM_Schedules_2022.csv`), not new computation.
+- **T20 main/null and T26 lambda meanings confirmed from the task docs' own Design sections, not guessed**:
+  main = real OLS at-home trend projected to 2030; null = same code with the trend forced to zero (already
+  proven equal to 2022); lambda = persistence weight of the pandemic-era at-home jump (1.0=persist,
+  0.5=half, 0.0=revert).
+- **Row-count control:** all six source files (2022 baseline, 2030 main/null, 2030 lambda 0.0/0.5/1.0) read
+  exactly 6,934,320 rows each (144,465 households x 24 hours x 2 day types), matching internally and
+  against expectation.
+- **Seen-working control:** all six files' hand-computed Weekday/Hour=12 mean matches the script's own
+  aggregate to 8+ decimal places.
+- **Nesting control:** lambda=1.0 reproduces T20's "main" build exactly in all 48 (day_type, hour) cells,
+  the already-accepted SC0 property from T26's own 2026-09-15 acceptance check, independently re-derived
+  here rather than trusted from that doc alone -- so lambda=1.0 was computed but not separately plotted
+  (would draw exactly on top of "Main/Persist"), kept in the CSV for traceability only.
+- Pulled the actual PNG via `scp` and viewed it directly: two-panel (Weekday/Weekend) at-home-fraction-by-
+  hour chart, 2022 baseline plus four 2030 scenario lines, correctly labelled, no CI (none exists in the
+  source, stated in the subtitle). Pattern is exactly as expected: the Persist scenario sits above the 2022
+  baseline at midday (more people staying home than before), Revert sits below it (closer to the
+  pre-pandemic low), Null tracks the 2022 baseline almost exactly.
+
+No problems found. Figure 1 (WP11 numbering) is DONE. **All nine planned WP11 figures are now built and
+accepted** (2/3/4/5/7/9/8/1 done this and prior sessions; 6 still blocked on T72's V3 gate).
+
+- Next: collect T72; if PASS, close T30's V3 gate and decide Figure 6 (average-profile vs. full-model).

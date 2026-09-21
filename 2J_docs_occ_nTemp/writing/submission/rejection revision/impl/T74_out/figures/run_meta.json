@@ -1,0 +1,76 @@
+{
+  "task": "T74_fig09_threshold_sensitivity",
+  "input_csv": "/speed-scratch/o_iseri/2J_revision/T04/T04_out/threshold_sensitivity.csv",
+  "n_rows_in_source_csv": 21,
+  "n_points_plotted": 25,
+  "row_count_control": {
+    "n_rows_in_source_csv": 21,
+    "n_distinct_scenarios_used_in_figure": 21,
+    "missing_from_figure": [],
+    "note": "All 21 source rows appear in the figure. The baseline row is the shared pct=0 anchor and is deliberately reused across all 5 panels (25 points plotted from 21 distinct rows: baseline counted once per panel x 5 panels = 5, plus 4 perturbed rows per family x 5 families = 20; 5 + 20 - 4 double-counted baseline instances = 21 distinct rows, 25 plotted points)."
+  },
+  "seen_working_control": {
+    "pairs": [
+      {
+        "scenario": "baseline_original",
+        "raw_text_read": {
+          "n_passing_4of4": "4",
+          "selected_model": "J3",
+          "matches_J3_only": "False"
+        },
+        "parsed_for_plot": {
+          "n_passing_4of4": 4,
+          "selected_model": "J3",
+          "matches_J3_only": false
+        },
+        "match": true
+      },
+      {
+        "scenario": "at_home_max_-20 pct",
+        "raw_text_read": {
+          "n_passing_4of4": "1",
+          "selected_model": "J5_X1",
+          "matches_J3_only": "False"
+        },
+        "parsed_for_plot": {
+          "n_passing_4of4": 1,
+          "selected_model": "J5_X1",
+          "matches_J3_only": false
+        },
+        "match": true
+      }
+    ],
+    "all_match": true
+  },
+  "global_finding_matches_j3_only": {
+    "n_rows_true": 0,
+    "n_rows_total": 21,
+    "note": "matches_J3_only is False on all 21 rows including the published baseline -- J3 is never the sole 4/4 passer, it wins by lowest composite score among 1-6 passers depending on scenario."
+  },
+  "selected_model_changes_from_j3": [
+    {
+      "scenario": "at_home_max_-20 pct",
+      "selected_model": "J5_X1",
+      "n_passing_4of4": 1
+    },
+    {
+      "scenario": "all_-20 pct",
+      "selected_model": "J5_X1",
+      "n_passing_4of4": 1
+    }
+  ],
+  "figure": {
+    "png_path": "/speed-scratch/o_iseri/2J_revision/T74/out/figures/fig09_threshold_sensitivity.png",
+    "csv_path": "/speed-scratch/o_iseri/2J_revision/T74/out/figures/fig09_threshold_sensitivity.csv",
+    "dpi_requested": 600,
+    "dpi_read_back_from_png": [
+      599.9988,
+      599.9988
+    ],
+    "size_px": [
+      6259,
+      3778
+    ]
+  },
+  "elapsed_seconds": 4.106
+}

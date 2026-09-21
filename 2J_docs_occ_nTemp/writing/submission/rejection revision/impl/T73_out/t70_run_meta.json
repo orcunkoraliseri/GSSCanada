@@ -1,0 +1,71 @@
+{
+  "job_started_utc": "2026-09-21T09:27:10Z",
+  "elapsed_sec": 40.468679904937744,
+  "input_root": "/speed-scratch/o_iseri/2J_revision/T21/out/step8",
+  "n_runs_per_archetype": {
+    "SingleD": 50,
+    "OtherDwelling": 50,
+    "MidRise": 50,
+    "HighRise": 50
+  },
+  "n_runs_loaded_ok": 200,
+  "n_runs_skipped": 0,
+  "skipped": [],
+  "row_counts": {
+    "sim_toronto_2022_shape_metrics_rebuilt.csv": 880,
+    "sim_vs_measured_toronto_2022_shape_rebuilt.csv": 1760
+  },
+  "dwelling_count": {
+    "SingleD": 1,
+    "OtherDwelling": 7,
+    "MidRise": 31,
+    "HighRise": 79
+  },
+  "dwelling_count_evidence": {
+    "SingleD": "SingleD__Toronto_5A/sample_001_HH33188/2022/Scenario_2022.idf:4392-4425 (one Zone living_unit1/attic_unit1/unheatedbsmt_unit1 triple, no ZoneGroup) [T15 evidence, geometry unchanged by rebuild per task Ruling 2]",
+    "OtherDwelling": "OtherDwelling__Toronto_5A/sample_001_HH22934/2022/Scenario_2022.idf:4392-4613 (seven Zone living_unitN/attic_unitN/unheatedbsmt_unitN triples, N=1..7, no ZoneGroup multiplier -- a 7-unit row-house block, NOT a single dwelling) [T15 evidence, geometry unchanged by rebuild per task Ruling 2]",
+    "MidRise": "MidRise__Toronto_5A/sample_001_HH126139/2022/Scenario_2022.idf:5448-5511 (7 ground-floor Apartment zones, SE corner absent) + :5690-5705 (ZoneList 'Mid Floor List', 8 Apartment zones + M Corridor; ZoneGroup Zone List Multiplier=2) + :5592-5655 (8 top-floor Apartment zones) = 7 + 8*2 + 8 = 31 [T15 evidence, geometry unchanged by rebuild per task Ruling 2]",
+    "HighRise": "HighRise__Toronto_5A/sample_001_HH49514/2022/Scenario_2022.idf:5527-5632 (7 ground-floor Apartment zones, SE corner absent) + :5931-5946 (ZoneList 'Mid Floor List', 8 Apartment zones + M Corridor; ZoneGroup Zone List Multiplier=8) + :5797-5902 (8 top-floor Apartment zones) = 7 + 8*8 + 8 = 79; same ZoneGroup lines/multiplier independently re-checked on sample_002_HH129161, identical geometry [T15 evidence, geometry unchanged by rebuild per task Ruling 2]"
+  },
+  "dwelling_count_reasoning": "Task Ruling 2: the rebuild (T21) changes occupancy schedules (2022-diaries only), not building geometry / IDF zone structure -- so DWELLING_COUNT, derived from Scenario_2022.idf ZoneList/ZoneGroup objects in T15, does not need re-deriving for the rebuilt runs, which share the same Toronto_5A archetype IDF templates. Not re-grepped on the rebuilt tree's IDFs in this run.",
+  "annual_facility_kwh_meter_mean_per_archetype": {
+    "SingleD": 8225.559817535332,
+    "OtherDwelling": 47428.914461653454,
+    "MidRise": 273071.8787223989,
+    "HighRise": 395874.4287727629
+  },
+  "annual_facility_kwh_per_dwelling_estimate": {
+    "SingleD": 8225.559817535332,
+    "OtherDwelling": 6775.559208807636,
+    "MidRise": 8808.770281367706,
+    "HighRise": 5011.0687186425685
+  },
+  "c5_rebuild_vs_old_sanity_bound": {
+    "SingleD": {
+      "new_annual_facility_kwh_mean": 8225.559817535332,
+      "old_t15_annual_facility_kwh_mean": 8164.714032723402,
+      "ratio_new_over_old": 1.007452286089637,
+      "within_0.5_2.0": true
+    },
+    "OtherDwelling": {
+      "new_annual_facility_kwh_mean": 47428.914461653454,
+      "old_t15_annual_facility_kwh_mean": 47444.01943999619,
+      "ratio_new_over_old": 0.9996816252391549,
+      "within_0.5_2.0": true
+    },
+    "MidRise": {
+      "new_annual_facility_kwh_mean": 273071.8787223989,
+      "old_t15_annual_facility_kwh_mean": 272595.0552057583,
+      "ratio_new_over_old": 1.0017492009027114,
+      "within_0.5_2.0": true
+    },
+    "HighRise": {
+      "new_annual_facility_kwh_mean": 395874.4287727629,
+      "old_t15_annual_facility_kwh_mean": 393032.78629638226,
+      "ratio_new_over_old": 1.0072300392625204,
+      "within_0.5_2.0": true
+    }
+  },
+  "c5_all_within_0.5_2.0_bound": true,
+  "note": "meter_mean = mean over the archetype's loaded runs of that run's raw (non-normalized) annual Facility kWh sum; per_dwelling = meter_mean / DWELLING_COUNT[archetype]. For SingleD, DWELLING_COUNT=1 so meter_mean == per_dwelling. C5 compares this run's meter_mean against T15's OLD (now-retired-tree) meter_mean, hardcoded from impl/T15_out/run_meta.json -- a sanity bound, not an exact-match test; the rebuild is EXPECTED to shift these numbers."
+}

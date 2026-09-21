@@ -1,0 +1,111 @@
+{
+  "figures": {
+    "fig02_annual_by_enduse": {
+      "png_path": "/speed-scratch/o_iseri/2J_revision/T71/out/figures/fig02_annual_by_enduse.png",
+      "px_width": 4675,
+      "px_height": 5029,
+      "dpi_x": 599.9988,
+      "dpi_y": 599.9988,
+      "width_in": 7.791682250031167,
+      "height_in": 8.381683430033528,
+      "note": "Panel A: whole-building stock-weighted annual kWh, all 8 end uses, S-Full only. Panel B: per-dwelling basis, equip+lights only (the only end uses with a derived unit divisor; ruling 3/4)."
+    },
+    "fig03_intraday_load_shape": {
+      "png_path": "/speed-scratch/o_iseri/2J_revision/T71/out/figures/fig03_intraday_load_shape.png",
+      "px_width": 4252,
+      "px_height": 2626,
+      "dpi_x": 599.9988,
+      "dpi_y": 599.9988,
+      "width_in": 7.086680840028347,
+      "height_in": 4.376675420017507,
+      "note": "Weekday, season='all' (whole-year weekday average), year 2030, meter=Electricity:Facility, restricted to the 1198 households common to all four scenario arms (ruling 1)."
+    },
+    "fig04_peak_loadfactor_ramp_ci": {
+      "png_path": "/speed-scratch/o_iseri/2J_revision/T71/out/figures/fig04_peak_loadfactor_ramp_ci.png",
+      "px_width": 4457,
+      "px_height": 1908,
+      "dpi_x": 599.9988,
+      "dpi_y": 599.9988,
+      "width_in": 7.4283481900297135,
+      "height_in": 3.18000636001272,
+      "note": "Peak and ramp: point values only, hatched, NO confidence interval exists in the accepted WP6 output for these two metrics. Load factor: real bootstrapped CI on the 2022->2030 delta, reused verbatim from enduse_change_2022_2030.csv (T67-sourced)."
+    },
+    "fig05_enduse_hour_diff": {
+      "png_path": "/speed-scratch/o_iseri/2J_revision/T71/out/figures/fig05_enduse_hour_diff.png",
+      "px_width": 4207,
+      "px_height": 2625,
+      "dpi_x": 599.9988,
+      "dpi_y": 599.9988,
+      "width_in": 7.011680690028047,
+      "height_in": 4.3750087500175,
+      "note": "Percent-change POINT ESTIMATES only (season='all', daytype='all' -- whole-year average day). 'x' marks a NOT_EVALUABLE cell (zero 2022 denominator or missing data), never plotted as if it were a real number. No bootstrap interval exists at this end-use x hour granularity; this heatmap is descriptive, not a quotable change claim on its own (ruling 5's QUOTABLE gate applies only to the CI-backed rows in enduse_change_2022_2030.csv, which this heatmap does not carry)."
+    }
+  },
+  "seen_working_control": {
+    "hourly_profile_cell": {
+      "household": {
+        "arch": "SingleD",
+        "city": "Toronto_5A",
+        "sim_hh_id": "32811"
+      },
+      "meter": "Electricity:Facility",
+      "season": "all",
+      "daytype": "weekday",
+      "year": 2030,
+      "hour": 17,
+      "hand_read_value_kW": 1.246054351041232,
+      "pipeline_read_value_kW": 1.246054351041232,
+      "match": true
+    },
+    "change_table_cell": {
+      "level": "stock_weighted",
+      "metric": "load_factor",
+      "hand_read": {
+        "point": 0.004943184695576,
+        "lo": 0.0041284557418345,
+        "hi": 0.005743231074777,
+        "change_type": "absolute_fraction"
+      },
+      "note": "compared against fig04's own read of the identical row below"
+    }
+  },
+  "notes": [
+    "FIGURE 4 FINDING: enduse_change_2022_2030.csv has NO stock_weighted CI row for peak_kW_annual or any ramp metric (only the 8 end-use energy meters + midday_share + load_factor get one). Per ruling 3 (never recompute a CI) and ruling 4 (never hide a NOT_EVALUABLE value), figure 4 shows peak and ramp as 2022-vs-2030 POINT VALUES with NO interval, visually distinct (hatched, grey) from load_factor's real CI band."
+  ],
+  "figure_02_household_count": {
+    "2022": 1200,
+    "2030": 1200
+  },
+  "figure_03_household_basis": {
+    "n_common_computed": 1198,
+    "per_arm_sizes": {
+      "S-Full": 1200,
+      "S-None": 1198,
+      "S-Partial": 1200,
+      "S-Revert-std": 1199
+    },
+    "expected_from_cross_scenario_common_basis_csv": 1198,
+    "matches_expected": true
+  },
+  "figure_04_ci_availability": {
+    "metrics_with_stock_weighted_ci_in_file": [
+      "Cooling:EnergyTransfer",
+      "Electricity:Facility",
+      "Fan Electricity Energy",
+      "HVACDHW:Electricity",
+      "Heating:EnergyTransfer",
+      "InteriorEquipment:Electricity",
+      "InteriorLights:Electricity",
+      "WaterSystems:EnergyTransfer",
+      "load_factor",
+      "midday_share"
+    ],
+    "peak_has_ci": false,
+    "ramp_has_ci": false,
+    "load_factor_change_type": "absolute_fraction",
+    "load_factor_quotable": "QUOTABLE"
+  },
+  "elapsed_sec": 52.398447036743164,
+  "dpi_setting": 600,
+  "fig_width_in_setting": 7.0
+}
