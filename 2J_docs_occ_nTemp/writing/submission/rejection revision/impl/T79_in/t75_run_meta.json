@@ -1,0 +1,173 @@
+{
+  "task": "T75",
+  "figure": "fig08_n200_convergence",
+  "elapsed_sec": 7.23,
+  "dpi_kwarg": 600,
+  "dpi_readback_from_png": [
+    599.9988,
+    599.9988
+  ],
+  "png_pixel_size": [
+    6900,
+    4920
+  ],
+  "input_csv": "/speed-scratch/o_iseri/2J_revision/T28/out/t28_b4_convergence.csv",
+  "input_csv_rows_total": 432,
+  "input_csv_cells": [
+    "HighRise__Montreal_6A",
+    "MidRise__Montreal_6A",
+    "OtherDwelling__Montreal_6A",
+    "SingleD__Montreal_6A"
+  ],
+  "input_csv_metric_labels": [
+    "elec_facility_kWh@2022",
+    "elec_facility_kWh@2030",
+    "elec_facility_kWh_delta_2022to2030",
+    "evening_ramp_kW_mean@2022",
+    "evening_ramp_kW_mean@2030",
+    "evening_ramp_kW_mean_delta_2022to2030",
+    "load_factor@2022",
+    "load_factor@2030",
+    "load_factor_delta_2022to2030",
+    "mean_daily_peak_kW@2022",
+    "mean_daily_peak_kW@2030",
+    "mean_daily_peak_kW_delta_2022to2030",
+    "mean_peak_hour@2022",
+    "mean_peak_hour@2030",
+    "mean_peak_hour_delta_2022to2030",
+    "midday_share@2022",
+    "midday_share@2030",
+    "midday_share_delta_2022to2030"
+  ],
+  "input_csv_N_values": [
+    10,
+    20,
+    50,
+    100,
+    150,
+    200
+  ],
+  "t54_precondition": {
+    "report_path": "/speed-scratch/o_iseri/2J_revision/T54/logs/t54_t28_report.txt",
+    "verdict_lines": [
+      "VERDICT: B0=PASS (1600/1600 delivered)",
+      "VERDICT: B1=PASS",
+      "VERDICT: B2=PASS",
+      "VERDICT: B3=REPORT (not a band -- see CSV named above; per-cell/metric yes-no already in the CSV)",
+      "VERDICT: B4=REPORT (convergence curve, CSV only, no PASS/FAIL band)",
+      "VERDICT: B5=PASS"
+    ],
+    "all_bands_pass_or_report": true,
+    "note": "T54 verdict read and confirmed BEFORE any t28_b4_convergence.csv number was used in this script. B0/B1/B2/B5 = PASS, B3/B4 = REPORT (no PASS/FAIL band; CSV-only report type by t28_check.py's own design)."
+  },
+  "t48_relevance_judgement": {
+    "files_checked": [
+      "/speed-scratch/o_iseri/2J_revision/T48/pub_loadshape/peak_shift_summary.csv",
+      "/speed-scratch/o_iseri/2J_revision/T48/pub_loadshape/loadshape_profiles.csv",
+      "/speed-scratch/o_iseri/2J_revision/T48/pub_loadshape/peak_hours.csv"
+    ],
+    "columns_seen": {
+      "peak_shift_summary.csv": "cell,year,equip_bldg_shift,equip_zone_shift,light_bldg_shift,light_zone_shift",
+      "loadshape_profiles.csv": "cell,year,arm,hour_of_day,equip_bldg_W,equip_zone_W,light_bldg_W,light_zone_W,facility_W,n_hh",
+      "peak_hours.csv": "cell,year,arm,equip_bldg_peak_h,equip_zone_peak_h,light_bldg_peak_h,light_zone_peak_h,n_hh"
+    },
+    "verdict": "EXCLUDED. This is a Step-9 activity-vs-baseline schedule peak-hour-shift check (n_hh=50 fixed per row, arm=activity/baseline, equip/light building/zone peak-hour columns) -- confirmed by the scripts in T48/scripts/ (step9_validate_full.py, step9_loadshape_aggregate.py, t48_helpers.py), matching this project's Step-9 A6 peak-shift work, NOT a sample-size N=10..200 convergence study. No column here is 'N' or 'halfwidth'. Unrelated to Figure 8's story; shares only the task NUMBER '48' with an earlier candidate guess in plan entry (di), not the content. Excluded entirely from this figure."
+  },
+  "figure_scope": {
+    "plotted_metric_labels": [
+      "elec_facility_kWh_delta_2022to2030",
+      "mean_daily_peak_kW_delta_2022to2030",
+      "mean_peak_hour_delta_2022to2030",
+      "load_factor_delta_2022to2030",
+      "midday_share_delta_2022to2030",
+      "evening_ramp_kW_mean_delta_2022to2030"
+    ],
+    "n_plotted_rows": 144,
+    "excluded_level_metric_labels": [
+      "elec_facility_kWh@2022",
+      "elec_facility_kWh@2030",
+      "mean_daily_peak_kW@2022",
+      "mean_daily_peak_kW@2030",
+      "mean_peak_hour@2022",
+      "mean_peak_hour@2030",
+      "load_factor@2022",
+      "load_factor@2030",
+      "midday_share@2022",
+      "midday_share@2030",
+      "evening_ramp_kW_mean@2022",
+      "evening_ramp_kW_mean@2030"
+    ],
+    "n_excluded_level_rows": 288,
+    "reason": "Figure headlines the 2022->2030 CHANGE half-width (this project's 'quotable' convention), not the raw 2022/2030 level half-widths. Level rows remain in the source CSV, untouched, for any future figure."
+  },
+  "controls": {
+    "row_count_completeness": {
+      "expected_delta_rows": 144,
+      "found_delta_rows": 144,
+      "missing_or_duplicate_combos": [],
+      "pass": true
+    },
+    "seen_working": [
+      {
+        "cell": "SingleD__Montreal_6A",
+        "metric": "elec_facility_kWh_delta_2022to2030",
+        "N": 200,
+        "mean": 12.029615887146749,
+        "halfwidth": 4.2046006657626025
+      },
+      {
+        "cell": "MidRise__Montreal_6A",
+        "metric": "mean_peak_hour_delta_2022to2030",
+        "N": 100,
+        "mean": -0.1514731474096963,
+        "halfwidth": 0.2667642666595441
+      }
+    ]
+  },
+  "finding_n200_method_switch": {
+    "description": "N=200 row uses a parametric Student-t CI on the real full 200-household sample; N=10-150 rows use a percentile CI of 1000 bootstrap-style subsample means drawn without replacement from that same 200. These are different statistics. Verified directly from t28_check.py's b4_convergence()/_paired_t_ci() source (T28_scripts/t28_check.py:353-380, 288-300).",
+    "n_combos_with_halfwidth_n200_gt_n150": 24,
+    "n_combos_total": 24,
+    "examples": [
+      {
+        "cell": "SingleD__Montreal_6A",
+        "metric": "elec_facility_kWh_delta_2022to2030",
+        "halfwidth_n150": 2.447488695117868,
+        "halfwidth_n200": 4.2046006657626025
+      },
+      {
+        "cell": "SingleD__Montreal_6A",
+        "metric": "mean_daily_peak_kW_delta_2022to2030",
+        "halfwidth_n150": 0.0114854390236252,
+        "halfwidth_n200": 0.0200408567623324
+      },
+      {
+        "cell": "SingleD__Montreal_6A",
+        "metric": "mean_peak_hour_delta_2022to2030",
+        "halfwidth_n150": 0.1522843315944302,
+        "halfwidth_n200": 0.2701931617951124
+      },
+      {
+        "cell": "SingleD__Montreal_6A",
+        "metric": "load_factor_delta_2022to2030",
+        "halfwidth_n150": 0.0009456170597842,
+        "halfwidth_n200": 0.0016426500899502
+      },
+      {
+        "cell": "SingleD__Montreal_6A",
+        "metric": "midday_share_delta_2022to2030",
+        "halfwidth_n150": 0.0012199631339462,
+        "halfwidth_n200": 0.0021231875145802
+      },
+      {
+        "cell": "SingleD__Montreal_6A",
+        "metric": "evening_ramp_kW_mean_delta_2022to2030",
+        "halfwidth_n150": 0.0210196351621481,
+        "halfwidth_n200": 0.0372486558743189
+      }
+    ]
+  },
+  "notes": [
+    "Source CSV also carries 288 LEVEL rows (<metric>@2022, <metric>@2030) not plotted in this figure -- see IMPL doc Decisions. Full source data (levels + deltas) is at /speed-scratch/o_iseri/2J_revision/T28/out/t28_b4_convergence.csv on the cluster, unmodified."
+  ]
+}

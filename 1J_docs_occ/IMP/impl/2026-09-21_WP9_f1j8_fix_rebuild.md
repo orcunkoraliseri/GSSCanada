@@ -5,8 +5,7 @@ Plan:       `1J_docs_occ/IMP/00_REVISION_PLAN.md` §7 log (an), (ao)
 Earlier:    `impl/2026-09-19_WP9_f1j8_age88.md` (the measurement), `impl/2026-09-19_WP9_stage1b_rebuild.md`
             (the rebuild recipe, patches P1-P5 and job scripts this task re-uses),
             `impl/2026-09-19_WP9_stage2_draw_manifest.md` (Stage 2 manifest + Gate 2)
-Status:     SUBMITTED — full chain queued (T0 1341248 RUNNING; T2 1341249/1341250, T3 1341251, T4 1341252
-            all PENDING on dependency). Local test PASSED. Nobody has read any output yet.
+Status:     DONE — all four jobs COMPLETED exit 0, outputs read and verified below.
 Model:      Sonnet employee. One task, one turn. Patch staged copies, test locally seen-failing-first,
             upload, submit the jobs (chained with dependencies), write state here, STOP. Never wait on a job.
 
@@ -129,6 +128,30 @@ then END YOUR TURN.
   `--dependency=afterok:1341251`) · submitted, state at submission: **PENDING (Dependency)** · log
   `/speed-scratch/o_iseri/1J_rerun/logs/wp9_stage2_1341252.out`.
 
+### Post-completion read (2026-09-21, this session)
+- All four jobs: `sacct` COMPLETED, exit 0:0. 1341249 (2010) 01:20:43, 1341250 (2022) 01:30:55,
+  1341251 (T3) 00:00:19, 1341252 (Stage 2) 00:03:13.
+- **T0** (`wp9_f1j8fix_t0_1341248.out`): all four `DONE:` backup lines present + `JOB DONE (T0 backups)`.
+- **T2 2010** (`wp9_f1j8fix_2010_1341249.out`): all required lines present — `P6b REUSE_LINKED` (rows=337126),
+  `P6a age88 -> 95: persons=10495`, `P6c age88 drop: persons=1885, homes before=32479, homes after=32440,
+  homes emptied=39`, `P5 tier NaN-safe` (x2), `JOB DONE (2010 F1J8FIX)`.
+- **T2 2022** (`wp9_f1j8fix_2022_1341250.out`): all required lines present — `P6b REUSE_LINKED` (rows=361922),
+  `P6a age88 -> 95: persons=30912`, `P6c age88 drop: persons=3844, homes before=36904, homes after=36785,
+  homes emptied=119`, `P5 tier NaN-safe` (x2), `JOB DONE (2022 F1J8FIX)`.
+- **T3** (`wp9_f1j8fix_t3_1341251.out`): `T3 VERDICT 2010: PASS`, `T3 VERDICT 2022: PASS`,
+  `T3 SUMMARY: 2010=PASS 2022=PASS overall=PASS` — M2=0 both years, home-set diff matches P6c emptied
+  counts exactly (39 / 119).
+- **T4 Stage 2** (`wp9_stage2_1341252.out`): THREE `GATE2 SUMMARY` lines found, not one — investigated
+  (line numbers 352/385/394) and confirmed all three are intentional, separate steps, not a fault:
+  - Step 5 (line 352, the real manifest): `G2.0=FAIL G2.1=PASS G2.2=PASS G2.3=PASS G2.4=PASS G2.5=PASS` —
+    matches the pre-registered pattern (plan log (an)) exactly.
+  - Step 6 (line 385, the April-rule CONTROL manifest — deliberately the wrong matching method): G2.3/G2.4
+    FAIL, G2.0/G2.5 NOT_EVALUABLE — expected; this control exists to prove G2.3/G2.4 can fire (memory rule
+    "gates must be seen failing"), and it did (z-scores up to -32.9, vs. the real manifest's max |z|=1.90).
+  - Step 7 (line 394, April-2025-reference-alone control): `G2.0=FAIL`, rest NOT_EVALUABLE (no manifest
+    given) — expected shape for a reference-only run.
+  **Verdict: T4 ACCEPTED, matches pre-registered pattern, no new failure.**
+
 ## Verified
 
 - **P6a/P6c logic, local seen-failing-first test** (`test_p6.py`, tiny synthetic 3-home census: HH1 no
@@ -201,18 +224,13 @@ then END YOUR TURN.
 
 ## Next
 
-- Nobody has read any job output yet — this was end-of-turn per the "never wait" rule. Next agent:
-  1. `tail`/`grep` (single-file) `wp9_f1j8fix_t0_1341248.out` for the four `DONE:`/`SKIP:` lines and
-     `JOB DONE (T0 backups)`.
-  2. `grep` `wp9_f1j8fix_2010_1341249.out` and `wp9_f1j8fix_2022_1341250.out` for the four required lines
-     `P6a age88 -> 95:`, `P6b REUSE_LINKED:`, `P6c age88 drop:`, `P5 tier NaN-safe:` (all four must be
-     PRESENT, memory rule 58) plus `JOB DONE (<year> F1J8FIX)` and the Gate 1 PASS/FAIL lines.
-  3. Read `f1j8fix/t3_result.json` (small) or `grep` `wp9_f1j8fix_t3_1341251.out` for `T3 VERDICT 2010:` /
-     `T3 VERDICT 2022:` / `T3 SUMMARY:`. Pass rule = both PASS (M2=0 and home-diff matches P6c exactly).
-  4. `grep` `wp9_stage2_1341252.out` for `GATE2 SUMMARY:` — expect `G2.0=FAIL` (accepted) and `G2.1`-`G2.5`
-     all PASS, per plan log (an).
-  5. If any T2 job exits 6 (guard: `.preF1J8` missing), that means T0 did not finish before T2 started —
-     should not happen since T2 depends `afterok` on T0, but check `sacct -j 1341248` state if it does.
+- **F-1J-8 fix is DONE and accepted** — the whole chain (T0-T4) verified above. Age-88 persons no longer
+  leak into the 75+ diary group in the 2010/2022 rebuild; Stage 2 (draw manifest + Gate 2) rebuilt clean
+  on top of it. Nothing outstanding from this task.
+- **Gate 1 checked (this session): all PASS, both years, both files** — 2010 grid/hhsize check1-3=PASS,
+  2022 grid/hhsize check1-3=PASS (day-type direction, night presence, 24-row shape). Nothing outstanding.
+- Update `00_REVISION_PLAN.md` §7 log with this closure (new entry after (ao)); the manuscript's
+  age-88 limitation text can now cite the emptied-home counts (39 in 2010, 119 in 2022) if needed.
 
 ## WHAT I DID NOT VERIFY
 

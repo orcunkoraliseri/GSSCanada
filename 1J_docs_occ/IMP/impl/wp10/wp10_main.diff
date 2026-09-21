@@ -1,0 +1,247 @@
+68a69,147
+> # --- WP10 (2026-09-21): Stage 4 manifest-driven household draws ---------------------
+> # Task doc: 1J_docs_occ/IMP/impl/2026-09-21_WP10_stage4_manifest_patch.md, step 4a.
+> # Ruling B (author, 2026-09-19): each simulated household is chosen ahead of time and
+> # recorded in draw_manifest.csv (see impl/2026-09-19_WP9_stage2_draw_manifest.md), not
+> # picked by _run_mc_neighbourhood itself. This constant/loader let that function read
+> # the manifest instead of calling random.choice()/find_best_match_household().
+> MC_DRAW_MANIFEST_PATH = "/speed-scratch/o_iseri/1J_rerun/stage2/draw_manifest.csv"
+> 
+> 
+> def _load_mc_draw_manifest(manifest_path=MC_DRAW_MANIFEST_PATH):
+>     """Load draw_manifest.csv into {(neighbourhood, draw, year, building_index): hh_id}.
+> 
+>     WP10 patch: _run_mc_neighbourhood must read household draws from this manifest
+>     instead of drawing them itself. Every call prints its own proof-of-execution line
+>     (repo convention: a patch that does not print a line did not run).
+>     """
+>     import csv as _wp10_csv
+> 
+>     lookup = {}
+>     n_rows = 0
+>     with open(manifest_path, "r", newline="", encoding="utf-8") as f:
+>         reader = _wp10_csv.DictReader(f)
+>         for row in reader:
+>             n_rows += 1
+>             key = (
+>                 row["neighbourhood"],
+>                 int(row["draw"]),
+>                 row["year"],
+>                 int(row["building_index"]),
+>             )
+>             lookup[key] = row["hh_id"]
+>     print(f"MANIFEST READ: {manifest_path}, rows={n_rows}")
+>     return lookup
+> 
+> 
+> def _wp10_select_households_for_draw(
+>     idf_stem, draw_number, year_scenarios, all_schedules, n_buildings, mc_draw_manifest,
+> ):
+>     """WP10 patch: manifest-driven household selection for one (neighbourhood, draw).
+> 
+>     Replaces the old base-household random.choice() draw plus the per-year
+>     integration.find_best_match_household() SSE match -- every household id now
+>     comes straight from draw_manifest.csv, one row per (neighbourhood, draw, year,
+>     building_index). No ranking, no candidate pool, no fallback chain.
+> 
+>     Returns {scenario: [{**household_data, 'hh_id': hh_id}, ...]} in building_index
+>     order, for every scenario present in all_schedules. Pure function (no I/O, no
+>     globals) so it can be unit-tested with tiny synthetic fixtures -- see Gate 4,
+>     G4.0/G4.1 "seen failing first" tests in impl/wp10/wp10_g4_selftest.py.
+> 
+>     Raises RuntimeError if a required manifest row is missing, or if its household
+>     id is not present in that year's loaded schedules.
+>     """
+>     per_scenario = {}
+>     for scenario in year_scenarios:
+>         if scenario not in all_schedules:
+>             continue
+>         year_schedules = all_schedules[scenario]
+>         schedules_list = []
+>         for bi in range(n_buildings):
+>             manifest_key = (idf_stem, draw_number, scenario, bi)
+>             if manifest_key not in mc_draw_manifest:
+>                 raise RuntimeError(
+>                     f"MANIFEST MISS: no row for neighbourhood={idf_stem} "
+>                     f"draw={draw_number} year={scenario} building_index={bi}"
+>                 )
+>             hh_id = mc_draw_manifest[manifest_key]
+>             if hh_id not in year_schedules:
+>                 raise RuntimeError(
+>                     f"MANIFEST HOUSEHOLD NOT IN SCHEDULES: hh_id={hh_id} "
+>                     f"neighbourhood={idf_stem} draw={draw_number} year={scenario} "
+>                     f"building_index={bi}"
+>                 )
+>             data = year_schedules[hh_id]
+>             schedules_list.append({**data, 'hh_id': hh_id})
+>         per_scenario[scenario] = schedules_list
+>     return per_scenario
+> 
+> 
+2015a2095,2109
+>     # WP10 (2026-09-21): the household draw must come from draw_manifest.csv, never
+>     # from random.choice(). Guard the whole function body so the old chooser raises
+>     # loudly if any code path still reaches it (Gate 4, G4.1), and always restore the
+>     # real random.choice on the way out so other menu options are unaffected.
+>     _wp10_orig_random_choice = random.choice
+> 
+>     def _wp10_forbidden_random_choice(*_wp10_a, **_wp10_kw):
+>         raise RuntimeError(
+>             "WP10 GUARD: random.choice() reached inside _run_mc_neighbourhood -- "
+>             "the old chooser must never run once the manifest patch is active "
+>             "(see impl/2026-09-21_WP10_stage4_manifest_patch.md, G4.1)."
+>         )
+> 
+>     random.choice = _wp10_forbidden_random_choice
+> 
+2036a2131,2135
+>         # WP10 (2026-09-21): load the pre-drawn household manifest once per neighbourhood
+>         # run. Every (neighbourhood, draw, year, building_index) combination this run
+>         # needs must be a row in the manifest -- there is no fallback to the old chooser.
+>         mc_draw_manifest = _load_mc_draw_manifest()
+> 
+2088,2116c2187,2191
+<         first_year = list(all_schedules.keys())[0]
+< 
+<         # Pre-compute sorted household lists per scenario — identical every iteration (Task 3)
+<         print("\nPre-computing household rankings per scenario...")
+<         sorted_year_hhs_cache = {}
+<         for scenario in year_scenarios:
+<             if scenario not in all_schedules:
+<                 continue
+<             sorted_year_hhs_cache[scenario] = [
+<                 hh for hh, _ in integration.filter_matching_households(all_schedules[scenario])
+<             ]
+<             print(f"  {scenario}: {len(sorted_year_hhs_cache[scenario])} ranked candidates")
+< 
+<         # Pre-compute per-DTYPE candidate pools for base-year sampling (once, before iterating)
+<         first_schedules = all_schedules[first_year]
+<         dtype_raw_first: dict = {}
+<         for hh_id, hh_data in first_schedules.items():
+<             hh_dtype = hh_data.get('metadata', {}).get('dtype', 'SingleD')
+<             dtype_raw_first.setdefault(hh_dtype, []).append(hh_id)
+< 
+<         dtype_pools_first: dict = {}
+<         for hh_dtype, pool in dtype_raw_first.items():
+<             scored = integration.filter_matching_households(first_schedules, candidates=pool)
+<             if not scored:
+<                 continue
+<             pool_size = max(n_buildings * 2, len(scored) // 2)
+<             dtype_pools_first[hh_dtype] = [hh for hh, _ in scored[:pool_size]]
+<             print(f"  Base year ({first_year}) {hh_dtype} pool: {len(dtype_pools_first[hh_dtype])} candidates")
+<         print()
+---
+>         # WP10 (2026-09-21): the base-year draw (random.choice over a DTYPE pool) and the
+>         # per-year SSE best-match draw (integration.find_best_match_household) are both
+>         # replaced by direct manifest lookups -- see G4.1. Nothing here computes a
+>         # ranking or a pool any more; every household id below comes from
+>         # mc_draw_manifest, keyed by (neighbourhood, draw, year, building_index).
+2119,2145c2194,2195
+<             print(f"\n--- Iteration {k+1}/{iter_count} ---")
+< 
+<             # Sample one base household per building from the correct DTYPE pool
+<             base_hhs: list = []
+<             used_base_k: set = set()
+<             for bldg_dtype in building_dtypes:
+<                 pool_k = [hh for hh in dtype_pools_first.get(bldg_dtype, []) if hh not in used_base_k]
+<                 if not pool_k:
+<                     for fb_dtype in DTYPE_FALLBACK.get(bldg_dtype, []):
+<                         fb_pool_k = [hh for hh in dtype_pools_first.get(fb_dtype, []) if hh not in used_base_k]
+<                         if fb_pool_k:
+<                             pool_k = fb_pool_k
+<                             break
+<                 if pool_k:
+<                     hh_id_k = random.choice(pool_k)
+<                     used_base_k.add(hh_id_k)
+<                     base_hhs.append(hh_id_k)
+<                 else:
+<                     base_hhs.append(list(first_schedules.keys())[0])
+< 
+<             # Record hhsize and dtype profiles for cross-year matching
+<             hhsize_profile = [first_schedules[hh].get('metadata', {}).get('hhsize', 2) for hh in base_hhs]
+<             dtype_profile  = [first_schedules[hh].get('metadata', {}).get('dtype', 'SingleD') for hh in base_hhs]
+< 
+<             from collections import Counter as _Counter
+<             dtype_summary_k = ', '.join(f"{v} {k2}" for k2, v in _Counter(dtype_profile).most_common())
+<             print(f"  Selected {n_buildings} households: {dtype_summary_k}")
+---
+>             draw_number = k + 1
+>             print(f"\n--- Iteration {k+1}/{iter_count} (manifest draw {draw_number}) ---")
+2151a2202,2210
+>             # (draw, year, building_index, hh_id) actually used this iteration, echoed to
+>             # mc_manifest_echo.csv below -- Gate 4 G4.0 reads this back, not the IDF/sql.
+>             wp10_echo_rows = []
+> 
+>             # WP10: one manifest-driven selection call for the whole iteration (all
+>             # years, all buildings) -- see _wp10_select_households_for_draw docstring.
+>             wp10_schedules_by_scenario = _wp10_select_households_for_draw(
+>                 idf_stem, draw_number, year_scenarios, all_schedules, n_buildings, mc_draw_manifest,
+>             )
+2164,2209c2223,2225
+<                     # Find matching households logic (filtered by profile)
+<                     schedules_list = []
+<                     year_schedules = all_schedules[scenario]
+< 
+<                     # Use pre-computed sorted list (Task 3)
+<                     sorted_year_hhs = sorted_year_hhs_cache[scenario]
+< 
+<                     used_hhs = set()
+< 
+<                     for target_hhsize, target_dtype in zip(hhsize_profile, dtype_profile):
+<                         # Per-building SSE matching filtered by DTYPE + hhsize
+<                         size_candidates = [
+<                             hh for hh in sorted_year_hhs
+<                             if year_schedules[hh].get('metadata', {}).get('hhsize', 0) == target_hhsize
+<                             and year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
+<                             and hh not in used_hhs
+<                         ]
+< 
+<                         if not size_candidates:
+<                             # DTYPE-only fallback (relax hhsize)
+<                             size_candidates = [
+<                                 hh for hh in sorted_year_hhs
+<                                 if year_schedules[hh].get('metadata', {}).get('dtype', '') == target_dtype
+<                                 and hh not in used_hhs
+<                             ]
+< 
+<                         if not size_candidates:
+<                             # DTYPE fallback chain
+<                             for fb_dtype in DTYPE_FALLBACK.get(target_dtype, []):
+<                                 size_candidates = [
+<                                     hh for hh in sorted_year_hhs
+<                                     if year_schedules[hh].get('metadata', {}).get('dtype', '') == fb_dtype
+<                                     and hh not in used_hhs
+<                                 ]
+<                                 if size_candidates:
+<                                     break
+< 
+<                         if size_candidates:
+<                             hh_id = integration.find_best_match_household(year_schedules, size_candidates)
+<                             data = year_schedules[hh_id]
+<                             used_hhs.add(hh_id)
+<                         else:
+<                             print(f"      Critical: No households left in {scenario}!")
+<                             continue
+< 
+<                         schedules_list.append({**data, 'hh_id': hh_id})
+---
+>                     schedules_list = wp10_schedules_by_scenario[scenario]
+>                     for bi, sched in enumerate(schedules_list):
+>                         wp10_echo_rows.append((draw_number, scenario, bi, sched['hh_id']))
+2242a2259,2269
+>             # WP10 (2026-09-21): echo exactly which household each building got this
+>             # draw, so Gate 4 (G4.0) can check it against draw_manifest.csv without
+>             # re-parsing the IDF or the .sql result files.
+>             echo_path = os.path.join(iter_dir, "mc_manifest_echo.csv")
+>             with open(echo_path, "w", newline="", encoding="utf-8") as _echo_f:
+>                 _echo_w = csv.writer(_echo_f)
+>                 _echo_w.writerow(["neighbourhood", "draw", "year", "building_index", "hh_id"])
+>                 for _draw, _year, _bi, _hh_id in wp10_echo_rows:
+>                     _echo_w.writerow([idf_stem, _draw, _year, _bi, _hh_id])
+>             print(f"  WP10 echo written: {echo_path}, rows={len(wp10_echo_rows)}")
+> 
+2356a2384,2387
+>     finally:
+>         # WP10: always restore the real random.choice, success or failure, so other
+>         # menu options that legitimately use it are unaffected outside this function.
+>         random.choice = _wp10_orig_random_choice

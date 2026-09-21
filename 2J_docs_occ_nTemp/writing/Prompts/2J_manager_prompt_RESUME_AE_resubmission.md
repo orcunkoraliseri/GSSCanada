@@ -1,15 +1,233 @@
 # 2J manager prompt — RESUME the Applied Energy resubmission (paste whole into a new session)
 
-First written 2026-09-15 by the outgoing manager session. **Kept current: the manager rewrites §2 and §3
-after every task completion** (author request, 2026-09-15). Last updated: **2026-09-21, session pausing
-overnight (author closing) —
-T76 (Figure 1, WP11 numbering, at-home-by-hour) ACCEPTED, no problems found. ALL NINE WP11 FIGURES ARE
-NOW BUILT (8 of 9 fully accepted; Figure 6 still blocked). Only T72 (checker fix) is still on the cluster.
-See §0.000000000000000 immediately below; §0.00000000000000 under it is now history.**
+Last updated: **2026-09-21 evening, end of session (plan log (el)). Nothing is live on the cluster or
+in any agent.** Read §NOW below; everything under it is history.
 
 ---
 
-## 0.000000000000000 CURRENT STATE (2026-09-21, plan log entry (do), T76) — THIS IS THE STATE. Everything below it is history. START HERE ON RESUME.
+## NOW (2026-09-21, plan log (ek)-(el)) — START HERE
+
+**Venue: Applied Energy, CONFIRMED by the author 2026-09-21** (knowing the rejection risk).
+Backups in order: Sustainable Cities and Society (declare the Concordia editor conflict), then
+Journal of Building Engineering. Energy and Buildings stays excluded. Recorded in
+`submission/02_journal_options.md` and plan log (el).
+
+**The author is reading the whole paper manually from the beginning before submission.** On resume,
+ASK what the author changed or wants changed before doing anything else. If the author edited the
+`.docx` directly, the `.md` is no longer the source; ask which file is master before any rebuild.
+
+**Files:** `submission/rejection revision/manuscript/2J_manuscript_AE_revised.md` + `.docx`, SI
+`2J_SI_AE_revised.md` + `.docx`. Build recipe: `manuscript/prep/assembly_log.md` (last manager lines)
+and the scratchpad `add_figs.pl` step; ref doc `extra/build_scripts/ref_submit.docx`, then `post.py`.
+Response map (every reviewer point, where answered): `manuscript/prep/response_map.md`, 55 DONE,
+7 PARTIAL (D19 Results ordering is the author's call; R2-3 "Forecasting" kept in the title by order).
+
+**Author decisions 2026-09-21, all applied (plan log (em)-(eq)):** companion paper = under review;
+Intro counts "over 40" architectures and 5,997 simulation runs (T91, (eo)); SI three values filled from
+job 1341516 with controls seen (T92, (eq)); declarations drafted with `[AUTHOR: ...]` blanks in
+`manuscript/prep/declarations_draft.md` (T93, (en)). **Main paper and SI now have ZERO placeholders;
+both .docx rebuilt 2026-09-21 15:17.** Fresh submission: no response letter. Items 1-3 below are DONE;
+item 5 is the declarations draft; item 4 (guide PDF) is still the author's.
+
+**Still owed by the author:**
+1. Companion paper status (`[STATUS TO CONFIRM BY AUTHOR]`, Table 1, line ~87).
+2. Two counts in Intro 1.5 (`[NUMBER FROM RESULTS]` x2, lines ~158 and ~162: architectures searched;
+   total simulation runs).
+3. Three SI `[VALUE PENDING]`: author decides, collector job or cut the sentences.
+4. Save the Applied Energy "Guide for Authors" page as PDF into `writing/resources/` (Elsevier blocks
+   our fetch tool with HTTP 403; T90 returned NOT OPENABLE, `manuscript/prep/ae_compliance.md`).
+5. Funding, CRediT roles, competing-interest and generative-AI declarations, data availability wording
+   (none exist in the manuscript yet; only the author knows them).
+
+**Agent work still to do once 4 is in:** re-run T90 from the PDF (fresh Sonnet, same task doc
+`impl/2026-09-21_T90_wp13_ae_compliance.md`); check the existing Highlights and Abstract against the
+guide's limits; decide single or double blind (`extra/build_scripts/submit_check.py` assumes double
+blind, MASTER + BLINDED); then WP13 package (cover letter and declarations from the author's answers). **FRESH submission, author
+ruling 2026-09-21: NO response letter, no mention of the earlier review anywhere; the response map is
+an internal checklist only.** Create nothing the author did not ask for.
+
+**Tracker page NOT republished this session** (https://claude.ai/artifact/4emZkRdASTDUtvXSRtWPVe):
+owed entries (ef)-(el). Read the live page first, then republish in place.
+
+Standing rules: plain English, short replies; no em/en dashes in prose (title and reference page ranges
+excepted); never quote 1.0-3.3 %; "limitation", never "failure"; claim the designed shift, not the level;
+no notebook/WP/reviewer wording in the paper; never create images; deep research is external; Speed
+cluster sbatch only, tcsh, `-t 7-00:00:00`; update this prompt and the plan log after every step.
+
+---
+
+
+First written 2026-09-15 by the outgoing manager session. **Kept current: the manager rewrites §2 and §3
+after every task completion** (author request, 2026-09-15). Last updated: **2026-09-21, same manager
+session, session pausing for the author to open a fresh session and continue with WP10 —
+T77 collected and ACCEPTED. Figure 6 is DONE (controls-first: seen-working control reproduced T68's
+accepted numbers to better than 1e-6, all four T30-side controls fired, both arms delivered the full
+2400 households, table + figure built). **All nine planned WP11 figures are now done. WP11 is CLOSED.**
+The critical path moves to WP10 (manuscript rewrite), then WP13 (venue/submission package). Nothing is
+live on the cluster right now. **Tracker artifact already republished** (same link,
+https://claude.ai/artifact/4emZkRdASTDUtvXSRtWPVe, now at Version 85): checklist shows Figure 6/WP11
+done, and the page was also restructured so the checklist sits right after the top summary and the long
+day-by-day update notes moved to the bottom, just above the footer — the author found the notes were
+burying the checklist. Nothing is owed on the tracker right now. See §0.000000000000000000 immediately
+below; everything under it is now history.**
+
+---
+
+## 0.00000000000000000000 CURRENT STATE (2026-09-21, plan log entry (ds)) — THIS IS THE STATE. Everything below it is history. START HERE ON RESUME.
+
+**T79 ACCEPTED** (results number sheet, spot-checked against the files). Four binding rulings in plan
+log (ds): item 40 governs WP5 too (per-dwelling Facility kWh SingleD only); "48/48 within +/-2.7 %" and
+EUI Table 5 retired; "17.0-17.7 h" band and coincidence factor retired (fig03 peak hour index 17 / 18
+allowed); rebuilt numbers replace archived ones (Facility +0.12 %, midday +0.73 pp, load factor +0.49 pp).
+All 2005-2015 energy numbers retired; energy results are 2022 and 2030 only.
+
+**T78 ACCEPTED (plan log (dt))**: `manuscript/draft_S1_introduction.md`, one manager fix (held-out
+test is one year, 2015 to 2022). Author-owed list for assembly is in (dt).
+
+**T81 ACCEPTED (plan log (du))**: `manuscript/draft_S3_results.md`, nine manager edits listed in (du).
+
+**T82 dispatched**: Discussion + Conclusion, brief `impl/2026-09-21_T82_wp10_discussion_conclusion.md`.
+
+**T80 COLLECTED + item 17 RULED (plan log (dv))**: 2030 reported as the step from 2022 (main
++1.49 pp, partial -0.85, reversion -3.21, weekday whole-day share); pandemic break = 4.73 pp over the
+2005-2015 respondent trend (7.67 standardized). Results 3.1 filled. New item 41: the old historic
+household schedule files trend DOWN while the respondent trend goes UP; those levels are never quoted.
+**T82 ACCEPTED (plan log (dw))**: Discussion + Conclusion drafts, six manager edits. All main sections
+now drafted. **T83 ACCEPTED (plan log (dx))**, one fix (average-profile total is about 9 % off, not
+"close"). **Live now: T84** assembly, brief `impl/2026-09-21_T84_wp10_assembly.md`, outputs
+`manuscript/2J_manuscript_AE_revised.md`, `manuscript/2J_SI_AE_revised.md`, `manuscript/prep/assembly_log.md`.
+**(history) was live: T83**
+
+**T84 ACCEPTED (plan log (dz)), 2026-09-21.** Merged main file `manuscript/2J_manuscript_AE_revised.md`
+(12,076 words) and SI `manuscript/2J_SI_AE_revised.md` exist. **Title = the ORIGINAL submitted title,
+verbatim, by author order; do not change it** (its "Forecasting" and en dash are an author-approved
+exception). T84's "FILE NOT FOUND" for four figures was wrong: all ten figure images exist locally; no
+old method diagram 02-04 is used. **Word copies exist (plan log (ea))**: both `.docx` files sit next to
+the `.md` files with all figures embedded; rebuild them with pandoc after any `.md` edit (see
+`manuscript/prep/assembly_log.md`, last manager lines, for the equation 17/18 workaround). **T85 SI
+clean-up ACCEPTED (plan log (eb))**: SI tables S1-S4, Figures S1-S2 captioned; both .docx rebuilt in
+the earlier submission format (`extra/build_scripts/ref_submit.docx` + `post.py`; recipe in the
+assembly log). Nothing is live now. Open: 3 SI `[VALUE PENDING]` with no source (collector job or cut
+the sentences). **Plan log (ec), 2026-09-21:** figures now embedded in the .md itself (no "WP" tags
+left); table widths set from content (pandoc needs `--columns=10`); table captions plain text, label
+bold; Figure 1 prompt simplified to 10 boxes (author regenerates in Gemini; current PNG is still the old
+one); citation prompts `deepResearch/dr_2J-14`, `-15`, `-16` written for the author. T86 (paper-voice wording sweep) ACCEPTED; both .docx rebuilt with `--columns=10`. Nothing live. EUI: author approved the job; T87 job 1341459 submitted (`impl/2026-09-21_T87_eui_collector.md`; cross-check against T68 enduse_annual.csv, not T67), score its controls before any number enters the paper.
+**Next:** WAITING ON AUTHOR: (1) venue confirm (stay Applied Energy recommended, plan log (ek)); (2) save the Applied Energy Guide for Authors as PDF into `writing/resources/` (Elsevier blocks the fetch tool, T90 NOT OPENABLE), then re-run T90 from that PDF with a fresh agent, then assemble WP13. Author owes: JBPS status, 2 Intro counts.
+
+**Figure status (author asked, 2026-09-21):** all nine data figures were regenerated from the rebuilt
+runs and accepted earlier (plan log (dj)-(dq)); local copies now sit in `impl/`:
+fig01 at-home by hour `T76_out/`, fig02-05 `T71_out/`, fig06 full vs average-profile `T77_out/`,
+fig07 measured vs simulated `T73_out/`, fig08 sample size (SI) `T75_out/`, fig09 threshold (SI)
+`T74_out/figures/`. Workflow diagram = `../figures/Figure_01_workflow.png` (accepted (bu)).
+**NOT regenerated:** the old method diagrams `Figure_02_dataprep.png`, `Figure_03_J3_architecture.png`,
+`Figure_04_schedule_integration.png` (author-made images; may carry internal labels such as "J3");
+old data figures `Figure_05`-`07` are retired by the new set. If T84's figure list keeps any of 02-04,
+check each image for internal labels and retired numbers; any redraw is an image PROMPT for the author,
+never an image made by us. (Abstract + Highlights, brief `impl/2026-09-21_T83_wp10_abstract_highlights.md`).
+Next after T83: assemble one manuscript file (renumber Limitations to Section 5, fill Intro 1.5
+placeholders, fix figure numbers), thread `response_map.md`, then WP13.
+
+**(history) Was live:** T80 (pre-pandemic at-home by hour, cluster sbatch, brief
+`impl/2026-09-21_T80_historic_athome_by_hour.md`), T81 (Section 3 Results draft, text, brief
+`impl/2026-09-21_T81_wp10_results_section.md`, T80 numbers as placeholders).
+
+**Next, in order:** (1) collect T81; (2) collect T80 job when `sacct` shows it done (fresh
+collector), then rule item 17's definition and fill T81's placeholders; (3) Discussion + Conclusion;
+(4) Abstract/Highlights; (5) assemble one file, thread `response_map.md`, then WP13.
+
+---
+
+## 0.0000000000000000000 EARLIER STATE (2026-09-21, plan log entry (dr), WP10 started) — HISTORY, kept for the record.
+
+**WP10 (manuscript rewrite) has started. Two Sonnet employees dispatched in parallel, no cluster compute:**
+- **T78** — new title + Section 1 Introduction -> `manuscript/draft_S1_introduction.md`. Brief
+  `impl/2026-09-21_T78_wp10_introduction.md`.
+- **T79** — Results number sheet (every quotable number, its source, its ruling) ->
+  `manuscript/prep/results_number_sheet.md`. Brief `impl/2026-09-21_T79_wp10_results_number_sheet.md`.
+
+Already drafted before today: Section 2 framework, Section 7 limitations, three SI parts.
+
+**Next, in order:** (1) collect T78 and T79 (read each task doc's Status/Verified/trailer, spot-check
+numbers against sources); (2) dispatch Results (Section 3) from T79's sheet; (3) Discussion +
+Conclusion; (4) Abstract/Highlights last; (5) assemble one manuscript file, then WP13. Author said:
+continue without waiting for confirmation.
+
+---
+
+## 0.000000000000000000 EARLIER STATE (2026-09-21, plan log entry (dq), T77) — HISTORY, kept for the record.
+
+**T77 is DONE and ACCEPTED — Figure 6 is built.** Jobs `1341328`/`1341329`/`1341330` all `COMPLETED`,
+exit `0:0`. Report read first (`T77/logs/t77_report.txt`), never `sacct` alone. Controls-first: the
+seen-working control (byte-identical copy of T68's accepted script run against `T21/out`) reproduced
+T68's own accepted numbers to better than one part in a million; all four T30-side controls (a
+seen-failing hour-of-day check, the brief's two independently hand-computed household pairs, a
+divisor-invariance check, a divisor-sanity check) fired as designed; both arms delivered the full
+expected 2400 households, nothing silently dropped. `fig06_comparison_table.csv` (1104 rows, 850
+usable/quotable, 254 marked not-usable per the project's own divisor rule) and
+`household_peak_spread_both_arms.csv` built; `figure_06_full_vs_avgarm.png` rendered with the excluded
+static arm named in its own caption, citing item c8's closure. VERDICT: PASS — meaning the safety
+checks and row counts are trustworthy; any single number still needs its own row's
+usable/not-usable flag checked before being quoted in the manuscript.
+
+**This closes all nine planned WP11 figures — WP11 is fully done.** Per plan §4's critical path, the
+work now moves to **WP10 (manuscript rewrite)**: thread every closed review item (the 10-40 numbered
+range in the plan log, plus the full WP11 figure set) into the manuscript draft and
+`manuscript/prep/response_map.md`. After WP10, **WP13 (venue/submission package)** is the last stage.
+
+**Next, in order, on resume:** (1) the tracker artifact is already current (Version 85, see above) —
+nothing owed there, only read it live if you need to double-check before making a claim; (2) start
+WP10 — read `manuscript/prep/response_map.md` and the plan log's numbered item list, scope the first
+manuscript-rewrite task as a fresh employee brief; (3) continue "til the end" per the standing author
+instruction, updating this prompt and the plan log after every step, and republish the tracker whenever
+there is genuine new state (not on a fixed schedule).
+
+Full detail: plan log entry (dq) in `00_REVISION_PLAN.md`.
+
+---
+
+## 0.0000000000000000 EARLIER STATE (2026-09-21, plan log entry (dp), T72/T77 dispatch) — HISTORY, kept for the record. §0.000000000000000000 above is the state.
+
+**T72 is DONE and ACCEPTED.** Job `1341254`, `sacct` shows `COMPLETED 01:56:38 0:0`. Report read first
+(`T72/logs/t72_v3_fixed_report.txt`, fixed order, never `sacct` alone). All three controls fired as
+designed: seen-failing (unmodified `t30_check.py`) reproduced T61's `0/48` exactly on the same real T30
+tree; the one-line fix (`obj[1:]` to `obj[2:]`, dropping the schedule object's per-household Name field
+that was polluting the hash) scores **48/48 PASS** on the full 48-cell grid; the broken-shadow control
+(a real VALUE field altered in one household) still correctly fires FAIL, proving the fix isn't a
+checker that always passes. Two more hand-verified household field comparisons, byte-identical past the
+Name field. **T30's averaging design worked correctly from the very start — only the checker's own
+hashing was ever wrong.**
+
+**T30's arm is now cleared on all six gates** (V0/V1/V2/V4/V5 accepted before T61; V3 now PASS via T72).
+
+**Figure 6 ruling (plan log (dp), full reasoning there): TWO-WAY comparison only — full model vs. T30
+average-profile arm.** The static-schedule arm (T19/T22) stays excluded; it was already ruled unusable
+because it drew a different household sample than the main runs (checklist item c8, closed). This still
+directly answers Reviewer 1's "compare with simpler alternatives" ask, since the average-profile arm is
+the harder of the two simple competitors by design. The manuscript text and figure caption must say
+plainly why the static arm is absent, citing item c8.
+
+**No task has ever computed this comparison table — it is new work.** T30's own collector
+(`t30_check.py`) only ever scored the six gates plus household peak-hour spread; it never computed
+stock-level annual kWh/peak/load-factor/midday-share/evening-ramp for either arm. **T77 dispatched** as a
+fresh Sonnet employee (background agent, not a cluster job yet at time of dispatch) to build this table
+and the figure, reusing the already-accepted `T68_scripts/enduse_hour_corrected.py` method (copied, not
+edited, pointed at `T30/out` instead of `T21/out`) and `T68/out/grid_metrics.csv`/`enduse_annual.csv` for
+the full-model side (already accepted, do not recompute). Brief:
+`impl/2026-09-21_T77_wp3_figure6_comparison.md`.
+
+**Next, in order on resume:** (1) check whether T77's background agent has reported back — if it has,
+read its final message and the implementation doc's Ledger/Verified sections before trusting anything;
+(2) if it submitted a real cluster job, check that job with `sacct -j <id> -X` (allowed command, no
+compute) — do not poll repeatedly, check once; (3) collect T77 controls-first exactly as every prior
+WP11/WP6 task (seen-working control, hand-verified pairs, then the table, then the VERDICT line) once its
+job (if any) shows COMPLETED; (4) once Figure 6 is accepted, **all nine planned WP11 figures are done**
+and the critical path moves to **WP10 (manuscript rewrite)**, then **WP13 (venue/submission package)** —
+continue "til the end" per the standing author instruction, updating this prompt and the plan log after
+every step.
+
+---
+
+## 0.000000000000000 EARLIER STATE (2026-09-21, plan log entry (do), T76) — HISTORY, kept for the record. §0.0000000000000000 above is the state.
 
 **T76 is DONE. Figure 1 (WP11 numbering, at-home-by-hour) accepted** — job `1341263` finished in under 5
 minutes. The hard-stop instruction did **not** fire: the 2022 at-home baseline turned out to be an existing

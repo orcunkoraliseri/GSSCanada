@@ -1,0 +1,34 @@
+{
+  "job_started_utc": "2026-09-21T15:23:45Z",
+  "elapsed_sec": 36.25613713264465,
+  "input_root": "/speed-scratch/o_iseri/2J_revision/T30/out",
+  "n_candidate_runs": 2400,
+  "n_discover_skipped": 0,
+  "discover_skipped_sample": [],
+  "excluded_non_grid_dirs": [
+    "SimResults_Plotting_Schedules",
+    "sample_001_HH130168",
+    "sample_001_HH130228",
+    "sample_002_HH79150",
+    "sample_002_HH79252"
+  ],
+  "n_households_year_read_ok": 2400,
+  "n_households_year_skipped": 0,
+  "proc_skipped": [],
+  "row_counts": {
+    "enduse_annual.csv": 2400,
+    "grid_metrics.csv": 2400,
+    "closure.csv": 2400
+  },
+  "dropped_outputs_vs_T68": [
+    "enduse_hourly_profile.csv",
+    "enduse_change_2022_2030.csv (documented in module docstring)"
+  ],
+  "controls_summary": {
+    "C1_hour_of_day_seen_failing": "ran_and_fired",
+    "C2_hand_verified_pairs": "ran_and_fired",
+    "C3_divisor_invariance": "ran_and_fired",
+    "C4_divisor_applied_sanity": "ran_and_fired"
+  },
+  "controls_all_fired": true
+}

@@ -1,0 +1,244 @@
+{
+  "scenario": "S-Revert-std",
+  "scenario_root": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out",
+  "scenario_note": "ruling 5: population-mix-held-fixed scenario (checklist B4b) -- a DIFFERENT scenario dimension from the two lambda arms above, NOT a third lambda value. Never group this with S-None/S-Partial on a lambda axis in any table or chart series.",
+  "job_started_utc": "2026-09-21T08:18:48Z",
+  "elapsed_sec": 52.03495383262634,
+  "t21_root": "/speed-scratch/o_iseri/2J_revision/T21/out/step8",
+  "n_candidate_runs": 2398,
+  "n_discover_skipped": 0,
+  "discover_skipped_sample": [],
+  "n_households_year_read_ok": 2398,
+  "n_households_year_skipped": 0,
+  "proc_skipped": [],
+  "n_paired_households_own_basis": 1199,
+  "row_counts": {
+    "enduse_annual.csv": 2398,
+    "enduse_hourly_profile.csv": 4014144,
+    "grid_metrics.csv": 2398,
+    "closure.csv": 2398,
+    "enduse_change_2022_2030.csv": 250
+  },
+  "divisor_tables_used": {
+    "T66_CELL_EQUIP_DIVISOR": {
+      "SingleD__Toronto_5A": 1.0,
+      "SingleD__Kelowna_5B": 1.0,
+      "SingleD__Vancouver_5C": 1.0,
+      "SingleD__Montreal_6A": 1.0,
+      "SingleD__Calgary_6B": 1.0,
+      "SingleD__Winnipeg_7A": 1.0,
+      "OtherDwelling__Toronto_5A": 7.0,
+      "OtherDwelling__Kelowna_5B": 7.0,
+      "OtherDwelling__Vancouver_5C": 7.0,
+      "OtherDwelling__Montreal_6A": 7.0,
+      "OtherDwelling__Calgary_6B": 7.0,
+      "OtherDwelling__Winnipeg_7A": 7.0,
+      "MidRise__Toronto_5A": 33.0,
+      "MidRise__Kelowna_5B": 33.0,
+      "MidRise__Vancouver_5C": 33.0,
+      "MidRise__Montreal_6A": 33.0,
+      "MidRise__Calgary_6B": 33.0,
+      "MidRise__Winnipeg_7A": 33.0,
+      "HighRise__Toronto_5A": 81.0,
+      "HighRise__Kelowna_5B": 81.0,
+      "HighRise__Vancouver_5C": 81.0,
+      "HighRise__Montreal_6A": 81.0,
+      "HighRise__Calgary_6B": 81.0,
+      "HighRise__Winnipeg_7A": 81.0
+    },
+    "T66_CELL_LIGHT_DIVISOR": {
+      "SingleD__Toronto_5A": 1.0,
+      "SingleD__Kelowna_5B": 1.0,
+      "SingleD__Vancouver_5C": 1.0,
+      "SingleD__Montreal_6A": 1.0,
+      "SingleD__Calgary_6B": 1.0,
+      "SingleD__Winnipeg_7A": 1.0,
+      "OtherDwelling__Toronto_5A": 7.0,
+      "OtherDwelling__Kelowna_5B": 7.0,
+      "OtherDwelling__Vancouver_5C": 7.0,
+      "OtherDwelling__Montreal_6A": 7.0,
+      "OtherDwelling__Calgary_6B": 7.0,
+      "OtherDwelling__Winnipeg_7A": 7.0,
+      "MidRise__Toronto_5A": 36.0,
+      "MidRise__Kelowna_5B": 36.0,
+      "MidRise__Vancouver_5C": 36.0,
+      "MidRise__Montreal_6A": 36.0,
+      "MidRise__Calgary_6B": 36.0,
+      "MidRise__Winnipeg_7A": 36.0,
+      "HighRise__Toronto_5A": 90.0,
+      "HighRise__Kelowna_5B": 90.0,
+      "HighRise__Vancouver_5C": 90.0,
+      "HighRise__Montreal_6A": 90.0,
+      "HighRise__Calgary_6B": 90.0,
+      "HighRise__Winnipeg_7A": 90.0
+    },
+    "source": "/speed-scratch/o_iseri/2J_revision/T66/scripts/step9_validate_full_corrected.py (read-only, never imported/edited)"
+  },
+  "water_systems_energytransfer_zero_by_archetype": {
+    "SingleD": {
+      "n_zero": 0,
+      "n_total": 600
+    },
+    "OtherDwelling": {
+      "n_zero": 0,
+      "n_total": 598
+    },
+    "MidRise": {
+      "n_zero": 0,
+      "n_total": 600
+    },
+    "HighRise": {
+      "n_zero": 0,
+      "n_total": 600
+    }
+  },
+  "zero_2022_denominator_counts_by_meter": {
+    "elec_facility_kWh": 0,
+    "lights_kWh": 0,
+    "equip_kWh": 0,
+    "fan_kWh": 0,
+    "heating_ET_kWh": 0,
+    "cooling_ET_kWh": 0,
+    "water_ET_kWh": 0,
+    "hvac_dhw_elec_kWh": 0
+  },
+  "undelivered_csv_sweep": {
+    "n_files": 24,
+    "n_total_undelivered_rows": 1,
+    "files": [
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/SingleD__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/SingleD__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/SingleD__Vancouver_5C/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/SingleD__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/SingleD__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/SingleD__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/OtherDwelling__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/OtherDwelling__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/OtherDwelling__Vancouver_5C/undelivered.csv",
+        "n_rows": 1,
+        "rows": [
+          {
+            "sample": "9",
+            "sim_hh_id": "129937",
+            "reason": "not in scenario pool (absent from schedule file, or dropped by validate_household_schedule -- integration.py:432-438; same mechanism T21 diagnosis 1328414 identified)"
+          }
+        ]
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/OtherDwelling__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/OtherDwelling__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/OtherDwelling__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/MidRise__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/MidRise__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/MidRise__Vancouver_5C/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/MidRise__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/MidRise__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/MidRise__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/HighRise__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/HighRise__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/HighRise__Vancouver_5C/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/HighRise__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/HighRise__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T32/step8_std/out/HighRise__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      }
+    ]
+  },
+  "controls_summary": {
+    "C1_hour_of_day_seen_failing": "ran_and_fired",
+    "C2_seen_working_hand_check": "ran_and_fired",
+    "C3_divisor_invariance": "ran_and_fired",
+    "C4_divisor_applied_sanity": "ran_and_fired"
+  },
+  "controls_all_fired": true
+}

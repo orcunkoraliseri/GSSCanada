@@ -1,0 +1,21 @@
+{
+  "controls": {
+    "C_input_row_counts": {
+      "full_model_enduse_annual_rows": 2400,
+      "full_model_grid_metrics_rows": 2400,
+      "avg_arm_enduse_annual_rows": 2400,
+      "avg_arm_grid_metrics_rows": 2400,
+      "expected_each": 2400
+    },
+    "C_row_counts_as_expected": true
+  },
+  "notes": [],
+  "figure": {
+    "png_path": "/speed-scratch/o_iseri/2J_revision/T77/out/figure_06_full_vs_avgarm.png"
+  },
+  "elapsed_sec": 93.26198220252991,
+  "comparison_table_rows": 1104,
+  "comparison_table_path": "/speed-scratch/o_iseri/2J_revision/T77/out/fig06_comparison_table.csv",
+  "household_peak_spread_path": "/speed-scratch/o_iseri/2J_revision/T77/out/household_peak_spread_both_arms.csv",
+  "static_arm_excluded_note": "Static arm (T19/T22) intentionally NOT computed and NOT plotted -- CLOSED as not home-for-home, checklist item c8. Stated in the figure's own suptitle above."
+}

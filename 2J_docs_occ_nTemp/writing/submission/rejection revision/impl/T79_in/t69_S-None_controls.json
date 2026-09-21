@@ -1,0 +1,74 @@
+{
+  "C1_hour_of_day_seen_failing": {
+    "control": "C1",
+    "outcome": "ran_and_fired",
+    "peak_hour_original": 16,
+    "peak_hour_shifted": 19,
+    "expected_peak_hour_shifted": 19,
+    "midday_share_original": 0.41897607817811006,
+    "midday_share_shifted": 0.3992541203003118,
+    "household": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.0/SingleD__Toronto_5A/sample_001_HH32811/2030/hourly_meters.csv"
+  },
+  "C2_seen_working_hand_check": {
+    "control": "C2",
+    "hand_check_found": true,
+    "hand_check_annual_kWh_mine": 8174.604014602141,
+    "hand_check_annual_kWh_expected": 8174.604015,
+    "hand_check_peak_kW_mine": 5.6389042985839435,
+    "hand_check_peak_kW_expected": 5.638904,
+    "hand_check_annual_diff": 3.9785845729056746e-07,
+    "hand_check_peak_diff": 2.985839433478077e-07,
+    "hand_check_annual_rel_diff": 4.867005870382426e-11,
+    "hand_check_peak_rel_diff": 5.295070519870664e-08,
+    "outcome": "ran_and_fired"
+  },
+  "C3_divisor_invariance": {
+    "control": "C3",
+    "n_compared": 299,
+    "max_abs_pct_diff": 1.174060848541103e-14,
+    "outcome": "ran_and_fired"
+  },
+  "C4_divisor_applied_sanity": {
+    "control": "C4",
+    "per_archetype": {
+      "equip_kWh": {
+        "SingleD": {
+          "before_whole_building_mean_kWh": 3700.8213022568666,
+          "after_per_dwelling_mean_kWh": 3700.8213022568666
+        },
+        "OtherDwelling": {
+          "before_whole_building_mean_kWh": 21978.084538227482,
+          "after_per_dwelling_mean_kWh": 3139.726362603926
+        },
+        "MidRise": {
+          "before_whole_building_mean_kWh": 71740.42512526065,
+          "after_per_dwelling_mean_kWh": 2173.95227652305
+        },
+        "HighRise": {
+          "before_whole_building_mean_kWh": 156388.57719734136,
+          "after_per_dwelling_mean_kWh": 1930.7231752758194
+        }
+      },
+      "lights_kWh": {
+        "SingleD": {
+          "before_whole_building_mean_kWh": 1262.0776337916668,
+          "after_per_dwelling_mean_kWh": 1262.0776337916668
+        },
+        "OtherDwelling": {
+          "before_whole_building_mean_kWh": 7702.987561663879,
+          "after_per_dwelling_mean_kWh": 1100.4267945234114
+        },
+        "MidRise": {
+          "before_whole_building_mean_kWh": 26600.6739114,
+          "after_per_dwelling_mean_kWh": 738.90760865
+        },
+        "HighRise": {
+          "before_whole_building_mean_kWh": 66742.15244222408,
+          "after_per_dwelling_mean_kWh": 741.5794715802676
+        }
+      }
+    },
+    "outcome": "ran_and_fired"
+  },
+  "all_fired": true
+}

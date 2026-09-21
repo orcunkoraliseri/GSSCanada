@@ -1,0 +1,101 @@
+{
+  "C1_hour_of_day_seen_failing": {
+    "control": "C1",
+    "outcome": "ran_and_fired",
+    "peak_hour_original": 18,
+    "peak_hour_shifted": 21,
+    "expected_peak_hour_shifted": 21,
+    "midday_share_original": 0.4020873062714422,
+    "midday_share_shifted": 0.37511811043688986,
+    "household": "/speed-scratch/o_iseri/2J_revision/T30/out/SingleD__Toronto_5A__2022/sample_001_HH32811/avg_2022/hourly_meters.csv"
+  },
+  "C2_hand_verified_pairs": {
+    "control": "C2",
+    "pairs": [
+      {
+        "cell": "SingleD__Toronto_5A",
+        "sample": 1,
+        "sim_hh_id": "32811",
+        "year": 2022,
+        "found": true,
+        "mine_elec_facility_kWh": 10490.314524176947,
+        "hand_elec_facility_kWh": 10490.314524177,
+        "diff_kWh": 5.275069270282984e-11,
+        "mine_peak_kW": 3.464711286644921,
+        "hand_peak_kW": 3.46471128664492,
+        "diff_kW": 8.881784197001252e-16,
+        "mine_peak_hour": 18,
+        "hand_peak_hour": 18,
+        "hour_ok": true,
+        "ok": true
+      },
+      {
+        "cell": "HighRise__Vancouver_5C",
+        "sample": 3,
+        "sim_hh_id": "135983",
+        "year": 2030,
+        "found": true,
+        "mine_elec_facility_kWh": 487815.6927982202,
+        "hand_elec_facility_kWh": 487815.692798221,
+        "diff_kWh": 8.149072527885437e-10,
+        "mine_peak_kW": 134.60329591113322,
+        "hand_peak_kW": 134.603295911133,
+        "diff_kW": 2.2737367544323206e-13,
+        "mine_peak_hour": 17,
+        "hand_peak_hour": 17,
+        "hour_ok": true,
+        "ok": true
+      }
+    ],
+    "outcome": "ran_and_fired"
+  },
+  "C3_divisor_invariance": {
+    "control": "C3",
+    "n_compared": 300,
+    "max_abs_pct_diff": 1.7763568394002505e-14,
+    "outcome": "ran_and_fired"
+  },
+  "C4_divisor_applied_sanity": {
+    "control": "C4",
+    "per_archetype": {
+      "equip_kWh": {
+        "SingleD": {
+          "before_whole_building_mean_kWh": 3870.009211405033,
+          "after_per_dwelling_mean_kWh": 3870.009211405033
+        },
+        "OtherDwelling": {
+          "before_whole_building_mean_kWh": 23357.073204683984,
+          "after_per_dwelling_mean_kWh": 3336.724743526283
+        },
+        "MidRise": {
+          "before_whole_building_mean_kWh": 75335.7885323175,
+          "after_per_dwelling_mean_kWh": 2282.9026827975003
+        },
+        "HighRise": {
+          "before_whole_building_mean_kWh": 163636.97063737232,
+          "after_per_dwelling_mean_kWh": 2020.209514041633
+        }
+      },
+      "lights_kWh": {
+        "SingleD": {
+          "before_whole_building_mean_kWh": 1389.3307890712501,
+          "after_per_dwelling_mean_kWh": 1389.3307890712501
+        },
+        "OtherDwelling": {
+          "before_whole_building_mean_kWh": 9254.862090865592,
+          "after_per_dwelling_mean_kWh": 1322.1231558379416
+        },
+        "MidRise": {
+          "before_whole_building_mean_kWh": 31140.66505065492,
+          "after_per_dwelling_mean_kWh": 865.0184736293033
+        },
+        "HighRise": {
+          "before_whole_building_mean_kWh": 77167.52406835365,
+          "after_per_dwelling_mean_kWh": 857.4169340928183
+        }
+      }
+    },
+    "outcome": "ran_and_fired"
+  },
+  "all_fired": true
+}

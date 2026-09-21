@@ -215,3 +215,8 @@ DOI `10.1016/j.enbuild.2024.114639`, verified. Swiss appliance-level metered dat
 demand-side management. It does not forecast through a structural break, does not use time-use diaries
 generatively, and runs no simulation campaign, so it does not take the cell. **Consider citing it
 anyway** — it is close enough that a reviewer who knows the field will notice its absence.
+
+### Update 2026-09-21: Applied Energy confirmed by the author
+Author confirmed Applied Energy after being told the rejection risk (partial measured comparison only).
+Backups in order: Sustainable Cities and Society (declare the Concordia editor conflict), then Journal
+of Building Engineering. Energy and Buildings stays excluded. Plan log (el).

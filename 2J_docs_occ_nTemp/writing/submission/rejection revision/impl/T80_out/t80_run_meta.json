@@ -1,0 +1,154 @@
+{
+  "jobid": "1341375",
+  "elapsed_seconds": 160.4900097846985,
+  "elapsed_per_file_seconds": {
+    "2005": 14.437034606933594,
+    "2010": 14.42868423461914,
+    "2015": 14.211709260940552,
+    "2022_baseline": 16.12139081954956
+  },
+  "sources": {
+    "2005": "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/BEM_Setup/BEM_Schedules_2005.csv",
+    "2010": "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/BEM_Setup/BEM_Schedules_2010.csv",
+    "2015": "/speed-scratch/o_iseri/GSSCanada/GSSCanada-main/BEM_Setup/BEM_Schedules_2015.csv",
+    "2022_baseline": "/speed-scratch/o_iseri/2J_revision/T18c/nbf/repo/outputs/BEM_Setup/BEM_Schedules_2022.csv"
+  },
+  "expected_rows_per_file": {
+    "2005": 6936336,
+    "2010": 6936336,
+    "2015": 6936336,
+    "2022_baseline": 6934320
+  },
+  "row_count_control": {
+    "2005": {
+      "n_rows_read": 6936336,
+      "n_rows_counted_in_groups": 6936336,
+      "expected_rows": 6936336,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2010": {
+      "n_rows_read": 6936336,
+      "n_rows_counted_in_groups": 6936336,
+      "expected_rows": 6936336,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2015": {
+      "n_rows_read": 6936336,
+      "n_rows_counted_in_groups": 6936336,
+      "expected_rows": 6936336,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2022_baseline": {
+      "n_rows_read": 6934320,
+      "n_rows_counted_in_groups": 6934320,
+      "expected_rows": 6934320,
+      "match_expected": true,
+      "match_internal": true
+    }
+  },
+  "frame_counts": {
+    "2005": {
+      "n_distinct_sim_hh_id": 144507,
+      "n_data_rows": 6936336
+    },
+    "2010": {
+      "n_distinct_sim_hh_id": 144507,
+      "n_data_rows": 6936336
+    },
+    "2015": {
+      "n_distinct_sim_hh_id": 144507,
+      "n_data_rows": 6936336
+    },
+    "2022_baseline": {
+      "n_distinct_sim_hh_id": 144465,
+      "n_data_rows": 6934320
+    }
+  },
+  "id_overlap_with_2022": {
+    "2005": {
+      "n_ids_this_file": 144507,
+      "n_ids_2022": 144465,
+      "n_shared_with_2022": 143598,
+      "pct_of_this_file_shared_with_2022": 99.371,
+      "pct_of_2022_shared_with_this_file": 99.3999
+    },
+    "2010": {
+      "n_ids_this_file": 144507,
+      "n_ids_2022": 144465,
+      "n_shared_with_2022": 143598,
+      "pct_of_this_file_shared_with_2022": 99.371,
+      "pct_of_2022_shared_with_this_file": 99.3999
+    },
+    "2015": {
+      "n_ids_this_file": 144507,
+      "n_ids_2022": 144465,
+      "n_shared_with_2022": 143598,
+      "pct_of_this_file_shared_with_2022": 99.371,
+      "pct_of_2022_shared_with_this_file": 99.3999
+    }
+  },
+  "hand_read_control": {
+    "2005": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.5079374978374745,
+      "hand_n": 144507,
+      "agg_mean": 0.5079374978374749,
+      "agg_n": 144507,
+      "match": true
+    },
+    "2010": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.4874029008975319,
+      "hand_n": 144507,
+      "agg_mean": 0.48740290089753435,
+      "agg_n": 144507,
+      "match": true
+    },
+    "2015": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.47071089981800124,
+      "hand_n": 144507,
+      "agg_mean": 0.47071089981800185,
+      "agg_n": 144507,
+      "match": true
+    },
+    "2022_baseline": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.4782043609178638,
+      "hand_n": 144465,
+      "agg_mean": 0.47820436091786944,
+      "agg_n": 144465,
+      "match": true
+    }
+  },
+  "seen_working_control_vs_t76_2022": {
+    "t76_reference_csv": "/speed-scratch/o_iseri/2J_revision/T76/out/figures/fig01_athome_by_hour.csv",
+    "t76_reference_found": true,
+    "n_t76_reference_cells": 48,
+    "n_cells_compared": 48,
+    "n_cells_equal": 48,
+    "all_48_equal": true,
+    "control_cell_weekday_hour12": {
+      "this_run": 0.47820436091786944,
+      "t76_accepted": 0.4782043609178694
+    }
+  },
+  "seen_failing_control": {
+    "description": "Same 48-cell comparison as the seen-working control, but T76's reference series is shifted by Hour+1 (mod 24) before comparing. A working control must report this as a mismatch on (nearly) all cells, since Occupancy_Schedule genuinely varies by hour.",
+    "n_cells_compared": 48,
+    "n_cells_spuriously_equal": 0,
+    "correctly_detected_mismatch": true
+  },
+  "aggregation_method": "Identical to T76: unweighted mean of Occupancy_Schedule per (Day_Type,Hour) cell across all rows in the file. No weight column in the historic schema either (SIM_HH_ID,Day_Type,Hour,HHSIZE,DTYPE,BEDRM,CONDO,ROOM,REPAIR,PR,MATCH_TIER,Occupancy_Schedule,Metabolic_Rate -- 13 columns, no CYCLE_YEAR, confirmed by T24). Each row is one household (SIM_HH_ID).",
+  "t76_2030_and_2022_series_copy_status": {
+    "path": "/speed-scratch/o_iseri/2J_revision/T76/out/figures/fig01_athome_by_hour.csv",
+    "found": true,
+    "n_series_copied": 5
+  },
+  "csv_path": "/speed-scratch/o_iseri/2J_revision/T80/out/athome_by_hour_historic.csv",
+  "daily_csv_path": "/speed-scratch/o_iseri/2J_revision/T80/out/athome_daily_mean.csv",
+  "note": "This task makes no claim about what these numbers mean for plan item 17 -- the manager rules on that, per the task doc."
+}

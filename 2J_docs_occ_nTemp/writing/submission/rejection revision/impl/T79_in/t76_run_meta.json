@@ -1,0 +1,154 @@
+{
+  "jobid": "1341263",
+  "elapsed_seconds": 283.0120747089386,
+  "elapsed_per_file_seconds": {
+    "2022_baseline": 15.346001625061035,
+    "2030_main_persist": 15.067297220230103,
+    "2030_null": 15.160851001739502,
+    "2030_lambda_1.0_persist": 15.162228345870972,
+    "2030_lambda_0.5_partial": 15.150280714035034,
+    "2030_lambda_0.0_revert": 15.264200448989868
+  },
+  "sources": {
+    "2022_baseline": "/speed-scratch/o_iseri/2J_revision/T18c/nbf/repo/outputs/BEM_Setup/BEM_Schedules_2022.csv",
+    "2030_main_persist": "/speed-scratch/o_iseri/2J_revision/T20/out/main/BEM_Setup/BEM_Schedules_2030.csv",
+    "2030_null": "/speed-scratch/o_iseri/2J_revision/T20/out/null/BEM_Setup/BEM_Schedules_2030.csv",
+    "2030_lambda_1.0_persist": "/speed-scratch/o_iseri/2J_revision/T26/out/lambda_1.0/BEM_Setup/BEM_Schedules_2030.csv",
+    "2030_lambda_0.5_partial": "/speed-scratch/o_iseri/2J_revision/T26/out/lambda_0.5/BEM_Setup/BEM_Schedules_2030.csv",
+    "2030_lambda_0.0_revert": "/speed-scratch/o_iseri/2J_revision/T26/out/lambda_0.0/BEM_Setup/BEM_Schedules_2030.csv"
+  },
+  "expected_rows_per_file": 6934320,
+  "row_count_control": {
+    "2022_baseline": {
+      "n_rows_read": 6934320,
+      "n_rows_counted_in_groups": 6934320,
+      "expected_rows": 6934320,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2030_main_persist": {
+      "n_rows_read": 6934320,
+      "n_rows_counted_in_groups": 6934320,
+      "expected_rows": 6934320,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2030_null": {
+      "n_rows_read": 6934320,
+      "n_rows_counted_in_groups": 6934320,
+      "expected_rows": 6934320,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2030_lambda_1.0_persist": {
+      "n_rows_read": 6934320,
+      "n_rows_counted_in_groups": 6934320,
+      "expected_rows": 6934320,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2030_lambda_0.5_partial": {
+      "n_rows_read": 6934320,
+      "n_rows_counted_in_groups": 6934320,
+      "expected_rows": 6934320,
+      "match_expected": true,
+      "match_internal": true
+    },
+    "2030_lambda_0.0_revert": {
+      "n_rows_read": 6934320,
+      "n_rows_counted_in_groups": 6934320,
+      "expected_rows": 6934320,
+      "match_expected": true,
+      "match_internal": true
+    }
+  },
+  "seen_working_control": {
+    "2022_baseline": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.4782043609178638,
+      "hand_n": 144465,
+      "agg_mean": 0.47820436091786944,
+      "agg_n": 144465,
+      "match": true
+    },
+    "2030_main_persist": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.5014690686325356,
+      "hand_n": 144465,
+      "agg_mean": 0.5014690686325407,
+      "agg_n": 144465,
+      "match": true
+    },
+    "2030_null": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.4782043609178638,
+      "hand_n": 144465,
+      "agg_mean": 0.47820436091786944,
+      "agg_n": 144465,
+      "match": true
+    },
+    "2030_lambda_1.0_persist": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.5014690686325356,
+      "hand_n": 144465,
+      "agg_mean": 0.5014690686325407,
+      "agg_n": 144465,
+      "match": true
+    },
+    "2030_lambda_0.5_partial": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.46210489737998145,
+      "hand_n": 144465,
+      "agg_mean": 0.4621048973799882,
+      "agg_n": 144465,
+      "match": true
+    },
+    "2030_lambda_0.0_revert": {
+      "cell": "Weekday/Hour=12",
+      "hand_mean": 0.4225628422109082,
+      "hand_n": 144465,
+      "agg_mean": 0.4225628422109161,
+      "agg_n": 144465,
+      "match": true
+    }
+  },
+  "nesting_check_main_vs_lambda1.0": {
+    "n_cells_compared": 48,
+    "n_cells_equal": 48,
+    "all_equal": true
+  },
+  "day_type_values_confirmed": [
+    "Weekday",
+    "Weekend"
+  ],
+  "hour_range": [
+    0,
+    23
+  ],
+  "no_ci_in_source": true,
+  "aggregation_method": "Unweighted mean of Occupancy_Schedule per (Day_Type,Hour) cell across all rows in the file. No weight column exists in any of the six schedule CSVs (PR is a province code, not a weight/probability column); each row is one real household (SIM_HH_ID), 144,465 total per file, matching T18c/T20/T26's own accepted household count -- so this unweighted mean IS the population mean, the same method T20's own N0/N1 acceptance checks (2026-09-15) already used on these same files.",
+  "main_vs_null_meaning": "CONFIRMED by reading 2026-09-15_T20_wp1_d1_2030_build.md's own Design section: 'main' = 2030 built with the real OLS trend slope (06_forecast_rake.py project_to_2030, fit on 2005/2010/2015 real respondents) added to the 2022 stock rate, then raked to that target -- the historical at-home trend is projected forward. 'null' = the identical code path with pre_slope forced to an all-zero (3,48) array, i.e. target == 2022 stock rate, so 'null' 2030 is a no-forecast-change control -- T20's own N0 acceptance check already measured null's weekday/weekend at-home means equal to 2022's to 0.0 pp (cells 100% exactly equal). Not a guess; read from the task doc's own Design and Collector sections.",
+  "lambda_meaning": "CONFIRMED by reading 2026-09-15_T26_wp2_scenario_builds.md: lambda is the persistence weight of the 2022 pandemic-era at-home 'jump' relative to the pre-2022 trend. lambda=1.0 = S-Persist (jump fully persists to 2030). lambda=0.5 = S-Partial (half persists). lambda=0.0 = S-Revert (jump fully fades, only the pre-2022 trend continues). T26's own SC0 acceptance check already proved lambda=1.0 is 100% cell-identical to T20's 'main' 2030 build; T26's own SC2 check proved the expected order Revert < Partial < Persist in national weekday at-home share. This script's own nesting_check_main_vs_lambda1.0 above reproduces the SC0 equality independently on this run's own aggregation, not by trusting the T26 doc alone.",
+  "baseline_2022_source": "/speed-scratch/o_iseri/2J_revision/T18c/nbf/repo/outputs/BEM_Setup/BEM_Schedules_2022.csv -- the Nb-f frozen 2022 stock schedule build. This is NOT a new aggregate computed for this task: it is the SAME file T20's own N0/N1 acceptance checks (2026-09-15) already read to compute weekday/weekend at-home means, and the SAME file the 2030 main/null (T20) and lambda 0.0/0.5/1.0 (T26) builds were all derived FROM (same 144,465 households, same stock). No other 2022 at-home-by-hour aggregate exists anywhere in the project -- T21/T17 hold per-household EnergyPlus hourly ENERGY output (used by T70/T71/T73), not a household-level occupancy-fraction schedule aggregate. Confirmed by reading the T20/T26/T21/T70 implementation docs directly, not guessed.",
+  "plotted_series": [
+    "2022_baseline",
+    "2030_main_persist",
+    "2030_null",
+    "2030_lambda_0.5_partial",
+    "2030_lambda_0.0_revert"
+  ],
+  "series_computed_but_not_separately_plotted": [
+    "2030_lambda_1.0_persist"
+  ],
+  "note_on_lambda1.0": "2030_lambda_1.0_persist was fully aggregated (six sources aggregated identically, no special-casing) and is confirmed numerically identical to 2030_main_persist in every (Day_Type,Hour) cell -- see nesting_check_main_vs_lambda1.0. This is the expected, already-accepted SC0 nesting property (T26 collector, 2026-09-15), not a bug. Plotting both would draw one line exactly on top of the other with no visible difference; the CSV deliverable keeps both series for traceability, the PNG plots only one to avoid a meaningless overlapping duplicate.",
+  "dpi_readback": [
+    599.9988,
+    599.9988
+  ],
+  "png_pixel_size": [
+    6539,
+    2844
+  ],
+  "csv_path": "/speed-scratch/o_iseri/2J_revision/T76/out/figures/fig01_athome_by_hour.csv",
+  "png_path": "/speed-scratch/o_iseri/2J_revision/T76/out/figures/fig01_athome_by_hour.png"
+}

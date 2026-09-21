@@ -1,0 +1,238 @@
+{
+  "scenario": "S-Partial",
+  "scenario_root": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5",
+  "scenario_note": "half the 2020-22 work-from-home shift persists to 2030 (lambda=0.5).",
+  "job_started_utc": "2026-09-21T08:17:53Z",
+  "elapsed_sec": 54.12780785560608,
+  "t21_root": "/speed-scratch/o_iseri/2J_revision/T21/out/step8",
+  "n_candidate_runs": 2400,
+  "n_discover_skipped": 0,
+  "discover_skipped_sample": [],
+  "n_households_year_read_ok": 2400,
+  "n_households_year_skipped": 0,
+  "proc_skipped": [],
+  "n_paired_households_own_basis": 1200,
+  "row_counts": {
+    "enduse_annual.csv": 2400,
+    "enduse_hourly_profile.csv": 4017600,
+    "grid_metrics.csv": 2400,
+    "closure.csv": 2400,
+    "enduse_change_2022_2030.csv": 250
+  },
+  "divisor_tables_used": {
+    "T66_CELL_EQUIP_DIVISOR": {
+      "SingleD__Toronto_5A": 1.0,
+      "SingleD__Kelowna_5B": 1.0,
+      "SingleD__Vancouver_5C": 1.0,
+      "SingleD__Montreal_6A": 1.0,
+      "SingleD__Calgary_6B": 1.0,
+      "SingleD__Winnipeg_7A": 1.0,
+      "OtherDwelling__Toronto_5A": 7.0,
+      "OtherDwelling__Kelowna_5B": 7.0,
+      "OtherDwelling__Vancouver_5C": 7.0,
+      "OtherDwelling__Montreal_6A": 7.0,
+      "OtherDwelling__Calgary_6B": 7.0,
+      "OtherDwelling__Winnipeg_7A": 7.0,
+      "MidRise__Toronto_5A": 33.0,
+      "MidRise__Kelowna_5B": 33.0,
+      "MidRise__Vancouver_5C": 33.0,
+      "MidRise__Montreal_6A": 33.0,
+      "MidRise__Calgary_6B": 33.0,
+      "MidRise__Winnipeg_7A": 33.0,
+      "HighRise__Toronto_5A": 81.0,
+      "HighRise__Kelowna_5B": 81.0,
+      "HighRise__Vancouver_5C": 81.0,
+      "HighRise__Montreal_6A": 81.0,
+      "HighRise__Calgary_6B": 81.0,
+      "HighRise__Winnipeg_7A": 81.0
+    },
+    "T66_CELL_LIGHT_DIVISOR": {
+      "SingleD__Toronto_5A": 1.0,
+      "SingleD__Kelowna_5B": 1.0,
+      "SingleD__Vancouver_5C": 1.0,
+      "SingleD__Montreal_6A": 1.0,
+      "SingleD__Calgary_6B": 1.0,
+      "SingleD__Winnipeg_7A": 1.0,
+      "OtherDwelling__Toronto_5A": 7.0,
+      "OtherDwelling__Kelowna_5B": 7.0,
+      "OtherDwelling__Vancouver_5C": 7.0,
+      "OtherDwelling__Montreal_6A": 7.0,
+      "OtherDwelling__Calgary_6B": 7.0,
+      "OtherDwelling__Winnipeg_7A": 7.0,
+      "MidRise__Toronto_5A": 36.0,
+      "MidRise__Kelowna_5B": 36.0,
+      "MidRise__Vancouver_5C": 36.0,
+      "MidRise__Montreal_6A": 36.0,
+      "MidRise__Calgary_6B": 36.0,
+      "MidRise__Winnipeg_7A": 36.0,
+      "HighRise__Toronto_5A": 90.0,
+      "HighRise__Kelowna_5B": 90.0,
+      "HighRise__Vancouver_5C": 90.0,
+      "HighRise__Montreal_6A": 90.0,
+      "HighRise__Calgary_6B": 90.0,
+      "HighRise__Winnipeg_7A": 90.0
+    },
+    "source": "/speed-scratch/o_iseri/2J_revision/T66/scripts/step9_validate_full_corrected.py (read-only, never imported/edited)"
+  },
+  "water_systems_energytransfer_zero_by_archetype": {
+    "SingleD": {
+      "n_zero": 0,
+      "n_total": 600
+    },
+    "OtherDwelling": {
+      "n_zero": 0,
+      "n_total": 600
+    },
+    "MidRise": {
+      "n_zero": 0,
+      "n_total": 600
+    },
+    "HighRise": {
+      "n_zero": 0,
+      "n_total": 600
+    }
+  },
+  "zero_2022_denominator_counts_by_meter": {
+    "elec_facility_kWh": 0,
+    "lights_kWh": 0,
+    "equip_kWh": 0,
+    "fan_kWh": 0,
+    "heating_ET_kWh": 0,
+    "cooling_ET_kWh": 0,
+    "water_ET_kWh": 0,
+    "hvac_dhw_elec_kWh": 0
+  },
+  "undelivered_csv_sweep": {
+    "n_files": 24,
+    "n_total_undelivered_rows": 0,
+    "files": [
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/SingleD__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/SingleD__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/SingleD__Vancouver_5C/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/SingleD__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/SingleD__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/SingleD__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/OtherDwelling__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/OtherDwelling__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/OtherDwelling__Vancouver_5C/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/OtherDwelling__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/OtherDwelling__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/OtherDwelling__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/MidRise__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/MidRise__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/MidRise__Vancouver_5C/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/MidRise__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/MidRise__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/MidRise__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/HighRise__Toronto_5A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/HighRise__Kelowna_5B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/HighRise__Vancouver_5C/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/HighRise__Montreal_6A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/HighRise__Calgary_6B/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      },
+      {
+        "path": "/speed-scratch/o_iseri/2J_revision/T29/out/lambda_0.5/HighRise__Winnipeg_7A/undelivered.csv",
+        "n_rows": 0,
+        "rows": []
+      }
+    ]
+  },
+  "controls_summary": {
+    "C1_hour_of_day_seen_failing": "ran_and_fired",
+    "C2_seen_working_hand_check": "ran_and_fired",
+    "C3_divisor_invariance": "ran_and_fired",
+    "C4_divisor_applied_sanity": "ran_and_fired"
+  },
+  "controls_all_fired": true
+}

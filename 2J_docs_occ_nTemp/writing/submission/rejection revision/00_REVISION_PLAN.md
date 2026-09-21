@@ -4002,3 +4002,353 @@ No problems found. Figure 1 (WP11 numbering) is DONE. **All nine planned WP11 fi
 accepted** (2/3/4/5/7/9/8/1 done this and prior sessions; 6 still blocked on T72's V3 gate).
 
 - Next: collect T72; if PASS, close T30's V3 gate and decide Figure 6 (average-profile vs. full-model).
+
+### (dp) 2026-09-21, new manager session (resumed after author's overnight pause): **T72 collected and
+ACCEPTED. T30's V3 gate is fully closed — the T30 arm is now cleared on all six adjudicated gates
+(V0/V1/V2/V4/V5 already accepted before T61; V3 now PASS via T72). Figure 6 ruled: TWO-WAY comparison
+(full model vs. average-profile arm only), static arm excluded.**
+
+`sacct -j 1341254 -X` → `COMPLETED 01:56:38 0:0`. Report read first
+(`T72/logs/t72_v3_fixed_report.txt`), never `sacct` alone. All three controls fired as designed:
+seen-failing (unmodified `t30_check.py`, real T30 tree) reproduced T61's `0/48` exactly; the fix
+(`obj[1:]` → `obj[2:]`, dropping the schedule object's per-household Name field from the hash, not just
+its constant type keyword) scores **48/48 PASS** on the full 48-cell grid; the broken-shadow control
+(one real VALUE field altered in one household) still correctly fires FAIL, proving the fixed checker
+is not a checker that always passes. `pass_design_levels_differ` unchanged at 48/48, matching T61's own
+number, as expected since that predicate never touched the buggy slice. Two more hand-verified
+household-pair field comparisons (MidRise/Toronto, HighRise/Vancouver) both byte-identical past the
+Name field, same result as the manager's own original SingleD/Toronto hand-check. **T30's averaging
+design worked correctly from the start; only the checker's own hashing was wrong (plan item 38's family
+— a bug in the test, not the data).**
+
+**Figure 6 rescoping ruling.** Plan §3 WP3 always specified a three-way comparison table (full model vs.
+static arm vs. average-profile arm) on annual kWh, peak demand, peak hour, load factor, midday share,
+evening ramp, and household peak-hour spread — and that table was explicitly deferred ("Wave 4, not this
+collector", `impl/2026-09-15_T30_wp3_average_profile_arm.md:50`). The static arm (T19/T22) is already
+CLOSED as not home-for-home (checklist item c8, plan (cx)/(dl)/(dp) context): it drew a different
+household sample than the main runs, so it cannot sit in a paired comparison table at all — including
+it would either silently mismatch households or need its own separate caveat on every row. **Ruling:
+Figure 6 is a TWO-WAY comparison, full model vs. average-profile arm (T30) only.** This still directly
+answers R1-M1/D1/D12 (what does the individual model add over the simplest plausible alternative) and
+satisfies M4/D15's "more figures" ask — the average-profile arm is the stronger of the two simple
+competitors by design (`2026-09-15_T30...md:15-18`: it keeps the province mix and removes only
+household-to-household diversity, so it is the hardest test the full model can face). The manuscript
+text and figure caption must state plainly why the static arm is absent (already ruled unusable, not
+silently dropped) and must cite item c8's closure.
+
+**No comparison-table task has ever been dispatched — this is new work, not a re-collection.** T30's own
+collector (`t30_check.py`) only ever scored gates V0-V5 and household peak-hour spread; it never computed
+stock-level annual kWh/peak/load-factor/midday-share/evening-ramp for either arm. **T77 dispatched** to
+build this table and Figure 6 from it. Brief: `impl/2026-09-21_T77_wp3_figure6_comparison.md`.
+
+- Next: T77 lands (cluster job, submit-and-end-turn, no polling this session unless idle). Collect
+  controls-first as always. Once Figure 6 is accepted, all nine WP11 figures are done and the critical
+  path moves to WP10 (manuscript rewrite), then WP13 (submission package). Update tracker artifact and
+  resume prompt with T72's and T77's results.
+
+### (dq) 2026-09-21, same manager session: **T77 collected and ACCEPTED. Figure 6 is DONE. All nine
+planned WP11 figures are now built and accepted. WP11 is CLOSED.**
+
+Jobs 1341328/1341329/1341330 all `COMPLETED`, exit `0:0` (`sacct`). Report read first
+(`T77/logs/t77_report.txt`), never `sacct` alone. Controls-first: the seen-working control
+(byte-identical copy of T68's accepted script against `T21/out/step8`) reproduced T68's own accepted
+`run_meta.json` numbers to better than 1e-6 relative difference on both hand-check constants
+(`HAND_CHECK_ANNUAL_KWH`, `HAND_CHECK_PEAK_KW`) and matched all 2400 T67 rows to ~1e-14 — the copy did
+not diverge. All four T30-side controls (C1 seen-failing hour roll, C2 the brief's two independently
+hand-computed household pairs, C3 divisor invariance, C4 divisor sanity) fired as designed. Both arms
+delivered the full expected 2400 rows (24 cells x 2 years x 50 households), nothing silently dropped.
+`fig06_comparison_table.csv` (1104 rows, 850 QUOTABLE / 254 NOT_EVALUABLE per divisor-invariance rule,
+item 40) and `household_peak_spread_both_arms.csv` (96 rows) built; `figure_06_full_vs_avgarm.png`
+(926 KB) rendered with the static-arm exclusion stated in its own suptitle, citing item c8. VERDICT:
+PASS. Per the report's own caveat, PASS certifies the controls and row counts, not every individual
+row — any single number quoted in the manuscript must still be checked against that row's own
+`quotable`/`quotable_reason` columns first.
+
+**All nine planned WP11 figures are now done** (2/3/4/5/7/9/8/1 from prior entries, 6 via T77 this
+entry). Nothing left open on WP11. Per plan §4's critical path, WP11 is CLOSED and the critical path
+moves to **WP10 (manuscript rewrite)**, then **WP13 (venue/submission package)**.
+
+- Next: begin WP10 — thread every closed item (10-40 range, plus the WP11 figure set) into the
+  manuscript draft and `manuscript/prep/response_map.md`; update the tracker artifact and the resume
+  prompt to reflect WP11's closure before dispatching the first WP10 task.
+
+### (dr) 2026-09-21, new manager session: **WP10 (manuscript rewrite) STARTED — two tasks dispatched in parallel.**
+
+Author: "start re-writing the manuscript ... no need to wait for my confirmation, please continue".
+Existing WP10 drafts already on disk: Section 2 framework (`manuscript/draft_S2_framework.md`), Section 7
+limitations (`draft_S7_limitations.md`), three SI parts. Missing: title/abstract/highlights, Section 1,
+Results, Discussion, Conclusion, reference list. Results cannot be drafted before one sheet says which
+numbers are quotable under which ruling, so:
+- **T78** (Sonnet, text only): new title + Section 1 Introduction -> `manuscript/draft_S1_introduction.md`.
+  Closes R2-5, R2-3, R3-3, R1-D2..D7, plan items 10, 16, 17, 18, 19 (Introduction side). Brief:
+  `impl/2026-09-21_T78_wp10_introduction.md`.
+- **T79** (Sonnet, reading only, login-node reads/scp of small files): Results number sheet ->
+  `manuscript/prep/results_number_sheet.md`, every quotable number with source, accepting entry and
+  restriction (items 29, 30, 39, 40, (cf), (cg)-(cs) rules bound in). Brief:
+  `impl/2026-09-21_T79_wp10_results_number_sheet.md`.
+- Next: collect both; then dispatch Results (Section 3) from T79's sheet, then Discussion + Conclusion,
+  then Abstract/Highlights last (they summarise the finished text).
+
+### (ds) 2026-09-21, manager: T79 (results number sheet) ACCEPTED; four rulings; T80 + T81 dispatched.
+- **Accepted** `manuscript/prep/results_number_sheet.md` (53 rows R1-R9 + 19-row archived reconciliation).
+  Manager spot-checks, re-read from the files themselves: `impl/T79_in/t68_enduse_change_2022_2030.csv`
+  stock-weighted rows (Facility +0.1209 % [0.0981, 0.1407]; heating -0.2905 %; cooling +0.5947 %; midday
+  share +0.0073235 [0.00616, 0.00859]; load factor +0.004943 [0.00413, 0.00574]) all match;
+  `t69_cross_scenario_common_basis.csv` four-way basis 1198 matches; `fig01_athome_by_hour.csv` weekday
+  hour 12 values (0.4782 / 0.5015 / 0.4621 / 0.4226 / null 0.4782) match. Unit check: the change columns
+  are PERCENT (0.12 %, not 12 %), and fig02's levels (117,942.5 -> 118,049.8 kWh) agree with that size.
+- **Ruling 1 (per-dwelling divisor, R6 flag): item 40 governs every section, WP5 included.** A
+  per-dwelling Facility kWh is quotable for SingleD only (8,225.56). OtherDwelling/MidRise/HighRise get
+  divisor-free ratios only (sim/measured shape ratios; rebuild/old sanity ratios 0.9997-1.0075).
+- **Ruling 2 (SHEU "48/48 within +/-2.7 %"): RETIRED.** Results quotes A5 only in the words of A5's own
+  definition and band as written in the corrected validator's task doc (T66/T48), and per item 14 calls
+  it a check against the fitted target, never validation. The archived EUI Table 5 values have no rebuilt
+  source and are not carried; a Results sentence needing an EUI gets `[NUMBER NEEDED]`, not an old value.
+- **Ruling 3 (peak hour): no new aggregation task.** The multi-cycle "17.0-17.7 h" band and the
+  coincidence-factor sentence are RETIRED. Allowed instead: (a) the stock-average 2030 weekday profile
+  (fig03, 1,198 common households) has its maximum at hour index 17 in S-Full, S-Partial and S-None and
+  at 18 in S-Revert-std (manager read `impl/T71_out/fig03_intraday_load_shape.csv`; the writer must
+  confirm the hour convention from T71's doc before wording it as a clock time); (b) the Toronto
+  measured check (R6); (c) per-cell household circular-mean ranges from T77's table across ALL
+  archetypes, each quoted as a range with its row source.
+- **Ruling 4 (archived numbers that moved a lot): not an author sign-off item.** The plan's rule is that
+  re-derived numbers replace archived ones. The rebuilt 2022->2030 annual electricity change is
+  +0.12 % (was +0.6 to +1.2 %), midday share +0.73 pp (was +0.37 pp), load factor +0.49 pp (was
+  +1.2 pp). Consequence the author must know: the headline becomes "annual electricity is nearly
+  flat to 2030 under the main scenario; the timing and the end-use mix move", which fits the new
+  title's "from how much to when" frame better than the old text did.
+- **Also retired (no rebuilt energy leg for 2005-2015, the optional +3,600-run extension was never
+  approved):** the 6,000-run campaign total, the "+1.4 to +2.6 % annual electricity across the break",
+  all 2005/2010/2015 energy numbers. Energy results are 2022 and 2030 only.
+- **Not retired yet: the pre-pandemic at-home levels (62.7/62.3/64.5/70.6 %, the +5.2 pp break) and
+  item 17.** These are occupancy shares, not energy (entry near line 1747), and the historic-cycle
+  schedule files exist (T24: own-year diaries on the frozen 144,507-ID frame, versus 144,465 for the
+  rebuilt 2022). **T80 dispatched** (`impl/2026-09-21_T80_historic_athome_by_hour.md`, sbatch) to
+  aggregate them by T76's method, with T76's 2022 series reproduced as the seen-working control and the
+  frame difference measured, not assumed. Item 17's definition is ruled once T80 lands.
+- **T81 dispatched** (`impl/2026-09-21_T81_wp10_results_section.md`): Section 3 Results draft from the
+  sheet, R1-R9 order, with `[NUMBER FROM T80]` placeholders for the pre-pandemic levels. T78
+  (Introduction) still running.
+
+### (dt) 2026-09-21, manager: T78 (title + Introduction) ACCEPTED with one manager correction.
+- `manuscript/draft_S1_introduction.md`: three title options, Section 1.1-1.5 (about 1,750 words,
+  accepted over the 1,700 aim), Table 1 with one written criterion per column, Chen et al. (2022)
+  separated on column C3 only, Motuzienė C3 corrected to absent, own-prior-work row, all 14 reviewer
+  items marked closed. Manager checks: no "forecast", no em/en dash, no banned symbol in the body.
+- **Manager correction:** 1.5 claimed a held-out test "against each cycle's next, unseen cycle". The SI
+  (`draft_SI_model_selection.md:104-105`) supports only ONE held-out year (trained through 2015, tested
+  on 2022). Reworded in place to say exactly that.
+- Accepted as reasonable: the post-2022 WFH decline figures are NOT inserted. `dr_2J-11_VETTING.md:116-121`
+  confirms only 41.1 % and 18.7 % against the StatCan source; 22.4 % and 20.1 % were not re-opened. The
+  sentence keeps `[CITATION NEEDED]` until the author supplies the StatCan Daily reference.
+- **Author-owed (collected at assembly, one question at a time):** title choice; companion JBPS
+  manuscript status; StatCan Daily reference for the WFH decline; three [CITATION NEEDED] sources
+  (timing matters for the grid; 2030 horizon; post-2022 WFH trajectory). Four `[NUMBER FROM RESULTS]`
+  placeholders in 1.5 are filled by the manager at assembly from the results sheet.
+
+### (du) 2026-09-21, manager: T81 (Section 3 Results draft) ACCEPTED with manager edits; T80 job 1341375 running.
+- `manuscript/draft_S3_results.md`: 3.1-3.8, about 3,180 words, 57 traced numbers, 3 placeholders
+  (two T80, one EUI). Headline written as ruled: main-scenario annual electricity +0.12 %, timing and
+  end-use mix move more than the total.
+- **Manager edits in place (each checked against a file):** (1) load factor definition corrected to
+  "year's mean hourly load over its single annual peak hourly load" (`draft_S2_framework.md:308`; the
+  draft said "daily"); (2) heatmap sentence corrected from `impl/T71_out/fig05_enduse_hour_diff.csv`
+  whole-building rows: falls overnight AND late evening (hours 18-23 negative), rises through the
+  daytime (hours 7-17 positive) — the draft said only "overnight vs midday"; (3) "Table 1 lists the
+  measured data source" removed (Table 1 is now the Introduction's literature table); (4) sanity
+  ratios "within about 0.1 to 0.8 percent" corrected to "within 0.8 percent of one" (0.9997 is 0.03 %);
+  (5) sample-size check scope reworded to "covers Montreal only" (draft had an unsupported "other two
+  cities"); (6) internal model labels (J3, J5_*) and "gate" removed from prose; (7) meta paragraph on
+  figure numbering removed from the body (kept in the trailer); (8) "Electricity:Facility" replaced by
+  "whole-building electricity"; (9) "fails to converge" reworded (limitation language rule).
+- **Manager rulings on T81's open items:** (a) circular-mean range stays SingleD-only in this draft;
+  the Figure 6 caption at assembly states that; (b) hour convention: the prose keeps "hour beginning
+  around 5 p.m." — T71's manager collection matched the plotted hour-17 value by direct grep, good
+  enough for a descriptive sentence with no interval; (c) figure numbers are fixed at assembly;
+  (d) 48/48 equivalence question is closed by (ds) Ruling 2 (never compared to the old claim).
+- Noted for Discussion, not a defect: under the main scenario lighting and equipment fall very
+  slightly (-0.016 %, -0.007 %) while at-home share rises; the Discussion must not claim "more time
+  at home means more plug load" without this number next to it.
+- **Next:** Discussion + Conclusion task (T82) now; T80 collected by a fresh agent when its job ends.
+
+### (dv) 2026-09-21, manager: T80 COLLECTED and ACCEPTED; item 17 RULED; Results 3.1 placeholders filled; new item 41.
+- Job `1341375` COMPLETED 0:0 in 2 min 42 s. Outputs copied to `impl/T80_out/`. Controls read in
+  `t80_run_meta.json`: row counts match on all four files; hand-read control matches on all four;
+  the 2022 series reproduces T76's accepted series in 48 of 48 cells; the hour-shifted seen-failing
+  control reports 0 of 48 spuriously equal (it fires). Frame: historic files 144,507 IDs, 2022 file
+  144,465; 143,598 shared (99.4 %).
+- Weekday whole-day at-home share (`athome_daily_mean.csv`): 2022 74.43 %; 2030 main 75.91 %, partial
+  73.57 %, full reversion 71.22 %. The full-reversion step (-3.21 pp) reproduces T26 SC3's own
+  -3.2081 pp, measured by a different script on the person table, so the household series is on the
+  same basis as the scenario builds.
+- **Item 17 RULED: the manuscript reports the 2030 figure as the STEP from 2022** (main +1.49 pp,
+  partial -0.85 pp, full reversion -3.21 pp, weekday whole-day share), and the pandemic break as T26's
+  own measured jump over the 2005-2015 respondent trend: 4.73 pp weekday (7.67 pp standardized)
+  (`impl/2026-09-15_T26_wp2_scenario_builds.md:272, 293-294`). The "level above pre-pandemic" reading
+  and every "+2.2 to +3.9 pp" and "+5.2 pp" figure are retired.
+- **New item 41 (recorded, not a manuscript number):** the historic household schedule files
+  (`BEM_Schedules_2005/2010/2015.csv`, old `08_gen_cycle_schedules.py` build) give 69.0 / 68.3 /
+  67.1 % weekday, a FALLING pre-pandemic series, while the respondent trend the scenarios use RISES
+  (main step +1.49 pp = trend alone; revert = trend minus 4.73 pp jump = -3.21 pp). The two
+  pre-pandemic series disagree in direction. Cause not diagnosed (candidates: old build's frame and
+  rake differ from the rebuilt person table; household vs person unit). **Consequence: the historic
+  household-schedule levels are not quoted anywhere, and no 2015-to-2022 difference is taken across
+  the two builds.** Results 3.1 was first drafted with those levels by the manager, then corrected in
+  the same session once the direction clash was seen. No energy leg uses those files.
+- Results 3.1 filled (manager), trace rows appended to the draft as "Manager addendum (entry (dv))".
+  Wording fix in 3.1 and 3.2: the standardized reweighting targets the housing stock's age x sex x
+  labour-force cells (`T26 doc :147-148`), not "the 2030 stock"; corrected in both places.
+- T80 task doc status: DONE (collected by manager).
+
+### (dw) 2026-09-21, manager: T82 (Discussion + Conclusion) ACCEPTED with manager edits.
+- `manuscript/draft_S4_discussion.md` (about 1,450 words) and `manuscript/draft_S6_conclusion.md`
+  (about 520 words). Rows closed per T82: M1, D1, D12, Q11 (Discussion); Q13, Q18, R3-1 (Conclusion part).
+- **Manager edits:** (1) the average-profile annual totals were called "close"; 725.84 of 8,225.56 kWh
+  is 8.8 %, so both drafts now say "about 9 percent" and that timing differs far more; (2) Discussion's
+  claim that the earlier, flatter simulated peak "holds across all twelve groups" was never read from
+  the file; cut to the one comparison actually quoted; (3) model-selection paragraph cut and made
+  honest about threshold provenance ("robust to moderate threshold changes, not independently
+  justified"); (4) the sentence ranking the standardized-reversion variant as "closer to what occurs"
+  removed (not supported); telework sentence reworded so 41.1 % to 18.7 % is not read as a
+  post-2022-only decline; (5) Conclusion future-work item said the measured check covered "shoulder
+  weekdays" only; it covers all seasons and day types in one year; fixed; (6) Conclusion gains finding 1
+  on occupancy (4.73 pp break; 2030 steps 1.49 to -3.21 pp, entry (dv)).
+- **All six main sections now exist as drafts** (S1 intro, S2 framework, S3 results, S4 discussion,
+  S7->5 limitations, S6 conclusion) plus SI parts. **Next: T83 Abstract + Highlights, then assembly.**
+
+### (dx) 2026-09-21, manager: T83 (Abstract + Highlights + Keywords) ACCEPTED with one manager fix.
+- `manuscript/draft_S0_abstract_highlights.md`: prose abstract, 5 highlights (83/85/83/77/78 chars),
+  7 keywords. Manager fix: the abstract said the average-profile method "reproduces the annual total
+  closely", contradicting (dw)'s 9 % ruling; now "shifts the annual total by about 9 percent in one
+  cell". Trimmed words to stay at 249 by `wc -w` (limit 250; Applied Energy's own limit is read at
+  WP13). Rounding collision (main +0.12 %, full reversion -0.12 %) accepted: the verbs carry the sign.
+  Keywords are the employee's choice, author may change.
+- **WP10 drafting is complete: abstract, sections 1-6, SI parts.** Next: T84 assembly into one
+  manuscript file (renumber Limitations to 5, figure numbers, Intro 1.5 placeholders, one references
+  list), then thread `response_map.md`, then WP13.
+
+### (dy) 2026-09-21, manager: session paused by the author; T84 (assembly) dispatched and still running.
+- Figure status recorded in the handover prompt: nine data figures regenerated and accepted earlier;
+  PNGs for fig01, fig06, fig07 and fig08 copied locally today (`impl/T76_out`, `T77_out`, `T73_out`,
+  `T75_out`). Old method diagrams Figure_02-04 not regenerated; checked at T84 collection.
+
+### (dz) 2026-09-21, manager: T84 (assembly) ACCEPTED; original title restored by the author's order.
+- Outputs: `manuscript/2J_manuscript_AE_revised.md` (main, 12,076 words Abstract to Conclusion),
+  `manuscript/2J_SI_AE_revised.md` (4,470 words), `manuscript/prep/assembly_log.md`.
+- **Title (author ruling, 2026-09-21): keep the original submitted title verbatim**, `From "How Much"
+  to "When": Forecasting the Residential Energy Load Shape from a Calibrated Behavioural Occupancy
+  Time-Series (Canada, 2005–2030)`. Line 1 replaced; `[TITLE: AUTHOR TO CONFIRM]` removed. The word
+  "Forecasting" and the en dash in the title are an author-approved exception to the no-forecast and
+  no-dash checks; the manager flagged the reviewer risk once, the choice stands.
+- **Manager correction to T84:** its "FILE NOT FOUND" for Figures 2, 7, 8, S1 is wrong. All four PNGs
+  exist locally (`impl/T76_out/fig01_athome_by_hour.png`, `impl/T77_out/figure_06_full_vs_avgarm.png`,
+  `impl/T73_out/fig07_measured_vs_simulated_shape.png`, `impl/T75_out/fig08_n200_convergence.png`),
+  copied per (dy). All 10 figures have an image.
+- Manager re-grep of the main file: no em/en dash in the body (only title and reference page ranges),
+  no "failure", no J3, no retired number. "Not a forecast" x3 (Section 2.7, Limitations x2) is negated
+  use that closes the reviewer point; ruled ALLOWED.
+- **Still open (author):** 3 distinct citations (grid timing, 2030 planning horizon, post-2022 WFH
+  trend; each appears in Intro and Discussion), StatCan Daily telework reference, JBPS companion
+  status, 2 Intro 1.5 counts (architectures searched, simulation runs), EUI placeholder (manager
+  recommends deleting the bracket; awaiting author ok).
+- **Still open (manager/agent):** SI captions for Figures S1 and S2 are not written; Table S1 content
+  (`tables/SI/Table_B1_B2.md`, with its "sole 4/4-gate model" fix) not merged; SI has 2 em dashes, 1
+  bare "T21", 3 `[VALUE PENDING]`; Table 2 data sources carry no inline citations. Next: one fresh
+  agent for the SI clean-up, then thread `response_map.md`, then WP13.
+
+### (ea) 2026-09-21 — Word copies built; T85 SI clean-up dispatched
+- Author asked for .docx copies. Built with pandoc 3.9: `manuscript/2J_manuscript_AE_revised.docx`
+  (Figures 1-8 embedded) and `manuscript/2J_SI_AE_revised.docx` (Figures S1, S2 appended under
+  manager-drafted captions marked DRAFT). Built from scratch copies; the .md files stay the source of
+  record and were not changed (equations 17/18 `\tag` swapped for `\qquad (N)` in the copy only). Detail
+  in `manuscript/prep/assembly_log.md`, last two manager lines.
+- Found: `tables/SI/Table_B1_B2.md` has no "sole" wording left, so its fix is done; the SI glossary
+  (item 28) exists at `tables/SI/Table_SI_glossary.md` (T56 DONE) but is not in the merged SI.
+- **T85 dispatched** (fresh Sonnet, text only, `impl/2026-09-21_T85_wp10_si_cleanup.md`): merge Table
+  S1 and the glossary, write Figure S1/S2 captions from T75/T74, fill `[VALUE PENDING]` only from
+  accepted sources, strip internal notes (the DO-NOT-QUOTE paragraph and its 1.0-3.3 % figure leave the
+  SI entirely), rebuild the SI .docx. Next: score T85, then `response_map.md`, then WP13.
+
+### (eb) 2026-09-21 — T85 SI clean-up ACCEPTED
+- SI now 6,438 words, S1-S11, tables S1-S4 in order, Figures S1-S2 with captions re-derived from T75/T74, no internal notes, no retired 1.0-3.3 % figure. Manager fixes: table renumbering (main text now cites Table S4), main-text 3.7 corrected to "four Montreal archetype cells and six metrics", Figure S1 caption "other two cities" -> "other five cities". Detail: `manuscript/prep/assembly_log.md` "Manager review of T85".
+- Both Word files rebuilt in the earlier submission format (`extra/build_scripts/ref_submit.docx` + `post.py`).
+- Still open: 3 SI `[VALUE PENDING]` with no source in any accepted doc (S6 x2 day-type at-home rates, S8 drop-count audit) - need a small collector job or deletion of those sentences; author-owed items unchanged from (dz). Next: `response_map.md`, then WP13.
+
+### (ec) 2026-09-21 — author requests: EUI question, simpler Figure 1, no WP in the paper, table widths, captions, citation prompts
+- EUI: no energy-use-intensity number exists for the current simulations because no collector ever read floor-area-normalised totals from them; the old Table 5 values come from the superseded tree (T07 could not reproduce them, gap up to 0.0043 kWh/m2). It is computable (whole-building energy / conditioned floor area needs no per-dwelling divisor), so it needs one small collector job, or the bracket is deleted. Author decision.
+- Figure 1: prompt rewritten as a 10-box, three-row diagram (`submission/figures/Prompts_Images/Figure_01_workflow_prompt.md`); old 24-box prompt kept in the session scratchpad only. New caption in the manuscript matches the new design; the current PNG is still the old diagram until the author regenerates it.
+- WP tags removed from the manuscript: figures 2-8 now embedded in the .md itself (no build-time insert needed), Figure 1 caption rewritten, "trace table ... removed before submission" sentence cut, Table 2 heading turned into a caption. Wider process-wording sweep dispatched as T86 (fresh Sonnet, `impl/2026-09-21_T86_wp10_paper_voice_sweep.md`).
+- Tables: column widths now set from cell content in both files (separator dash counts; min 10 %), script `table_widths.py` in the session scratchpad; pandoc builds must pass `--columns=10` so every pipe table uses relative widths.
+- Captions: every table caption is now a plain paragraph with only the label bold (figures already were).
+- Citations: deep-research prompts `deepResearch/dr_2J-14` (load timing and the grid), `dr_2J-15` (2030 horizon, next GSS time-use cycle), `dr_2J-16` (post-2022 telework trend, and the 41.1 % / 18.7 % StatCan numbers) written for the author to run in Gemini.
+- (ec, later) **T86 ACCEPTED.** 12 rewordings, one bug-history sentence (the old 12-of-48 story) deleted; manager number diff before/after: only the 12/12/48/48 of that sentence and the old "WP10" caption changed; all 10 author placeholders intact; no WP, "failure" or 1.0-3.3 left. Both .docx rebuilt with `--columns=10`: main 8 images, 2 tables (Table 2 widths 862/940/3293/2822 twips); SI 2 images, 6 tables. Nothing live. Next: `response_map.md`, then WP13; author owes dr_2J-14/15/16 runs, new Figure 1 image, EUI decision.
+
+### (ed) 2026-09-21 — author approved the EUI job; T87 dispatched
+- T87 (fresh Sonnet, `impl/2026-09-21_T87_eui_collector.md`): read-and-divide only over the existing T21 paired tree (no new simulations): site energy / conditioned floor area per archetype, 2022 and 2030, end-use split on the same basis, T07 parsing method, cross-check against T67 `agg_annual.csv`, controls C1-C3 seen failing. STOP rule if the T21 tree kept no `eplustbl.csv`. Next: score its controls, then fill `[NUMBER NEEDED: EUI]`.
+- (ed, later) T87 job **1341459** submitted (4 CPUs, running). Step 0 did not fire: `eplustbl.csv` is kept in the T21 tree for all four archetypes. T67 `agg_annual.csv` has no annual-kWh column, so the planned cross-check is NOT_POSSIBLE there; manager will cross-check instead against T68 `out/enduse_annual.csv` (raw Facility kWh per household-year). Next: read `T87/out/run_meta.json` controls first, then the EUI tables.
+
+### (ee) 2026-09-21 — new Figure 1 accepted by the author; citation returns in; T88 vetting dispatched
+- Author generated the simplified Figure 1 (Gemini, script `submission/figures/scripts/generate_fig01_workflow_simplified.py`) and likes it. `submission/figures/Figure_01_workflow.png` (md5 a78bc7ef...) is the one the manuscript cites; main .docx rebuilt, new image confirmed embedded. Matches the caption written in (ec).
+- dr_2J-14, -15, -16 returned (`deepResearch/*_results.md`). Gemini flags that 41.1 % (April 2020) and 18.7 % (May 2024) sit on different bases (workers at work vs all employed), so the Discussion sentence may not present them as one series. T88 (fresh Sonnet, `impl/2026-09-21_T88_vet_dr2j14_15_16.md`) vets all three (controls, Crossref, quotes on page) and proposes the placeholder edits; manager applies them. T87 EUI job 1341459 still to collect.
+
+### (ef) 2026-09-21 — T88 and T87 scored and applied; all citation gaps and the EUI gap closed
+- T88 ACCEPTED (`deepResearch/dr_2J-14_15_16_VETTING.md`): three positive controls pass, no fabrication. Applied six edits: grid timing x2 -> Denholm et al. 2015 (quote confirmed on osti.gov); 2030 horizon x2 -> IEA 2021 (DOI confirmed, page 403 to fetch); time-use cycle clause -> Statistics Canada 2024a (SDDS 4503, confirmed); post-2022 trajectory -> Barrero, Bloom and Davis 2023 (DOI confirmed, page 403) + Statistics Canada 2024b (Daily 26 Aug 2024, confirmed). Five reference entries added, en-dash page style.
+- Manager deviation from T88 Edit 6: the Discussion telework sentence quotes the Daily's own wording (18.7 % May 2024, down 1.4 points from May 2023 and 3.7 from May 2022) instead of derived 22.4/20.1 (rounding risk); "If that fall continued after 2022" -> "If that fall continues". 41.1 % no longer in the paper.
+- AUTHOR TO EYEBALL before submission: IEA 2021 2030-milestones passage and Barrero et al. 2023 page (both fetch-blocked).
+- T87 job 1341459 COMPLETED 0:0, 2,400/2,400 runs, all three controls ran_and_fired, internal check 2400/2400. Manager hand check of SingleD Montreal sample_001 2022: 91,735.91 kBtu x 0.293071 = 26,885 kWh, 2,377.10 ft2 = 220.84 m2, EUI 121.74 = collector row exactly. T68 cross-check dropped (Facility electricity only, different basis). Area basis is whole-building and self-consistent, so plan item 26 (per-unit divisor) does not bite.
+- Section 3.3 placeholder filled: area-weighted EUI 2022 SingleD 116.0, OtherDwelling 100.5, MidRise 107.8, HighRise 78.6 kWh/m2; 2030 main 116.3/100.6/107.8/78.6, stated as levels, not a tested change. Source `/speed-scratch/o_iseri/2J_revision/T87/out/eui_by_archetype.csv`.
+- Word rebuilt. Remaining placeholders: `[STATUS TO CONFIRM BY AUTHOR]` x1, `[NUMBER FROM RESULTS]` x2 (all author-owed). Backup scratchpad `ms_backup_before_T88edits.md`.
+
+### (eg) 2026-09-21 — T89 dispatched: response map brought up to date
+- Author: "continue till end". T89 (fresh Sonnet, text only) updates `manuscript/prep/response_map.md` against the revised manuscript and adds rows for carried items 10 to 19. Task doc `impl/2026-09-21_T89_response_map_thread.md`. Backup scratchpad `response_map_before_T89.md`. After it: WP13 (Applied Energy package).
+
+### (eh) 2026-09-21 — author supplied the two fetch-blocked PDFs; manager read both
+- Barrero, Bloom and Davis 2023 (`writing/resources/barrero-et-al-2023-the-evolution-of-work-from-home.pdf`): p1 "full days worked from home account for 28 percent of paid workdays in June 2023, four times the estimated share for 2019"; p24 "work-from-home intensity has stabilized in 2023". Supports the Section 1.3 citation. Reference page range corrected 23-49 -> 23-50 (journal header reads "Pages 23-50"; Crossref said 49).
+- IEA 2021 Net Zero by 2050 (`writing/resources/c8328405-en.pdf`): foreword "sets out clear milestones, more than 400 in total ... for what needs to happen, and when"; p20 figure "Key milestones in the pathway to net zero" with a 2030 column. Supports "2030 is a commonly used planning horizon". Both author-owed browser checks CLOSED. Word rebuilt.
+
+### (ei) 2026-09-21 — T89 ACCEPTED; manager applied its four text findings
+- T89 (`impl/2026-09-21_T89_response_map_thread.md`) re-checked all 55 response-map rows against the manuscript and added carried items 10-19. Manager spot-checked its two sharpest claims (ramp wording mismatch, reference errors): both real.
+- Applied: Section 2.10 now defines evening ramp = yearly mean of (hour-17 minus hour-14 whole-building load), source `impl/T06_scripts/enduse_hour_2022_v2.py:302-303` (same definition in T28 doc line 133); the false "no ramp metric is defined" sentence is gone. Motuzienė volume 76 -> 77 (item 20); Jalilian and Kamel full subtitle restored (item 21).
+- D13 closed with a new Section 5 scope limitation "Only home energy is inside the system boundary" (no outside source needed; it claims only what is not modelled). Limitation count eleven -> twelve, "first eight" -> "first nine".
+- Paper-voice leftovers removed: "not raised by reviewers", "reviewer-flagged scoring inconsistency" (Table 1 criteria note), "The project fixed" -> "This study fixed"; SI two "the project" -> "the study". SI glossary Step-8/Step-9 row kept (deliberate glossary, item 28).
+- Response map rows D13, Q21, Q22 -> DONE; D19 stays PARTIAL (Results order: occupancy and scenarios before load shape; author's call). Carried item 15 (old 3x cohort) OPEN but moot: those counts are no longer in the paper.
+- Both docx rebuilt. Backups scratchpad `ms_backup_before_T89fixes.md`, `si_backup_before_T89fixes.md`.
+- Next: WP13 (Applied Energy package: live Guide for Authors, highlights, cover letter, submit_check).
+
+### (ej) 2026-09-21 — WP13 started: T90 compliance check dispatched
+- T90 (fresh Sonnet) reads the live Applied Energy Guide for Authors and measures the manuscript against each requirement; writes `manuscript/prep/ae_compliance.md`; no edits. Task doc `impl/2026-09-21_T90_wp13_ae_compliance.md`.
+
+### (ek) 2026-09-21 — T90 scored: journal guide could not be opened
+- T90 ACCEPTED as NOT OPENABLE: Elsevier and ScienceDirect return HTTP 403 to the fetch tool on 8 URLs; a control fetch of another site worked, so the block is real, not a tool fault. No requirement was filled from memory (correct per task rule). `manuscript/prep/ae_compliance.md` lists 20 items as NOT CHECKABLE.
+- `submit_check.py` is built for double-blind (MASTER + BLINDED docx); not run. Whether Applied Energy is double-blind is itself unread.
+- Author asked whether Applied Energy is the right venue; manager answered: author's own choice of 2026-09-15 stands under the pre-agreed rule, but the measured comparison is only partial (province-level), so rejection risk is real; recommend stay, keep Sustainable Cities and Society ready. Waiting on author.
+- Unblock: author saves the Applied Energy Guide for Authors page as PDF into `writing/resources/`; a fresh agent then re-runs T90 from that file.
+
+### (el) 2026-09-21 — venue confirmed; session closed for the author's manual read
+- **Author confirmed Applied Energy** knowing the risk. Backups in order: Sustainable Cities and Society (declare the Concordia editor conflict), Journal of Building Engineering. Energy and Buildings stays excluded. Also added to `../02_journal_options.md`.
+- Author will read the whole paper manually before submission and return in a new session. No agent or job is live.
+- Nothing further an agent can do before the author returns: WP13 needs the author guide PDF (T90 NOT OPENABLE) and the author-only declarations. Owed list is in the handover prompt §NOW.
+- Tracker page not republished this session; owed (ef)-(el).
+- Author ruling: FRESH submission to Applied Energy. No response letter and no mention of the earlier review in any submitted file; the response map stays an internal checklist.
+
+### (em) 2026-09-21 — author decisions; three tasks dispatched
+- Companion paper status: **under review** (author). Placeholder filled in the manuscript line 87; backup `ms_backup_before_el.md` in the manager scratchpad.
+- Intro counts: agent finds them, manager checks (T91). SI three values: compute from existing outputs, no new simulations (T92, one sbatch job). Declarations: agent drafts with author blanks (T93, `manuscript/prep/declarations_draft.md`).
+- Fresh submission ruling stands: no response letter.
+
+### (en) 2026-09-21 — T93 ACCEPTED
+- `manuscript/prep/declarations_draft.md` read in full by the manager: 322 words, six sections, every author-only item a `[AUTHOR: ...]` blank, names from the old title page, no invented funder, roles or tools, no mention of the earlier review. Author to correct. T91 and T92 still running.
+
+### (eo) 2026-09-21 — T91 scored; both Intro counts filled
+- Architectures: **"over 40"**, matching the SI wording already accepted (SI line 152, source `04_augmentationGSS_IMP_2.md`). T91 recount of 55 from `comparision.md` NOT used: no document reconciles it with the "40+" record, and the SI would then disagree.
+- Simulation runs: **5,997** = paired 2022/2030 base 2,400 + three extra 2030 arms 1,200 + 1,198 + 1,199 delivered (T79 run_meta counts). Scope = the paired attribution design the sentence names; the SHEU check runs (4,800) and the average-profile arm (2,400) are other contributions and are not added. Manuscript now has zero placeholders. Docx rebuild waits for T92.
+
+### (ep) 2026-09-21 — T92 job resubmitted
+- T92 employee ran one python one-liner on the Speed login node (pandas check); flagged by itself, not repeated. Rule reminder stays in every cluster brief.
+- Job 1341513 FAILED (package import path); manager patched and resubmitted as **1341514**. Score controls first when it lands; then fill the three SI values and rebuild both docx.
+- Job 1341514 stopped on its own control (unit mismatch: household schedule mean vs per-person slot mean). Control replaced with a same-unit one; resubmitted as **1341516**. SI VALUE1/2 must state their unit: per person, unweighted, before the weekday/weekend pooling.
+
+### (eq) 2026-09-21 — T92 ACCEPTED; SI has no placeholders left
+- Job 1341516 COMPLETED; all three controls seen (one failing-by-design, two reproducing accepted numbers). Filled SI S6 (weekday 74.1, Saturday 76.0, Sunday 78.9 percent, per person, unweighted), the pooling loss (2.9 pp in 2022, 2.3 pp in 2030 main) and S8 full drop count (918 and 921 of 134,262 rebuilt; 797 and 1,043 published). Backup `si_backup_before_T92.md` in the manager scratchpad.
+- Both docx rebuilt: main 2 tables, SI 6 tables, xml ok; zero placeholders in either file.
+- Remaining before submission: author manual read; author fills the declarations blanks; author saves the Applied Energy guide PDF so T90 can re-run; tracker page republish owed (ef)-(eq).
