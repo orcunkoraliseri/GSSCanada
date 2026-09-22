@@ -1,0 +1,45 @@
+--- /c/Users/o_iseri/AppData/Local/Temp/claude/C--Users-o-iseri-Desktop-GSSCanada/19ce180e-2d81-4695-abbc-930a6c24df31/scratchpad/wp11_src/main.py	2026-09-22 08:51:17.939430700 -0400
++++ main_wp11.py	2026-09-22 08:52:36.463289900 -0400
+@@ -2190,12 +2190,21 @@
+         # ranking or a pool any more; every household id below comes from
+         # mc_draw_manifest, keyed by (neighbourhood, draw, year, building_index).
+ 
++        # WP11 (2026-09-22): draw-start patch, additive only -- behaviour is unchanged
++        # when WP11_DRAW_START is unset (defaults to "1", identical to the old k+1
++        # numbering). Lets one array task run draws D..D+iter_count-1 instead of always
++        # starting at draw 1, so several tasks for the same neighbourhood can cover
++        # different draw blocks without colliding on iter_1..iter_<iter_count>.
++        # Task doc: 1J_docs_occ/IMP/impl/2026-09-22_WP11_stage4d_draws.md, item 1.
++        wp11_draw_start = int(os.environ.get("WP11_DRAW_START", "1"))
++        print(f"WP11 DRAW START: {wp11_draw_start}", flush=True)
++
+         for k in range(iter_count):
+-            draw_number = k + 1
+-            print(f"\n--- Iteration {k+1}/{iter_count} (manifest draw {draw_number}) ---")
++            draw_number = wp11_draw_start + k
++            print(f"\n--- Iteration {draw_number}/{iter_count} (manifest draw {draw_number}) ---")
+ 
+             # Prepare jobs for this iteration
+-            iter_dir = os.path.join(neighbourhood_dir, f"iter_{k+1}")
++            iter_dir = os.path.join(neighbourhood_dir, f"iter_{draw_number}")
+             os.makedirs(iter_dir, exist_ok=True)
+ 
+             jobs = []
+@@ -2229,7 +2238,7 @@
+                         prepared_idf, final_idf, schedules_list,
+                         original_idf_path=selected_idf, epw_path=selected_epw,
+                         sim_results_dir=SIM_RESULTS_DIR,
+-                        batch_name=f"{batch_name}/iter_{k+1}"
++                        batch_name=f"{batch_name}/iter_{draw_number}"
+                     )
+ 
+                     # Export all used schedules for debugging (Iter 1 only to save space, or all?)
+@@ -2242,7 +2251,7 @@
+                         for sched in schedules_list:
+                             hh_id = sched.get('hh_id', 'unknown')
+                             integration.export_schedule_csv(
+-                                sched, str(hh_id), f"{scenario}_Iter{k+1}",
++                                sched, str(hh_id), f"{scenario}_Iter{draw_number}",
+                                 SIM_RESULTS_DIR, batch_name=batch_name
+                             )
+ 

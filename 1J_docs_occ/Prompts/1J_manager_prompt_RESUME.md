@@ -3,45 +3,63 @@
 First written 2026-09-19 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6,
 §7 and §8 change only when a rule or a design changes.
-Last updated: **2026-09-21, plan log entry (at). Stage 4's manifest/schedule mismatch found, ruled on, and
-fixed. Six real Default jobs plus the Gate 4 scoring job are RUNNING on the cluster now; results not yet
-read.**
+Last updated: **2026-09-22 ~13:30 EDT, still plan log entry (ax) (no step has completed since — this is only a
+live-status refresh before a handoff, not a closure ritual). step 4d scripts BUILT and ACCEPTED (selftest 1342170
+PASS, 7+2 checks, 0 unexpected); manager fixed the disk pre-flight parser, which could never fail (plan log (ax)).
+Swap+probe 1342171 PENDING `afterany:1342160:1342163`. Still waiting on RC5/RC6 -> Gate 4 (1342160) and the workers
+check (1342163). Progress page still at version **50** — nothing has been logged there because nothing has finished.
 - **Author ruling (ao): remove only the code-88 person, keep the home; state it as a limitation.** WRITTEN
   in the manuscript at the sampled-population share (2.8 % 2010, 5.4 % 2022), never the raw-census 4.1 % /
   10.0 % (see §7.3).
 - **G2.0: kept and disclosed (an).** Stays a recorded FAIL, no longer blocks anything.
 - **Manager ruling (as): re-stage the schedule files from the rebuilt grid files, not April** — fixed and
   verified 6/6 (up from 0/6) by plan log (at). Full reasoning in `impl/2026-09-21_WP10_stage4_manifest_patch.md`.
-- **Live now:** job chain **1341388** (Gate 4 selftest, COMPLETED) -> **1341389-1341394** (six Default runs
-  RC1-RC6, RUNNING) -> **1341395** (Gate 4 real scoring, PENDING on Dependency). **This chain, not any
-  agent, is the state.** Step 4d (draws in blocks of 5) does not start until 1341395's output is read and
-  G4.0-G4.3 all PASS. April reference numbers to score against, already read fresh (plan log (at)): RC1
-  35.117/45.612, RC2 38.173/44.014, RC3 24.974/46.526, RC4 156.414/18.231, RC5 158.525/19.424, RC6
-  150.780/26.221 (heating/cooling).
+- **Live now (checked 2026-09-22 ~13:30 EDT, handover to a new session; this session's watchers die with it):**
+  - RC5 **1341393** and RC6 **1341394** RUNNING (~23 h 18 m in, expected ~28 h) -> **1342160** Gate 4 real scoring
+    (`afterany` on those two, still PENDING). RC1-RC4 (1341389-1341392) finished; CSVs equal April exactly
+    (informal, (au); G4.3 is still scored by Gate 4). April references: RC1 35.117/45.612, RC2 38.173/44.014,
+    RC3 24.974/46.526, RC4 156.414/18.231, RC5 158.525/19.424, RC6 150.780/26.221 (heating/cooling).
+  - Workers check (av): **1342162** (w5, 5 CPUs, 64G) **COMPLETED, exit 0:0** (~2 h 29 m). **1342161** (w1, 1 CPU,
+    24G) still RUNNING (~4 h 03 m; RC1 needs ~3 h at 1 CPU, so it should land soon) -> **1342163** comparer,
+    `afterany` on both, still PENDING (cannot run until w1 finishes).
+  - WP11 swap+probe **1342171** PENDING `afterany:1342160:1342163` (swaps in `main_wp11.py`, runs no EnergyPlus).
+  - WP11 selftest 1342170 COMPLETED PASS (read, (ax)). Scripts staged in `/speed-scratch/o_iseri/1J_rerun/stage4/wp11/`,
+    local copies `IMP/impl/wp11/` (the quota parser there is the manager-fixed one; both copies compared equal).
+  - 1J CPUs in use now: 3 of the 32 cap (RC5 1, RC6 1, w1 1 — w5's 5 CPUs freed on completion).
 - (Unrelated `histnu`/1340317-1341187 under `/nfs/speed-scratch/rhlab/hist_nu_z7a` is not 1J; ignore it.)
-- Progress page db version **47** (two new log lines: mismatch found before cluster time was spent, then
-  ruling+fix; `sim` box still 0/6 done, note explains the six-job check now running).
-**A fresh session's first action:** `sacct -j 1341388,1341389,1341390,1341391,1341392,1341393,1341394,1341395
---format=JobID,JobName%30,State,ExitCode,Elapsed -X` on Speed (no more than once every 30 min). If 1341395
-shows COMPLETED, read its output file for the `GATE4 SUMMARY` line and score G4.0-G4.3 against the numbers
-above per §5.5 step 4. If still PENDING/RUNNING, that is normal — do not re-submit, do not poll again for
-30 minutes.
+- Progress page db version **50** (log line for (ax): draws planned, scripts tested, disk check fixed).
+- **Author instruction in force:** "continue until the end" — carry Stage 4 through on your own (score, submit
+  4d, score blocks), closure ritual after every step; ask the author only if a fix is itself a design choice.
+
+**A fresh session's first action:** `sacct -j 1341393,1341394,1342160,1342161,1342162,1342163,1342171 -X
+--format=JobID,JobName%24,State,Elapsed,ExitCode,MaxRSS` on Speed (no more than once every 30 min; for waiting,
+run a local background loop that sleeps 1800 s between sacct calls, never a tight poll). Exit code 1 on a Default
+or runner job is expected (plotting crash); read the CSV. Then, in this order, as each lands:
+  1. **1342163 done** -> read `logs/wc_compare_1342163.out` for `WORKERS CHECK SUMMARY` (PASS -> 4d uses 5
+     workers). Record MaxRSS of 1342161 vs 1342162 (steps too: `sacct -j <id> --format=JobID,MaxRSS`): the w5/w1
+     ratio on RC1 (w1 baseline 9.0 GB) scales the 1-CPU peaks (RC2 20.8, RC3 19.0, RC4 24.0, RC6 38.7 GB; RC5
+     unmeasured, take RC6's) into `--mem` for LIGHT (max of RC1-RC4) and HEAVY (max of RC5-RC6), plus ~25 % margin.
+  2. **1342160 done** -> read `logs/wp10_stage4_gate4_real_1342160.out` for `GATE4 SUMMARY`; score G4.0-G4.3
+     per §5.5 step 4.
+  3. **1342171 done** -> read `logs/wp11_swap_probe_1342171.out` for `SWAP CHECK: PASS` and `WP11 PROBE VERDICT: PASS`
+     (unset -> draw 1; start 6 -> iter_6/7; start 30 -> MANIFEST MISS seen raised).
+  4. All PASS -> submit 4d per §5.5 step d (binding notes there). Write plan log (ay), closure ritual.
 ---
 
 ## 0. Cold start: do these five things, in this order, before anything else
 
 1. Read the **last three entries of §7 (Progress log)** in `1J_docs_occ/IMP/00_REVISION_PLAN.md`
    (`tail -60 00_REVISION_PLAN.md`). **The log is the state. This file is only a pointer; where the two
-   disagree, the plan wins.** The last entry written is **(ao)**; the next letter you write is **(ap)**.
+   disagree, the plan wins.** The last entry written is **(ax)**; the next letter you write is **(ay)**.
 2. Read the progress page's database (`ArtifactData` `get`, url `https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn`,
-   collection `revision`, doc `progress`) and note its `version`. It was **44** when this file was written
+   collection `revision`, doc `progress`) and note its `version`. It was **50** when this file was written
    (the document now also carries a `sim` field: `{done, total, label, note, updated}`, read by the page's
    new tracker box — keep it when you next write the whole document, or update `done`/`total`/`note` if a
    different job's simulation count becomes the one worth showing).
-3. **One 1J job chain is live (ao):** the F-1J-8 fix-and-rebuild, job IDs in the Ledger of
-   `IMP/impl/2026-09-21_WP9_f1j8_fix_rebuild.md`. Poll it with `sacct` no more than once every 30 minutes.
-   Earlier jobs (1339756, 1339757, 1339951, 1339963, 1339964) are all DONE and scored. (Unrelated
-   `histnu`/1340317 under `/nfs/speed-scratch/rhlab/hist_nu_z7a` is not 1J; confirm by `WorkDir`, then ignore.)
+3. **Live jobs:** see the "Live now" block and "first action" list at the top of this file (Stage 4
+   baseline, workers check, Gate 4, WP11 probe). Poll with `sacct` no more than once every 30 minutes. The
+   (ao) F-1J-8 chain is DONE and scored. (Unrelated `histnu` array under `/nfs/speed-scratch/rhlab/hist_nu_z7a`
+   is not 1J; confirm by `WorkDir`, then ignore.)
 4. Read the `Status:` line and the `## Ledger` section of every doc in `1J_docs_occ/IMP/impl/` whose name
    starts with today's date. **Do not re-dispatch a task because you cannot see its agent** — the previous
    session's employees are invisible to you, and the doc, not the agent, is the state. Re-dispatch only
@@ -261,17 +279,24 @@ except have the actual Section 4.1 prose rewritten at Step 7, using the shares (
 4. **4a (manifest patch) and 4b (Gate 4, seen failing first) DONE.** A schedule-file mismatch was found
    (manifest vs still-April schedules disagreed on `PR`/region, 0/6 neighbourhoods would succeed), ruled on
    by the manager (as: re-stage from the rebuilt grid files, not April), fixed and verified 6/6 (at).
-   **4c is now RUNNING:** job **1341388** selftest COMPLETED -> **1341389-1341394** six Default jobs
-   RUNNING -> **1341395** Gate 4 real scoring PENDING on Dependency (starts itself). When 1341395
-   completes:
+   **4c is RUNNING (au):** selftest 1341388 COMPLETED; RC1-RC4 finished (exit 1 = plotting crash, CSVs
+   good, equal April); RC5/RC6 1341393/1341394 RUNNING -> **1342160** Gate 4 real scoring (`afterany`,
+   replaces the dead-locked 1341395). When 1342160 completes:
    - Read its output for `GATE4 SUMMARY: G4.0=.. G4.1=.. G4.2=.. G4.3=..` and the six `Default_mean`
      heating/cooling numbers.
    - Score G4.3 against the April numbers in the header above (RC1-RC6). Do not re-derive from a
      different file.
    - If all of G4.0-G4.3 PASS, proceed to 4d below. If any FAIL, stop, diagnose (do not guess a second
      fix), write it up, and ask the author only if the fix is itself a design choice.
-   d. **4d, not yet designed or dispatched:** draws in **blocks of 5**, 1 CPU per job, scoring the
-      pre-registered stopping rule (§7.1) after each complete block.
+   d. **4d DESIGNED (aw), not yet submitted.** Read plan log (aw) in full; task doc
+      `impl/2026-09-22_WP11_stage4d_draws.md` (its Ledger holds the selftest and swap+probe job IDs). Order:
+      (1) Gate 4 PASS (1342160), workers check PASS (1342163), selftest and `WP11 PROBE VERDICT: PASS`; (2) the manager
+      submits LIGHT array (RC1-RC4, 24 tasks `%2`) and HEAVY array (RC5-RC6, 12 tasks `%4`), `-c 5`, `--mem` from the
+      workers check's MaxRSS, `ARRAY_KIND` env set; (3) six scorer jobs, scorer b `afterany` on the tasks of blocks 1..b;
+      (4) write `stage4/draws/job_ids.txt`. **Binding submission notes, plan log (ax):** `--export=ALL,ARRAY_KIND=...`
+      (never plain `--export=ARRAY_KIND`), keep the block-major `--array=0-23%2` / `0-11%4` layout, scorer b waits on
+      ALL tasks of blocks 1..b, and read `WP11 PROBE VERDICT` in `logs/wp11_swap_probe_1342171.out` first. On STOP the scorer cancels the rest itself. If the workers check does not
+      PASS, 4d runs at 1 worker (redesign the array throttle to stay within 32 CPUs).
 Detail and job shapes: Fable report §6 Stage 4.
 
 ### 5.6 Stage 5: what may be written in the paper
@@ -358,6 +383,9 @@ Back up a record before editing it (`cp <file> "$TEMP/<name>_bakN"`).
 - **Delegate mechanical work** to Sonnet or Haiku with an explicit model. Never delegate a ruling.
 - **Re-measure an employee's key claims** before carrying them: spot-check two or three of its file:line
   citations. A gate is trusted only after it has been seen failing on a broken input.
+- **CPU budget (author, 2026-09-22): 1J uses at most 32 CPUs at once**, counting running and pending 1J
+  jobs; the rest of the allocation belongs to `histnu`. Size every 4d block to fit (e.g. 5-worker jobs:
+  at most 6 at a time).
 - **Cluster (Speed):** `sbatch` only. Never a blocking `srun`, never python on the login node. Allowed
   there: `sbatch`, `squeue`, `sacct`, `scancel`, `scontrol`, `cd`, `ls`, `scp`, `module load`, single-file
   `tail`/`head`/`grep`/`wc -l`/`cat`. **No `find`, no `du`, no `md5sum`.** Every job asks
