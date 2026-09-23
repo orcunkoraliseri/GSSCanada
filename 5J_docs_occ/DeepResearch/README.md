@@ -98,6 +98,16 @@ the response template is per prompt.
 
   WAVE 7 -- after RT19..RT37 are vetted
     T38  gap check and ranking of A14 forms  fixed scoring rule; manager pastes the vetted forms first
+
+  --- added 2026-09-22: 5J subject is A7 in climate form (brief section 10) ---
+
+  WAVE 8 -- building records and what can check them, any order, one fresh session each
+    T39  Canadian permit open data ....... which cities publish permit text; fields, years, language
+    T40  truth on retrofits and cooling .. EnerGuide, rebates, HES: what can score the model
+    T41  other records, benchmarks ....... assessment rolls, disclosure, 311; US permit sets with truth
+
+  WAVE 9 -- after RT39..RT41 are vetted (done 2026-09-22), fresh session, run alone
+    T42  openness of the climate form .... has anyone read building records for retrofit state with abstention
 ```
 
 `T10` and `T11` name a fallback trio (`A2`, `A3`, `A9`) for use only if `RT02` is not back. Replace
@@ -149,6 +159,10 @@ in place, dated.
 | **T36** | `T36_legal_licence_privacy_of_non_survey_sources.md` | Licences, TCPS 2, Law 25, GDPR: what may be released per source class | Every `A14` form | **Yes**, per source class | round 2 returned 2026-09-18, vetted 2026-09-19: FAILED ROUND, do not re-run in Gemini (VETTING_RT36) |
 | **T37** | `T37_emerging_and_unconventional_occupancy_sources.md` | Night light, water, EV, Wi-Fi, LLM-written diaries: real, closed or hype | Closes doors early | Yes, expected | failed 2026-09-18 (VETTING_RT37) |
 | **T38** | `T38_source_angles_gap_check_and_ranking.md` | Prior work and one fixed-rule ranking of the vetted `A14` forms | The `A14` shortlist | **Yes**, per form | round 2 returned 2026-09-19, vetted 2026-09-19: FAILED ROUND, do not re-run as it stands; forms unchanged (VETTING_RT38; round 1 void: VETTING_RT38_round1) |
+| **T39** | `T39_canadian_building_permit_open_data.md` | Which Canadian cities publish residential permit files with free text; fields, years, language; is a permit even required for the work | `A7` climate form, input text | Yes, if no text | written 2026-09-22; returned 2026-09-22 (all three in one Gemini session, not fresh sessions); **FAILED ROUND** (`VETTING_RT39.md`): central Montreal permit claim reversed by its own source, 14 bad tags, invented examples, wrong counts; kept: no permit needed for heat pump or AC in Montreal (verbatim), none for furnace, cooling, insulation or same-opening windows in Toronto houses; free-text fields confirmed in 10 more cities; Gunay 2023 (text mining on Canadian permits, 7 cities) is prior work |
+| **T40** | `T40_retrofit_and_cooling_ground_truth_canada.md` | Per-building or area truth on heat pumps, air conditioning, insulation and windows in Canadian homes, and its terms | `A7` climate form, scoring | **Yes**, if no truth | written 2026-09-22; returned 2026-09-22 (all three in one Gemini session, not fresh sessions); **FAILED ROUND** (`VETTING_RT40.md`): fabricated tags and false "opened in full"; kept: no open per-address truth, EnerGuide per-home rows at FSA level (OGL, 2004 to 2026), StatCan 38-10-0019-01 and 38-10-0286-01 with Montreal and Toronto |
+| **T41** | `T41_other_building_record_texts_and_benchmarks.md` | Other Canadian record texts, and non-Canadian cities with permit text plus public truth for benchmarking | `A7` climate form, coverage | No | written 2026-09-22; returned 2026-09-22 (all three in one Gemini session, not fresh sessions); **FAILED ROUND** (`VETTING_RT41.md`): invented authors on a real DOI, US cards with unreached IDs; kept: listing sites not usable (Centris, Kijiji quotes), Montreal roll as join key, NYC and Chicago benchmark pairs, SimBuild 2020 read in full (multi-label BERT, no abstention, no French) |
+| **T42** | `T42_openness_of_the_permit_reading_climate_form.md` | Prior work on a language model reading building records for retrofit and cooling state, with abstention, French text, feeding an energy model; which part is open | `A7` climate form, novelty | **Yes**, if already done | written 2026-09-22; returned 2026-09-22 (run alone); **FAILED ROUND** (`VETTING_RT42.md`): two accuracy figures not in their sources (Zhang, Gunay), false "reachable" rows; kept: both controls surfaced, Gunay French = hard-coded keywords with no equipment, Borrotti 2024 conformal on loads not text, 19 empty queries re-run empty; combination unclaimed as far as searched; Geo2UBEM read 2026-09-22 (author PDF): benchmark calibration from geometry, no record text, no retrofit state, no abstention, so it does not take our part |
 
 ## Rules that hold for every prompt in this series
 

@@ -1,0 +1,71 @@
+{
+  "building": "SuperTall",
+  "city": "CLG",
+  "code_md5": {
+    "commercial_integration.py": "233932d7b043dc54d3ad5a76cf2432bf",
+    "3rdJ_08P_probe_driver.py": "b42dc4ba0e56335f3194eda74617ec4d",
+    "3rdJ_09J_retail_necb_c.py": "fca94812b7064fc648e4b3050a49e6dc",
+    "3rdJ_09H_plant_resize_probe.py": "94d28d1e20644a7b6a4e7ec4045f1e24",
+    "3rdJ_09H_resize_campaign_cell.py": "8a4530b6de697566dc25b5e0a35e1dce",
+    "3rdJ_09H_dhw_plant_topology.py": "e8ecf67b03d58627305b8ca5db6d9a9f",
+    "v3_lib.py": "10de224b6a823e3da69dbe36972cb5d0"
+  },
+  "B_rebuild_vs_frozen_U": {
+    "n_only_a": 0,
+    "n_only_b": 0,
+    "digest_a": "75eac1665b5baee3caf0a04bea409de6",
+    "digest_b": "75eac1665b5baee3caf0a04bea409de6",
+    "classes_only_a": [],
+    "classes_only_b": [],
+    "report": "only in A (0):\nonly in B (0):",
+    "seconds": 26.0
+  },
+  "N_vs_R": {
+    "n_only_a": 0,
+    "n_only_b": 0,
+    "digest_a": "b1c7f97dc4f86c33993e73d1841e75ae",
+    "digest_b": "b1c7f97dc4f86c33993e73d1841e75ae",
+    "classes_only_a": [],
+    "classes_only_b": [],
+    "report": "only in A (0):\nonly in B (0):",
+    "seconds": 25.2
+  },
+  "X_vs_R": {
+    "n_only_a": 18,
+    "n_only_b": 18,
+    "digest_a": "bc2f1344ae76ee32de154c477f955fb5",
+    "digest_b": "b1c7f97dc4f86c33993e73d1841e75ae",
+    "classes_only_a": [
+      "ELECTRICEQUIPMENT",
+      "LIGHTS",
+      "PEOPLE"
+    ],
+    "classes_only_b": [
+      "ELECTRICEQUIPMENT",
+      "LIGHTS",
+      "PEOPLE"
+    ],
+    "report": "only in A (18):\n  ELECTRICEQUIPMENT ['CLASSROOM ELEC EQUIP', 'CLASSROOM', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['CLOSEDOFFICE ELEC EQUIP', 'CLOSEDOFFICE', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['CONFERENCE ELEC EQUIP', 'CONFERENCE', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['DINING ELEC EQUIP', 'DINING', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['OPENOFFICE ELEC EQUIP', 'OPENOFFICE', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['RESTROOM ELEC EQUIP', 'RESTROOM', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.5028']\n  LIGHTS ['CLASSROOM LIGHTS', 'CLASSROOM', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.642376396']\n  LIGHTS ['CLOSEDOFFICE LIGHTS', 'CLOSEDOFFICE', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '7.965293708']\n  LIGHTS ['CONFERENCE LIGHTS', 'CONFERENCE', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '10.440993104']\n  LIGHTS ['DINING LIGHTS', 'DINING', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '4.628481479']\n  LIGHTS ['OPENOFFICE LIGHTS', 'OPENOFFICE', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '6.565985354']\n  LIGHTS ['RESTROOM LIGHTS', 'RESTROOM', \"SCHED('C', '21d8528d30d2068d')\", 'WATTS/AREA', '', '6.7']\n  PEOPLE ['CLASSROOM PEOPLE', 'CLASSROOM', \"SCHED('C', '21d8528d30d2068d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['CLOSEDOFFICE PEOPLE', 'CLOSEDOFFICE', \"SCHED('C', '21d8528d30d2068d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['CONFERENCE PEOPLE', 'CONFERENCE', \"SCHED('C', '21d8528d30d2068d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['DINING PEOPLE', 'DINING', \"SCHED('C', '21d8528d30d2068d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['OPENOFFICE PEOPLE', 'OPENOFFICE', \"SCHED('C', '21d8528d30d2068d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['RESTROOM PEOPLE', 'RESTROOM', \"SCHED('C', '21d8528d30d2068d')\", 'PEOPLE/AREA', '', '0.040015']\nonly in B (18):\n  ELECTRICEQUIPMENT ['CLASSROOM ELEC EQUIP', 'CLASSROOM', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['CLOSEDOFFICE ELEC EQUIP', 'CLOSEDOFFICE', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['CONFERENCE ELEC EQUIP', 'CONFERENCE', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['DINING ELEC EQUIP', 'DINING', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['OPENOFFICE ELEC EQUIP', 'OPENOFFICE', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.5028']\n  ELECTRICEQUIPMENT ['RESTROOM ELEC EQUIP', 'RESTROOM', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.5028']\n  LIGHTS ['CLASSROOM LIGHTS', 'CLASSROOM', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.642376396']\n  LIGHTS ['CLOSEDOFFICE LIGHTS', 'CLOSEDOFFICE', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '7.965293708']\n  LIGHTS ['CONFERENCE LIGHTS', 'CONFERENCE', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '10.440993104']\n  LIGHTS ['DINING LIGHTS', 'DINING', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '4.628481479']\n  LIGHTS ['OPENOFFICE LIGHTS', 'OPENOFFICE', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '6.565985354']\n  LIGHTS ['RESTROOM LIGHTS', 'RESTROOM', \"SCHED('C', 'c46d91d671286a4d')\", 'WATTS/AREA', '', '6.7']\n  PEOPLE ['CLASSROOM PEOPLE', 'CLASSROOM', \"SCHED('C', 'c46d91d671286a4d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['CLOSEDOFFICE PEOPLE', 'CLOSEDOFFICE', \"SCHED('C', 'c46d91d671286a4d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['CONFERENCE PEOPLE', 'CONFERENCE', \"SCHED('C', 'c46d91d671286a4d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['DINING PEOPLE', 'DINING', \"SCHED('C', 'c46d91d671286a4d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['OPENOFFICE PEOPLE', 'OPENOFFICE', \"SCHED('C', 'c46d91d671286a4d')\", 'PEOPLE/AREA', '', '0.040015']\n  PEOPLE ['RESTROOM PEOPLE', 'RESTROOM', \"SCHED('C', 'c46d91d671286a4d')\", 'PEOPLE/AREA', '', '0.040015']",
+    "seconds": 25.4
+  },
+  "Y2022s42_vs_frozen": {
+    "n_only_a": 0,
+    "n_only_b": 0,
+    "digest_a": "743f403de96e35df2668808fe3252bf1",
+    "digest_b": "743f403de96e35df2668808fe3252bf1",
+    "classes_only_a": [],
+    "classes_only_b": [],
+    "report": "only in A (0):\nonly in B (0):",
+    "seconds": 28.4
+  },
+  "Bcentral_s42_vs_frozen": {
+    "n_only_a": 0,
+    "n_only_b": 0,
+    "digest_a": "d547e32e68bbfe00fb4d1e7ec1b0a94d",
+    "digest_b": "d547e32e68bbfe00fb4d1e7ec1b0a94d",
+    "classes_only_a": [],
+    "classes_only_b": [],
+    "report": "only in A (0):\nonly in B (0):",
+    "seconds": 28.3
+  }
+}

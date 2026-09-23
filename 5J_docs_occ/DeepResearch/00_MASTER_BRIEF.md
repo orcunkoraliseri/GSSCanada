@@ -249,3 +249,62 @@ verified example of its use in building energy research, or `NONE FOUND`.
 7. (Added 2026-09-18 after `RT19`.) Write only your report, `RT<NN>_<topic>.md`. Never write a
    `VETTING_RT<NN>.md` note, never edit `README.md` or any other file, and never give your own report
    a verdict. Vetting is done by someone else, after you finish.
+
+## 10. The chosen form of `A7`: building records as input, and what can check them (prompts `T39` to `T42` only)
+
+Added 2026-09-22. Ignore this section for `T01` to `T38`.
+
+**The subject.** The fifth paper is now `A7` in a climate form. An open-weight language model, run on
+our own GPUs, reads the free text of Canadian municipal building permits (French and English) and
+recovers, for each residential building, its retrofit and cooling state: heat pump, air
+conditioning, insulation, window replacement, heating fuel change. It gives a set of possible answers,
+or abstains, when the text is too thin, with conformal coverage per archetype. That uncertain stock
+then feeds a Canadian building energy model with time-use occupancy (the GSS pipeline of section 2),
+to show how much the unknown retrofit and cooling state changes demand and indoor conditions for the
+people actually at home. `A9` is no longer the 5J subject; do not discuss it.
+
+**What we already know, so do not restate it as a finding.** Montreal and Toronto publish building
+permit files on their open-data portals; we are checking those two files ourselves. European energy
+certificate registers are already structured, so they are out of scope here.
+
+**The four roles a record source can play.** Every Section F row states which roles it can serve.
+
+| Role | Meaning |
+|---|---|
+| `L1` input text | Free text a model would read to infer retrofit or cooling state (a permit description, an assessment note, a listing text) |
+| `L2` label | Per-building or per-dwelling truth that a model's answer can be scored against (an energy audit record, a rebate record, a measured inventory) |
+| `L3` aggregate check | Counts or shares by area or year (for example the share of homes with air conditioning by city) that the model's totals can be compared with, without per-building linkage |
+| `L4` link | A key that joins a record to a building footprint or to another source (civic address, lot or roll number, coordinates) |
+
+**The record-source card.** Every Section F row carries, in this order: source name and custodian;
+city or province; years covered and whether it is still updated; unit (permit, dwelling, building,
+lot, address); total row count as shown on the page; **the names of the free-text fields, quoted from
+the schema or data dictionary**; language of that text; whether residential records can be
+separated, and by which field; any structured work-type field and its codes relevant to heat pumps,
+air conditioning, insulation, windows or heating fuel; roles `L1` to `L4`; link key; access route and
+eligibility for a researcher at a Canadian university, quoted with the date checked; licence name
+copied from the licence page, and whether derived per-building labels may be redistributed, quoted;
+known bias (for example: work that needs no permit, such as a window air conditioner, never appears);
+one verified example of its use in research, or `NONE FOUND`.
+
+**Extra hard rules for `T39` to `T42`.** Rules 1 to 7 of section 9 apply unchanged, and:
+1. Read only `00_MASTER_BRIEF.md`, `_RESPONSE_TEMPLATE.md` and your one prompt. Open no other file in
+   the project.
+2. Write only two files, in `5J_docs_occ/DeepResearch/`: `RT<NN>_<slug>.md` and `RT<NN>_pages.log`.
+   Any other file created, edited, renamed or deleted in the project voids the report. Scratch
+   scripts live outside `C:\Users\o_iseri\Desktop\GSSCanada\`. No script may hold report text.
+3. The page log is written **by the fetch itself, at the time of each fetch**: one tab-separated line
+   per page, API call or search query, with time `YYYY-MM-DDTHH:MM:SS`, the full URL or query, the
+   HTTP status, and about 200 characters copied verbatim from the body. Built-in web searches are
+   logged too, with the query string. A log rebuilt afterwards from a list of URLs voids the report.
+   Finish the log before writing the report and do not add to it afterwards.
+4. Every sentence in the report that states a fact ends with a tag: `[Ln]` (the page at log line `n`
+   holds it), `[BRIEF s.n]`, or `[INFERENCE]`. A factual sentence with no tag is struck; more than five
+   tags that do not support their sentence void the report.
+5. A dataset page counts as opened only if it returned 200 and its excerpt is readable text of that
+   dataset. A field name, row count or licence counts only if it is on a logged page. Where the schema
+   is only in a downloadable file, download its first rows or its dictionary and log that call.
+6. A CrossRef record proves a work exists, not what it did. Any sentence about what a study did needs
+   a logged abstract or full text; otherwise write `TITLE ONLY`.
+7. Every "not found" lists its queries with their log lines. Say "these queries found nothing", never
+   "none exists". No self-grades: never write "verified", "confirmed" or "complete" about your own work.

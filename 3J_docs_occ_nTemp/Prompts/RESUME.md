@@ -1,6 +1,80 @@
 # RESUME - THE 3J director prompt. Start every session here.
 
-**Last updated: 2026-08-11, "handoff refreshed, stale submission figures replaced" round.**
+**Last updated: 2026-09-23 ~01:30 UTC, "rebuilt arm on Speed, parallel writing work" round.**
+Predecessor: `archive/RESUME.2026-09-23_pre_speed_wait.md`.
+
+> 🔴 **RESUME HERE - 2026-09-23. The critical path is the 56 rebuilt-arm (P10R) runs on Speed.**
+> Everything that needs the new numbers waits for them; work that does not need them was started in
+> parallel (see "Parallel work" below). Live state = bottom of the progress log in
+> `writing/implementation/3J_IMP_execution_2026-09-22.md`. Author board (update after EVERY step):
+> https://claude.ai/artifact/Fr1S2GUncWa3bC5QptgoKN - state is the db doc `board/progress`
+> (`checks`, `sims` bars, `log`); change it with `ArtifactData update`, republish the page
+> (`writing/implementation/IMP/board/3J_improvement_board.html`) only for layout changes.
+>
+> **Author ruling 2026-09-23: simulations run on Speed ONLY, never on the local machine** (the local
+> box is busy with the author's own work; a busy queue is not a reason to go local). The local
+> `Leg3_4-split/Step8_docs/campaign_local_P10R/` (8 ok cells, killed mid-run) is kept only as a
+> Speed-vs-local cross-check (`IMP/scripts/p10r_speed_vs_local.py`, tolerances from V3b).
+>
+> **3J jobs on Speed** (user `o_iseri`, cap cpu=64, histnu owns its half - never touch it):
+> - P10R test cell 0 = **1342535**; cells 1-55 = array **1342536** (`%26`, `afterok:1342535`,
+>   `--nice=10000` so histnu/1J win freed CPUs). Script `Step8_docs/3rdJ_08D_campaign_P10R_speed.sh`
+>   (backup `.bak_pre_slim`), submitter `/speed-scratch/o_iseri/3J_P10R/p10r_submit.sh`. Output
+>   `/speed-scratch/o_iseri/3J_P10R/campaign_P10R/<tag>/`, logs `.../3J_P10R/logs/p10r_<job>_<idx>.out`.
+>   An ok cell = manifest `P10R_STATUS=ok` + `run/eplusout.sql` slimmed to ~1 MB (exit 5/6 = slim failed).
+>   At 00:40 UTC the test was RUNNING and the 55 were PENDING on it (see history in step 1 below).
+> - V3b plumbing check **1342426** (20 tasks, 9 done at 01:10) + checker **1342427** (afterany).
+> - V3c fair code control **1342434** (4 tasks, 1 done). Details: `IMP/V3_design_and_runs.md`, `IMP/V3c_fair_control.md`.
+>
+> **First actions on return, in order:**
+> 1. `sacct -j 1342535,1342536,1342426,1342427,1342434 -X` (never infer "finished" from empty output).
+>    If 1342535 FAILED: read its log, fix, `scancel 1342536`, re-upload, re-run `p10r_submit.sh`.
+>    History: 1342523 and 1342533 FAILED in 7 s at the mirror check (exit 3) because the edited speed
+>    script's md5 was stale in `repo/mirror_md5.txt` (the file the checker reads; a copy also sits at
+>    `3J_P10R/mirror_md5.txt`). Fixed: list now 63 lines (script 556bebd8 + slimmer 51d6487d). Any
+>    future edit of a mirrored file must update `repo/mirror_md5.txt` in the same step.
+>    1342535 started 00:39 UTC on speed-30: `[mirror] OK`, `preserve_load_standby_floor=True`.
+> 2. Update the board bars + log.
+> 3. V3b done -> read the checker, write the cross-platform tolerance into `IMP/V3_design_and_runs.md`,
+>    then the V4 design note (`IMP/V4_design.md`). V3c done -> post-process per `IMP/V3c_fair_control.md`.
+> 4. All 56 P10R cells ok -> phase C **as sbatch jobs on Speed** (not locally): aggregate
+>    (`--idf-name injected_resized.idf`, `PYTHONPATH=<repo>/eSim`) -> Step-9 scorer -> gates (d)+(e)
+>    over 56 cells (`IMP/scripts/p10r_gates.py`) -> old-vs-new table for `IMP/P10_2030_level_check.md` §6
+>    -> P3 re-run on the new arm. Pull only the small outputs back to `Leg3_4-split/outputs_step8/agg_P10R/`
+>    and `Step9_docs/outputs_step9_P10R/`. Speed-vs-local check on the 8 local cells.
+> 5. Then: V3a seed repeats on the P10R products; REWRITE stage 2 numbers pass (substitute the 143
+>    ⟦P10R⟧ markers in `writing/chapters_v2/`); P9 second pass; rebuild both docx (verify installed media
+>    md5s); P14 finish; closure ritual (Progress Log, this file, board, memory).
+> Never touch the frozen arm (`campaign_local_deliverable/`, `agg_deliverable/`, `outputs_step9_deliverable/`).
+>
+> **Parallel work started 2026-09-23 (does not need the new numbers):** prose fixes in `chapters_v2`
+> ("fails" -> "does not meet", leftover HTML author comments removed); P14 journal-package draft
+> (cover letter, highlights, declarations, audit prompt) with ⟦P10R⟧ markers where numbers go.
+> Their status is logged in the execution doc. **Both DONE and checked 2026-09-23:** wording pass
+> (11 sentences, 14 comments out, 143 markers intact, backup `chapters_v2/_archive_pre_stage2a/`;
+> 11 open questions in `IMP/rewrite_log.md` "Stage 2a"); P14 draft `IMP/P14_package.md` (no dashes,
+> no "fail" in prose; author must confirm NSERC wording + AI declaration and fill reviewers).
+
+> 🔴 **NEW 2026-09-22 - READ FIRST. Do NOT submit 3J as it stands.** 2J was rejected by Building
+> Simulation (report-like writing, no simpler-schedule comparison, calibration called validation,
+> "forecast" wording, missing statistics). A side-by-side read found 3J carries almost all of it, plus
+> two problems of its own: the "coincidence factor below 1" headline is true of any building by
+> arithmetic, and the uninjected code-schedule case is never compared for peak timing. Plan:
+> `writing/submission/IMP/3J_improvement_plan_from_2J_lessons_2026-09-22.md` (P1-P14, decisions D1-D7).
+> First checks, in order: P10 (does 3J's 2030 raking share 2J's pre-relink defect? Table 6's
+> "10.51 pp below observed 2022") then P3 (code-schedule comparison from the frozen deliverable).
+> **D1-D7 ANSWERED 2026-09-22** (plan Section 7): fix first; "forecast" out of the text, title kept;
+> lead with timing vs code schedules (only if P3 shows a difference); read-only work on frozen
+> aggregates approved; short Limitations (~250 words) in the main text; stay with B&E after P3 + P7.
+> Validation tracks V1-V4 all approved (plan Section 7a): V1 measured building energy, V2 measured
+> occupancy (both reading only), V3 seed repeats + plumbing check, V4 second tower model. The
+> no-simulation rule is lifted for V3/V4 only; runs stay inside the 32 allocated Speed CPUs, never
+> touch `histnu`, and are sequenced with live 1J jobs (same cap). Start: P10, then P3, then V3b.
+> The work list further down predates this and is now secondary. Predecessor: `Prompts/archive/RESUME.2026-09-22_pre_2J_lessons_plan.md`.
+> **EXECUTING since 2026-09-22 (author: "do not wait my confirmation, go to the end").** Live state:
+> `writing/implementation/3J_IMP_execution_2026-09-22.md` (work-package table + progress log); each
+> package writes its result to `writing/implementation/IMP/`. V3 runs go to Speed under
+> `/speed-scratch/o_iseri/3J_V3/`; job IDs are in `IMP/V3_design_and_runs.md`.
 
 > 🔴 **THIS FILE IS THE FIXED ADDRESS OF THE 3J HANDOFF. There is no second one.**
 > Instruction from the author, 2026-08-09: *"je veux seulement cet prompt RESUME.md, comme un prompt

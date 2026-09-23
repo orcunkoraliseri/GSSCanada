@@ -3,7 +3,7 @@
 State lives here. Do not park: write every result to this file's Ledger, then end your turn.
 Never wait/sleep/poll for a running job; submit and stop.
 
-Status: **IN PROGRESS** -- items 1-7 built and staged; only items 2 and 7 submitted (per spec). Waiting on 1342170/1342171 to land; manager builds/submits the draw arrays and scorers after Gate 4 (1342160), workers-check (1342163) and the probe (1342171) all read PASS.
+Status: **IN PROGRESS** -- draws RUNNING (plan log (ay)): Gate 4, workers check, selftest and swap+probe all PASS; manager submitted LIGHT 1342400, HEAVY 1342401 and scorers 1342408-1342413 on 2026-09-22.
 
 Design source: plan log `1J_docs_occ/IMP/00_REVISION_PLAN.md` entry **(aw)** — read it first; it is binding.
 Stopping rule: plan log (ar) / manager prompt §7.1 — never change a word or a number of it.
@@ -106,6 +106,9 @@ the manager submits them after reading Gate 4, the workers check and the probe.
 
 - **1342170** · `wp11_selftest.sh` (item 7: `wp11_stoprule.py --mode selftest` + `wp11_extract.py --mode selftest` on `default/draw_1/NUS_RC1`, `--no-cleanup`) · submitted 2026-09-22, no dependency · confirmed RUNNING via `squeue` at submission (0:10 elapsed on magic-node-04) · not polled further (no-parking rule) · output `/speed-scratch/o_iseri/1J_rerun/logs/wp11_selftest_1342170.out`.
 - **1342171** · `wp11_swap_probe.sh` (item 2: backup+swap `main.py`↔`main_wp11.py`, two grep sanity checks, `wp11_probe.py`) · submitted 2026-09-22, `--dependency=afterany:1342160:1342163` · confirmed PENDING (Dependency) via `squeue` at submission · output `/speed-scratch/o_iseri/1J_rerun/logs/wp11_swap_probe_1342171.out`.
+- **1342400** · LIGHT draw array (manager, (ay)) · `--array=0-23%2 -c 5 --mem=56G --export=ALL,ARRAY_KIND=LIGHT` · tasks 0/1 RUNNING at submission · logs `logs/wp11_draw_1342400_<i>.out`.
+- **1342401** · HEAVY draw array (manager, (ay)) · `--array=0-11%4 -c 5 --mem=90G --export=ALL,ARRAY_KIND=HEAVY` · tasks 0-3 RUNNING at submission · logs `logs/wp11_draw_1342401_<i>.out`.
+- **1342408-1342413** · scorers blocks 1-6 (manager, (ay)) · `--export=ALL,BLOCK=b`, `afterany` on LIGHT 0..4b-1 + HEAVY 0..2b-1 · PENDING (Dependency) · logs `logs/wp11_scorer_<id>.out`. `stage4/draws/job_ids.txt` written and read back.
 - Items 3, 4, 5, 6 (`wp11_extract.py`, `wp11_draw_task.sh` + `wp11_quota_check.py`, `wp11_stoprule.py`, `wp11_scorer.sh`) built and staged on the cluster, **not submitted** — per spec, the manager submits the draw arrays and scorers after reading Gate 4, the workers check and the probe.
 
 ## Verified

@@ -1,3 +1,69 @@
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+296) — SUPERSEDES last+295 BELOW
+
+The author answered D1-D6 on 2026-09-23 (final; the withdrawn 2026-09-22 answers do not matter any
+more). All six as recommended: D1 improve first, then submit; D2 plain title ("Can a fine-tuned language
+model generate time-use diaries for a country without survey data? A pre-registered test against
+reweighted real diaries"); D3 P3 compute APPROVED (appliance model on real + raked-donor diaries, Python on
+Speed, sbatch only, 32-CPU cap shared with 1J/3J, never `histnu`) if the runs do not already exist;
+D4 deposit frozen pre-registration + hash publicly at submission; D5 about 9,000-10,000 words main text;
+D6 Energy and Buildings. Recorded in plan Section 7 and memory.
+
+Work order from here (plan Section 6): P3 step 1 (do real-diary appliance runs exist?) -> P10 -> P5 -> P9;
+meanwhile write the P6/P7/P8 deep-research prompts. Manuscript still unedited.
+
+Later same day: P10 read done, no compute (`writing/submission/IMP/impl/P10_in_sample_vs_transfer.md`):
+model misses the 15 % bar in-sample on all six training-country checks (worst-band MAPE 33-158 %; real
+diaries score 5-12 %); no donor in-sample comparator exists and none should be built (self-donor trap);
+route = narrow the claim. Still to confirm: fold vs training-country order in the JSON labels.
+P3 step 1 done: appliance runs on real / raked-donor diaries do NOT exist. P3 step 2 designed
+(`writing/submission/IMP/impl/P3_appliance_real_and_donor.md`, decision rule fixed before numbers) and
+handed to an execution agent (pool builder + additive `--pool` flag + 9 runs on Speed with 3 controls).
+Its job id and results land in that doc's "Execution log"; if empty, the agent did not finish.
+
+Improvement board (new, 2026-09-23): https://claude.ai/artifact/SJX4RXb7CneNRARitNnHez -- update db doc
+`board/progress` after every step (ArtifactData); page source `writing/submission/IMP/board/4J_improvement_board.html`.
+
+Next: read P3 execution log.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-22, last+295) — SUPERSEDES last+294 BELOW
+
+4J is REOPENED for one improvement round before submission. The author asked (2026-09-22) that the
+lessons from the 2J rejection be applied to 4J, the same way they were applied to 3J. A plan was
+written; **nothing in the manuscript, supplement or build has been edited yet.**
+
+Plan: `writing/submission/IMP/4J_improvement_plan_from_2J_lessons_2026-09-22.md` (read it first).
+Headline of the plan: the science stands; the paper reads like a technical report (strongest of the
+three papers), the backbone model is never named, an internal instruction is printed in §3.4, the
+in-sample check also fails (must be answered in Results), the six-hour appliance-peak result rests on
+generated diaries only (needs the same model run on real diaries, work package P3), 24 references
+only, no generative-AI declaration, about 17,100 words.
+
+## How to resume this session (author returns 2026-09-23)
+
+1. Read the plan above in full (it is about 370 lines; Sections 1-3 are the findings, Section 5 the work
+   packages, Section 7 the decisions).
+2. **Ask the author the six decisions D1-D6 of plan Section 7, one question each, recommendation first**
+   (use the ask-question tool: D1 timing, D2 title, D3 appliance compute on real + raked-donor diaries,
+   D4 pre-registration deposit, D5 target length, D6 venue). The author answered them once on 2026-09-22
+   and then withdrew all six answers to decide later: **treat every decision as OPEN; do not act on the
+   withdrawn answers.**
+3. Record the answers in plan Section 7 (the "Author answers" line), in this file and in memory.
+4. Only then start work. First agent work after the answers: P3 step 1 (check whether appliance runs on
+   real or raked-donor diaries already exist; `Step9_docs/4thJ_09_enduseLoads.md:90` says Step 9 used
+   generated diaries only), then P10 (in-sample vs transfer), P5 (intervals on Table 3), P9 (number sheet).
+   The deep-research prompts for P6, P7 and P8 can be written while the author runs Gemini.
+
+Rules for the round: plan only until the author answers; archive before any manuscript edit; rebuild the
+docx with `tools/4thJ_build_submission_docx.sh`; headline factor 1.1 to 3.9, never 2 to 6; any compute on
+Speed via sbatch only, inside the 32-CPU cap shared with 1J and 3J, never `histnu`.
+
+Older items still open (unchanged): abstract word limit unverified; 35,290 / 35,090 / 840 cell counts
+do not reconcile (now plan item P9).
+
+Next: ask the author D1-D6.
+
+---
 # START HERE — HANDOFF FOR A NEW SESSION (2026-09-17, last+294) — SUPERSEDES last+293 BELOW
 
 Author is stepping away and asked this prompt be updated to return to later. Nothing changed since

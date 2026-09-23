@@ -1,5 +1,7 @@
 # Declarations draft (Applied Energy submission)
 
+**SUPERSEDED 2026-09-22 (plan log (ex)):** the final declarations are now in the manuscript, before the References; this draft is kept for history only.
+
 Draft only, for the author to correct and finalize. Author names taken from the existing title page
 (`archive/submissionDocs/Title_Page_and_Cover_Letter.md`); roles, funding, tool names and the
 release decision are left blank for the author to fill.

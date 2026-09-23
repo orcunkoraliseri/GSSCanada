@@ -1,102 +1,36 @@
-# Applied Energy submission compliance check
+# Applied Energy guide check (2026-09-22, second pass (ey))
 
-Task doc: `../../impl/2026-09-21_T90_wp13_ae_compliance.md`
-Date attempted: 2026-09-21
+Source: the official Guide for Authors, opened 2026-09-22 through the Concordia library connection.
+Saved copies: `impl/AE_guide_for_authors_2026-09-22.html` and `.txt` (line numbers below refer to the .txt).
+A third-party summary site (manusights) gave different limits (200-word abstract, 4 to 6 keywords,
+numbered references required). Those limits are WRONG against the official page and were not used.
+No Gemini prompt was needed.
 
-## Step 1 result: NOT OPENABLE
-
-The live Applied Energy Guide for Authors could not be opened. Every URL tried returned
-HTTP 403 Forbidden (Elsevier and ScienceDirect appear to block this tool's automated
-fetch), except one, which followed a dead redirect to a generic ScienceDirect journal
-browse page (the slug does not resolve there). A control fetch of a neutral, unrelated
-page (example.com) succeeded normally, so the fetch tool itself works; the block is
-specific to elsevier.com and sciencedirect.com.
-
-URLs tried, and result:
-1. `https://www.elsevier.com/journals/applied-energy/0306-2619/guide-for-authors`
-   -> 301 redirect to `https://www.sciencedirect.com/science/journal/03062619/publish/guide-for-authors`
-2. `https://www.sciencedirect.com/science/journal/03062619/publish/guide-for-authors`
-   -> HTTP 403 Forbidden
-3. `https://www.sciencedirect.com/journal/applied-energy/publish/guide-for-authors`
-   -> HTTP 403 Forbidden
-4. `https://www.sciencedirect.com/journal/applied-energy/about/author-guidelines`
-   -> HTTP 403 Forbidden
-5. `https://www.journals.elsevier.com/applied-energy/guide-for-authors`
-   -> 302 redirect to `https://www.sciencedirect.com/browse/journals-and-books` (dead: not the guide)
-6. `https://www.elsevier.com/journals/applied-energy/0306-2619`
-   -> 301 redirect to `https://www.sciencedirect.com/science/journal/03062619`
-7. `https://www.sciencedirect.com/science/journal/03062619`
-   -> HTTP 403 Forbidden
-8. `https://sciencedirect.com/journal/applied-energy/publish/guide-for-authors`
-   -> HTTP 403 Forbidden
-
-Control: `https://www.example.com` fetched successfully (confirms the fetch tool is
-working; the 403s are specific to the Elsevier / ScienceDirect domains).
-
-Per the task doc, requirements are never filled from memory. No requirement in the table
-below, and no MEETS / DOES NOT MEET verdict, may be produced until the guide is opened by
-some other means (for example, the author opening it in a normal browser session and
-saving the page or pasting its text, or a manual browser check outside this tool's
-sandbox).
-
-## Step 2: requirement table
-
-Not produced. Blocked by step 1 (NOT OPENABLE). No row below is filled from memory;
-this table is a placeholder listing only the requirement categories the task doc names,
-each marked NOT CHECKABLE until the guide text is obtained.
-
-| Requirement (from task doc list) | Guide wording | Manuscript measurement | Verdict |
+| Requirement (guide line) | Official rule | Our paper | Status |
 |---|---|---|---|
-| Article type and length/word limit | not read | not measured | NOT CHECKABLE |
-| Abstract length | not read | not measured | NOT CHECKABLE |
-| Highlights (number, characters) | not read | n/a (author-owed, not yet written) | NOT CHECKABLE |
-| Keywords | not read | not measured | NOT CHECKABLE |
-| Graphical abstract | not read | not checked | NOT CHECKABLE |
-| Section structure | not read | not checked | NOT CHECKABLE |
-| Nomenclature | not read | not checked | NOT CHECKABLE |
-| Figure format and resolution | not read | not checked | NOT CHECKABLE |
-| Table format | not read | not checked | NOT CHECKABLE |
-| Reference style | not read | not checked | NOT CHECKABLE |
-| Data availability statement | not read | not checked | NOT CHECKABLE |
-| Declaration of competing interest | not read | not checked | NOT CHECKABLE |
-| CRediT author statement | not read | not checked | NOT CHECKABLE |
-| Generative AI declaration | not read | not checked | NOT CHECKABLE |
-| Funding | not read | not checked | NOT CHECKABLE |
-| Cover letter | not read | n/a (not yet written) | NOT CHECKABLE |
-| Response to reviewers / transfer notes | not read | not checked | NOT CHECKABLE |
-| Peer review type (single/double blind) | not read | relevant to whether `submit_check.py`'s master/blinded pair applies (plan `00_REVISION_PLAN.md` line 433) | NOT CHECKABLE |
-| Anything else stated | not read | not checked | NOT CHECKABLE |
+| File format (300-306) | editable .docx, single column, no strikethrough/underline | pandoc .docx, single column | met |
+| Abstract (320-329) | at most 250 words; no references; define abbreviations | 240 words, no references, no abbreviations | met |
+| Keywords (330-332) | 1 to 7; avoid multi-word keywords with "and"/"of" | 7; "peak demand and load factor" changed to "load factor" in (ey) | met |
+| Highlights (333-338) | 3 to 5 bullets, at most 85 characters each, separate file with "highlights" in its name | 5 bullets (78 to 85 characters); `AE_upload/2J_highlights_AE.docx` | met |
+| Graphical abstract (339-347) | encouraged, not required | none | optional, not made |
+| Peer review (139) | single anonymized | author names may appear | met |
+| Title page (313-319) | title, names, lower-case letter affiliations, full postal address, corresponding e-mail | `2J_title_page_and_cover_letter_AE.md` | met |
+| Math (348-354) | editable; solidus for small inline fractions; exp for powers of e; numbered in order | two inline fractions changed to solidus in (ey); display equations (1)-(6), appendix (B.1)-(B.12) | met |
+| Tables (355-363) | editable, cited, numbered, caption, notes below, no vertical rules or shading | 2 tables in text + Table A.1; docx has no borders or shading | met |
+| Figures (364-399) | separate files, logical names; charts preferably vector (EPS/PDF) | `AE_upload/Figure_1.pdf` to `Figure_12.pdf`; Figures 6-12 are vector PDFs from the same plot script (PNGs byte-identical to the docx copies) | met; upload each |
+| AI in figures (400-406) | explanatory diagrams allowed; say so in each caption and in the AI statement | Figures 1 to 5 captions say "Drawn with Gemini (Google) from the authors' specification." | met |
+| Sections (455-460) | numbered sections 1.1, 1.1.1; abstract unnumbered; cross-references by number | sections 1-6 numbered; references by section number | met |
+| Appendices (494-497) | A, B; Eq. (B.1); Table A.1 | "Table A1" changed to "Table A.1" in (ey); Eqs. B.1-B.12 | met |
+| CRediT (476-481) | required | section before References | met |
+| Competing interests (186-201) | declare; also fill the Elsevier declarations tool at submission | section before References | text met; tool at upload (author) |
+| Funding (202-208) | standard form; state sponsor role; program detail not needed | NSERC (Discovery Grant) and Volt-Age Seed Fund, Concordia University; funders' role stated; grant number not needed (author, 2026-09-22) | met |
+| Generative AI (209-225) | own section before References, set wording | Claude (grammar), Gemini (research reports, Figures 1 to 5) | met |
+| Sex and gender (251-262) | define how sex/gender were used, or state as a limitation | Section 2.2: 2005-2015 cycles record sex; 2022 cycle and 2021 census record gender (men+, women+); joined into one two-category variable, conditioning and matching only | met (added in (ey)) |
+| Acknowledgements (473-475) | directly before References, not on title page | last section before References | met |
+| Data statement (424-435) | deposit data, or explain why not | Statistics Canada licence stops redistribution; derived data and scripts on request | met |
+| References (498-511) | real sources, complete (authors, volume, pages), DOIs where available; any consistent style at submission | author-year, all authors listed; (ey) filled in full author lists for Elsayed 2023, Herrmann 2024, Mahdavi 2021 (Crossref) and the volume of Iseri 2026 (357) | met; numbered style applied by the journal at proof |
+| Article length | no limit stated | not applicable | met |
 
-## Step 3: what the author must supply
-
-Not determined from the guide (step 1 blocked). From the task inputs already on file,
-these are known to be author-owed regardless of the guide's exact wording (from plan log
-entries (ee)-(eg) and the manuscript's own placeholders):
-- Funding statement content (grant numbers, if any).
-- CRediT author roles per author.
-- Declaration of competing interest (names/relationships, if any).
-- Cover letter text.
-- Highlights (not yet drafted, per task doc step 4 the employee may not write these).
-- Any journal-specific author information (ORCID, affiliations) not already in the
-  manuscript metadata.
-
-## `submit_check.py` note
-
-Read only, not run (task doc step: run only if it needs no edits and says what it
-checks). The script (`../../../extra/build_scripts/submit_check.py`) takes two file
-arguments, `MASTER` and `BLINDED`, and checks formatting invariants (paragraph/image/
-table counts, "Figure N" residue, caption forms, reference comma style, default font/
-size, double spacing, page-number footer, absence of line numbers, table text size, and
-a 9-probe blinding-residue scan comparing an unblinded master against a blinded copy).
-This script assumes a **double-blind** submission (it expects a separate blinded file
-with author names/affiliations/funding/ORCID stripped). The plan
-(`00_REVISION_PLAN.md` line 433) already flags this: "apply its format (blinding only if
-double-blind; the 16/6-line master/blinded invariant applies only then)". Whether Applied
-Energy uses single-blind or double-blind review is one of the guide items that could not
-be read (see table row "Peer review type" above), so **whether this script is the right
-gate for Applied Energy cannot yet be decided.** Only one manuscript docx exists in
-`../` (`2J_manuscript_AE_revised.docx`); no blinded copy exists yet, so the script cannot
-be run as-is regardless.
-
-## Status
-NOT OPENABLE at step 1. No further steps performed per task doc instruction.
+Open for the author only: fill the Elsevier declarations tool; upload the highlights file and the twelve
+figure files from `manuscript/AE_upload/`; optional: say if the PI wants NRC named as the source of the
+Volt-Age funds (the offer letter says "NRC (Volt-Age)"; the earlier papers name only the Volt-Age Seed Fund).

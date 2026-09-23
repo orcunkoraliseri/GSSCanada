@@ -1,0 +1,28 @@
+{
+  "a": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "b": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c_control": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "d": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "e": {
+    "status": "FAIL",
+    "detail": "B_central__Tall__MTL/injected_resized.idf: office objects on MXU_Office_*: 12; counts Hotel/ELECTRICEQUIPMENT/other=3, Hotel/LIGHTS/other=3, Office/ELECTRICEQUIPMENT/People=6, Office/LIGHTS/People=6, Retail/ELECTRICEQUIPMENT/People=3, Retail/LIGHTS/People=4\n      LIGHTS            OpenOffice Lights                  -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      LIGHTS            Classroom Lights                   -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      LIGHTS            Conference Lights                  -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      LIGHTS            Dining Lights                      -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      LIGHTS            ClosedOffice Lights                -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      LIGHTS            Restroom Lights                    -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      ELECTRICEQUIPMENT OpenOffice Elec Equip              -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      ELECTRICEQUIPMENT Classroom Elec Equip               -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      ELECTRICEQUIPMENT Conference Elec Equip              -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      ELECTRICEQUIPMENT Dining Elec Equip                  -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      ELECTRICEQUIPMENT ClosedOffice Elec Equip            -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD\n      ELECTRICEQUIPMENT Restroom Elec Equip                -> MXU_Office_People_B_central__Tall__MTL       min=0.0031 BAD"
+  },
+  "exit": 0,
+  "expect": "FAIL"
+}

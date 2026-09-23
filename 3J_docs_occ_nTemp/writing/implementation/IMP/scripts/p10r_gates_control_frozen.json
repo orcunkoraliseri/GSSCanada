@@ -1,0 +1,24 @@
+{
+  "a": {
+    "status": "FAIL",
+    "detail": "BEM_Schedules_4split_2022.csv md5=281d96c0 WD 09-17h = 0.3006 vs 0.4180 +/- 0.005 (|d|=0.1174); WD day-mean 0.6373"
+  },
+  "b": {
+    "status": "FAIL",
+    "detail": "2030_synthetic_diaries_4split_calibrated_mindwell_C_v2.csv md5=5aa74f44\n      GATED: band=hybrid       LFTAG=1 n=12304 home: -8.99 pp  OUT (> 1.4)\n      GATED: band=hybrid       LFTAG=1 n=12304 work: +6.48 pp  OUT (> 1.4)\n      GATED: band=hybrid       LFTAG=2 n=  440 home: -9.06 pp  OUT (> 1.4)\n      GATED: band=hybrid       LFTAG=2 n=  440 work: -2.67 pp  OUT (> 1.4)\n      INFO band=ALL          LFTAG=1 n=36912 home: -9.19 pp\n      INFO band=ALL          LFTAG=1 n=36912 work: +6.56 pp\n      INFO band=ALL          LFTAG=2 n= 1320 home: -9.05 pp\n      INFO band=ALL          LFTAG=2 n= 1320 work: -2.65 pp\n      INFO band=conservative LFTAG=1 n=12304 home: -13.13 pp\n      INFO band=conservative LFTAG=1 n=12304 work: +8.84 pp\n      INFO band=conservative LFTAG=2 n=  440 home: -9.09 pp\n      INFO band=conservative LFTAG=2 n=  440 work: -2.59 pp\n      INFO band=fullyhybrid  LFTAG=1 n=12304 home: -5.45 pp\n      INFO band=fullyhybrid  LFTAG=1 n=12304 work: +4.34 pp\n      INFO band=fullyhybrid  LFTAG=2 n=  440 home: -9.00 pp\n      INFO band=fullyhybrid  LFTAG=2 n=  440 work: -2.69 pp"
+  },
+  "c": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c_control": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "d": {
+    "status": "FAIL",
+    "detail": "B_central__Tall__MTL hotel       hotel_schedule_multiplier_2030_central.csv    md5=4b3d3a46 in_P10R_dir=False frozen_md5=False registry absent -> BAD\n      B_central__Tall__MTL office      office_presence_multiplier_2030.csv           md5=1536c98c in_P10R_dir=False frozen_md5=True registry absent -> BAD\n      B_central__Tall__MTL residential BEM_Schedules_4split_2030_central.csv         md5=d36388c8 in_P10R_dir=False frozen_md5=True registry absent -> BAD\n      B_central__Tall__MTL retail      retail_presence_multiplier_2030_central.csv   md5=cf8721c6 in_P10R_dir=False frozen_md5=True registry absent -> BAD\n      Y2022__Tall__MTL hotel       hotel_schedule_multiplier_2022.csv            md5=7b62a885 in_P10R_dir=False frozen_md5=False registry absent -> BAD\n      Y2022__Tall__MTL office      office_presence_multiplier_2022.csv           md5=ff0fc987 in_P10R_dir=False frozen_md5=True registry absent -> BAD\n      Y2022__Tall__MTL residential BEM_Schedules_4split_2022.csv                 md5=281d96c0 in_P10R_dir=False frozen_md5=True registry absent -> BAD\n      Y2022__Tall__MTL retail      retail_presence_multiplier_2022.csv           md5=e31f528e in_P10R_dir=False frozen_md5=True registry absent -> BAD"
+  },
+  "exit": 0,
+  "expect": "FAIL"
+}

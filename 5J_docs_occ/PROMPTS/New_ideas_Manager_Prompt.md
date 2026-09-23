@@ -5,6 +5,62 @@ Written 2026-09-07. Edit in place as the series advances; do not fork copies.
 
 ---
 
+## START HERE (updated 2026-09-22, night): 5J is now in METHODS DESIGN
+
+Everything below this box is the finished subject-selection history (read it only if asked). The
+subject is ruled: **5J = a language model reads Montreal building-permit text for retrofit and cooling
+state (windows, insulation, heat pump, air conditioning, heating change), abstains when the text is
+too thin, and feeds a building-stock EnergyPlus model with GSS occupancy** (D-5J-2 ruled (a)). You are
+the manager of the methods design. You plan, review and decide small things; sonnet employees execute.
+
+**Read first, in this order (nothing else unless needed):**
+1. Root `CLAUDE.md` (reply shape, plain words, no parking, deep research is external, no images).
+2. `5J_docs_occ/5thJ_01_Methods_Design.md`: the design v1 (sections 1 to 10) and its **Progress Log
+   at the end, which is the state**. Read the last five entries closely.
+3. `5J_docs_occ/impl/2026-09-22_wp0_task.md` (WP0 task doc, incl. the "Employee B2" section) and the
+   two impl files `impl/2026-09-22_wp0A_permits_roll.md` (DONE, reviewed) and
+   `impl/2026-09-22_wp0B_areatruth_models.md` (StatCan + model inventory done; EnerGuide part = B2).
+Data lives outside the repo in `C:\Users\o_iseri\Desktop\GSSCanada\_5J_data\` (scripts in
+`_5J_data\scripts_wp0\`). Never read the big CSVs into context; small count scripts only.
+
+**State when the author left (2026-09-22, about 21:10):**
+* WP0-A done and re-checked by the manager. Traps found and fixed in the Progress Log: roll year 9999
+  is a placeholder (not "1990 and later"); 3.9 % of address joins point at buildings of different ages.
+* WP0-B's first employee parked at 186k tokens and read half-downloaded EnerGuide files, so its
+  EnerGuide numbers are void; it was stopped. The download is now complete (21 files, `download_log.txt`
+  ends ALL_DONE). A fresh sonnet employee **B2** was launched at about 21:05 to redo the EnerGuide
+  counts; it appends a "## B2 EnerGuide (redo)" section to the B impl file and sets Status DONE.
+* Closed: O-2 (Toronto licence), O-4 mostly (all 2J models have gas furnace + DX cooling; electric
+  baseboard and heat pump variants must be built; one test run per variant owed in WP5).
+* Open: O-1 (envelope values by vintage), O-3 (EnerGuide FSA counts = B2), O-5, O-6.
+
+**First thing to do tomorrow:**
+1. Check the B impl file. If Status is DONE with a "B2 EnerGuide (redo)" section: review it the usual
+   way (re-derive two or three numbers yourself with a small script: one file's size against
+   `download_log.txt`, the count of Montreal H-FSAs with at least 30 houses, one FSA's heat pump share).
+   Watch for placeholder values (like the roll's 9999) and for strings counted as "has AC/heat pump"
+   that mean "none". Then close O-3 in the design doc and write a Progress Log entry.
+   If Status is not DONE or the section is missing: check no leftover 5J python process is running
+   (`Get-CimInstance Win32_Process` and look for `_5J_data` or the scratchpad in the command line; the
+   `OpenUBEM` processes belong to another project, never touch them), then launch ONE fresh sonnet
+   employee on the task doc section "Employee B2". Never resume an old employee.
+2. Ask the author the one open decision, in plain words with an example (the author said "I do not
+   understand the task" the first time it was asked in jargon):
+   "Will you label the permits yourself? It means reading about 2,600 short permit texts and ticking,
+   for each, yes / no / can't tell for windows, insulation, heat pump, air conditioning, heating change
+   (10 to 12 hours). Example: 'change four windows' = windows yes. A colleague labels 400 of the same
+   texts separately so we can show the labels are reliable. Recommend: yes, you label, a colleague
+   checks 400." (This is D-5J-3 in the design doc, section 9; record the answer there.)
+3. Then WP1 (design doc section 5): the manager writes `5J_docs_occ/5thJ_02_Label_Spec.md` (label
+   definitions with French and English examples, the "can't tell" rule, reset events N and D) and a
+   sonnet employee builds the stratified sampling frame (Montreal 2,000 + Toronto 600, sealed test
+   sets). Apply the WP0 rules: roll year 9999 or < 1800 = unknown vintage; ambiguous joins carried as a
+   mixture; the 2,394 extra Toronto "Residential"/"House" rows count as residential.
+4. O-1 (envelope U-values and air-tightness by vintage) needs an external deep research prompt the
+   author runs in Gemini; write it only when the author agrees to run one.
+
+---
+
 You are the **Manager** for choosing the subject of the fifth journal paper (5J). The author runs
 deep-research prompts externally in Gemini Antigravity and brings the reports back. Your job is to
 vet what comes back, keep the state on disk, write the adjudication prompt when the time comes, and

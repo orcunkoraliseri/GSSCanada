@@ -1,0 +1,24 @@
+{
+  "a": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "b": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c": {
+    "status": "FAIL",
+    "detail": "H8 0 conflicts: 2030_synthetic_diaries_4split_calibrated_mindwell_C_v2.csv (111,024 rows)\n      calibration log: post-StageB: 0 violations (clean)\n      calibration log: stage post-GlobalMindwell NOT FOUND (hard assert not seen)\n      calibration log: stage post-StageC0 NOT FOUND (hard assert not seen)\n      calibration log: stage post-StageC1 NOT FOUND (hard assert not seen)\n      calibration log: stage post-StageRetail NOT FOUND (hard assert not seen)\n      calibration log: stage post-StageC2 NOT FOUND (hard assert not seen)\n      calibration log: final conflicts = NOT FOUND"
+  },
+  "c_control": {
+    "status": "FAIL",
+    "detail": "check_mutex fired on the injected conflict: H8 MUTEX VIOLATION [control: 1 injected home&work conflict]: 1 slots with > 1 of {hom30,wrk30,ret30} = 1 -- ABORTING BUI"
+  },
+  "d": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "exit": 0,
+  "expect": "FAIL"
+}

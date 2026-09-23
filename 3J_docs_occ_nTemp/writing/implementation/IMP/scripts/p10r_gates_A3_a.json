@@ -1,0 +1,28 @@
+{
+  "a": {
+    "status": "PASS",
+    "detail": "BEM_Schedules_4split_2022.csv md5=bdb9b506 WD 09-17h = 0.4180 vs 0.4180 +/- 0.005 (|d|=0.0000); WD day-mean 0.7035"
+  },
+  "b": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c_control": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "d": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "e": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "exit": 0,
+  "expect": "PASS"
+}

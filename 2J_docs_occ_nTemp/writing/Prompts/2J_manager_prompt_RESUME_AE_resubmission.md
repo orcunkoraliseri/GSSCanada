@@ -1,11 +1,63 @@
 # 2J manager prompt — RESUME the Applied Energy resubmission (paste whole into a new session)
 
-Last updated: **2026-09-21 evening, end of session (plan log (el)). Nothing is live on the cluster or
-in any agent.** Read §NOW below; everything under it is history.
+Last updated: **2026-09-22, after plan log (fa). Approval email SENT to the supervisor; waiting on her
+reply. Submission happens only after her approval. Nothing is live on the cluster or in any agent.** Read §NOW below; everything
+under it is history.
 
 ---
 
-## NOW (2026-09-21, plan log (ek)-(el)) — START HERE
+## NOW (2026-09-22, plan log (fa)) — START HERE
+
+**(fa) 2026-09-22: the author SENT the approval email to Dr. Hachem-Vermette** (sent text: `submission/rejection revision/e-mails/archive/2026-09-22_to_CHV_ready_for_Applied_Energy.txt`; all email drafts now in `e-mails/archive/`). **Waiting on her reply. Do not submit before her approval.** On her reply: apply any change she asks for (then rebuild the main docx with `py impl/T94_scripts/build_main_docx.py` and re-check), settle the NRC question with the author, then the author fills the Elsevier declarations tool and uploads the paper, SI, cover letter and `manuscript/AE_upload/` files. Tracker Version 90.
+
+**(ez) 2026-09-22: approval email to the supervisor written, not sent:** `submission/rejection revision/e-mails/archive/2026-09-22_to_CHV_ready_for_Applied_Energy.md` (sent in (fa)). It covers the Building Simulation rejection, the revisions, the main numbers (+0.12 %, 0.73 and 0.49 pp, 5,997 runs), and asks for her approval to submit (author edits: greeting "Dear Dr. Hachem-Vermette,"; no review checklist; NRC question NOT in the email, still open with the author); attachments = main, SI, cover letter .docx. It replaces the earlier unsent draft, now in `e-mails/archive/2026-09-22_to_CHV_rejection_and_Applied_Energy_plan.md` (that one predates the rewrite). **Next:** the author sends it; on her reply, apply any change (NRC wording in Funding and Acknowledgements, then rebuild the main docx), then the author fills the Elsevier declarations tool and uploads from `manuscript/AE_upload/`.
+
+**(ey) 2026-09-22: second pass against the Applied Energy guide done; upload files made.** Grant number not needed (author). Funding now "NSERC Discovery Grant and Volt-Age Seed Fund" (source: the author's postdoc offer letter, which says "PI's research grants of NRC (Volt-Age) and NSERC DG"; NRC not named, asked the author once). Keyword "load factor" replaces "peak demand and load factor"; Table A.1 numbering; two inline fractions as solidus; sex/gender definition added to Section 2.2 (guide SAGER rule); full author lists for Elsayed 2023, Herrmann 2024, Mahdavi 2021 and the volume of Iseri 2026. Reference style stays author-year (allowed at submission). `manuscript/AE_upload/` holds `2J_highlights_AE.docx` and `Figure_1.pdf` to `Figure_12.pdf` (6-12 vector, PNGs byte-identical). Check table `manuscript/prep/ae_compliance.md`. **Author only:** Elsevier declarations tool, upload, and whether NRC should be named. Tracker page Version 87.
+
+**(ex) 2026-09-22: submission package nearly complete.** Official Applied Energy guide read and saved (`submission/rejection revision/impl/AE_guide_for_authors_2026-09-22.txt`; check table `manuscript/prep/ae_compliance.md`). Manuscript now has CRediT, competing interest (none), Funding (NSERC + Volt-Age Seed Fund), Data availability, generative AI declaration (Claude grammar; Gemini research reports and Figures 1-5) and Acknowledgements before the References; Figures 1-5 captions disclose Gemini drawing; abstract 240 words. Cover letter + title page: `manuscript/2J_title_page_and_cover_letter_AE.{md,docx}`. Figure S2 title fixed, SI rebuilt. **Author only:** grant number if any; Volt-Age spelling; is the AI statement complete; Elsevier declarations tool, separate highlights file and separate figure files at upload. Then the author submits. Tracker page republished as Version 86 (https://claude.ai/artifact/4emZkRdASTDUtvXSRtWPVe).
+
+
+**(ew) 2026-09-22: IMP plan FULLY APPLIED, S4 included. Gemini equation-source return vetted (`deepResearch/dr_2J-17_VETTING.md`: Herrmann author list and Aerts DOI in the return were wrong, Goel 2014 dropped); 12 references added (list 36 -> 48); Appendix B names the own-definition equations; every other equation cited in Section 2. Main .docx rebuilt and checked; SI unchanged. Metabolic basis now stated as Compendium MET x 70 W. Next: the author reads the new version and sends comments. Figure S2 title fixed in (ex).**
+
+**(ev) 2026-09-22: IMP plan APPLIED (all steps except S4). Main + SI .md rewritten and both .docx rebuilt; details and checks in plan log (ev); chunks and writer reports in `manuscript/prep/IMP_chunks/`. Author's four method figures M1-M4 checked and embedded as Figures 2-5. Next: when the author saves `deepResearch/dr_2J-17_equation_sources_gemini_results.md`, vet it (7-step check) and add equation citations; then the author reads the new version.**
+
+**(eu) 2026-09-22: plan APPROVED by the author. Gemini prompts written: `deepResearch/dr_2J-17_equation_sources_gemini_prompt.md` and `submission/figures/Prompts_Images/Figure_M1..M4_*_prompt.md`; author is running them. Next: text steps S1, S2, S3, S6, S9, S8, S7, S10 (backups first). Vet dr_2J-17 results and open each M-figure before use.**
+
+**2026-09-22, plan log (et): the author's manual-read comments are in (15 Word comments in
+`manuscript/2J_manuscript_AE_revised.docx`; the .docx text equals the .md, so the .md stays master).
+Improvement plan written, NOTHING applied yet:** `submission/rejection revision/IMP/2J_improvement_plan_author_comments_2026-09-22.md`
+(steps S1-S10: fold Sec 1.4 away, Appendix A with Table 1 + 12 of 18 equations, Section 2 from 12 to 6
+sub-sections, one-sentence captions, paragraph/figure alternation, new Highlights, plain short sentences
+everywhere, Discussion and Limitations cut by half with all 12 limitations kept, equation-source Gemini
+prompt dr_2J-17, four method-figure image prompts). **Waiting on the author's yes/no on the plan's
+proposals before any edit.** Email to the supervisor drafted (rejection + improvements + Applied Energy
+plan): `submission/rejection revision/e-mails/2026-09-22_to_CHV_rejection_and_Applied_Energy_plan.md`.
+
+**(es) state, still true:** When the author returns, start from their manual-read comments.**
+Current files: `manuscript/2J_manuscript_AE_revised.md/.docx` and `manuscript/2J_SI_AE_revised.md/.docx`
+(both rebuilt and checked). Rebuild recipe: main = `py impl/T94_scripts/build_main_docx.py`; SI = plain
+pandoc (`ref_submit.docx`, `--columns=10`) then `post.py`. Pre-(es) backups are in `prep/*_pre_notes_2026-09-22*.bak`.
+Open, small, not started (do only if the author asks):
+1. The Figure S2 panel title still reads "Worst co-presence gap"; the SI text now says "spousal co-presence
+   gap". To fix, rename the title in `impl/T94_scripts/t94_si_figures.py`, re-plot, and rebuild the SI .docx.
+2. The tracker page has not been republished since entries (ef)-(es). Read the live page first and diff it.
+3. The abstract is 249 words; the Applied Energy limit is not verified. This check is for the author.
+
+**2026-09-22, plan log (es): author rule "this is a journal paper not a report" — no in-figure notes,
+no hatching-for-no-interval, no "not quoted / stated here / not as an error" meta prose.** Figures 5, 7, 8
+re-plotted without such notes (Figure 8 now 4 panels; the non-comparable max-per-premise panel and its
+paragraph are gone). SI cleaned: J3 nickname and internal-label glossary removed (old Table S4 is now
+Table S3, main text updated), process-history notes removed, false "previously published" wording in S8
+now says "the authors' earlier simulation campaign", co-presence check correctly named spousal. Figures
+S1-S2 re-plotted from their accepted data (`impl/T94_scripts/t94_si_figures.py` -> `impl/T94_out/figS*`);
+the old S1 image wrongly said "N=200 is the sample size used throughout the paper". Both .docx rebuilt.
+
+**2026-09-22, plan log (er): manager did a final pre-read check of the MAIN manuscript and fixed ~25 text
+problems plus the figure labels** (details and backups listed in (er)). Figures 2-8 now come from
+`impl/T94_out/` (same numbers, plain labels; script `impl/T94_scripts/t94_clean_figures.py`). The .docx is
+rebuilt with `py impl/T94_scripts/build_main_docx.py` (replaces the lost scratchpad `add_figs.pl` step).
+References now render one per paragraph. SI not re-checked in this pass (its Figures S1-S2 may still carry
+internal labels). The author is now reading the paper manually.
 
 **Venue: Applied Energy, CONFIRMED by the author 2026-09-21** (knowing the rejection risk).
 Backups in order: Sustainable Cities and Society (declare the Concordia editor conflict), then

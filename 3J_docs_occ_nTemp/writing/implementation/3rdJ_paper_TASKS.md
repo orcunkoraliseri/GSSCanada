@@ -2282,3 +2282,26 @@ was touched.
 **Not done, and it is now the top of the work list:** `f3` still reads 3 PASS / 2 FAIL. Both arms are
 the 2026-08-11 replot that the figure REGISTRY never recorded. Now that the two trees agree, updating
 the registry is bookkeeping with nothing else in the way. **Fix the registry, never the gate.**
+
+### 2026-09-22 #1 - Improvement plan from the 2J rejection lessons (plan only)
+
+Author asked to learn from the 2J rejection and revision before submitting 3J. Read the 2J revision
+plan (reviewer triage, work packages, unraised weaknesses, log to (ex)), the 2J author-comment plan, the
+revised 2J manuscript, and the full 3J manuscript, SI and cover letter. Wrote
+`writing/submission/IMP/3J_improvement_plan_from_2J_lessons_2026-09-22.md`: every applicable 2J
+reviewer request mapped to 3J, ten 3J-specific problems, the author's 15 2J comments applied to 3J,
+work packages P1-P14, decisions D1-D7. Main finds: the coincidence factor is at most 1 for any building
+by arithmetic, so "below 1" is not evidence; the uninjected code-schedule case exists but is never
+compared on timing; 18 references, five "not reported"; the survey collection-mode change and TMY
+weather are missing from the limitations; section 6 still carries a paragraph about defects in the old
+2J table; Table 6's 10.51 pp 2030 drift may be the 2J pre-relink defect (NOT VERIFIED, first check P10).
+No manuscript, SI, figure, build or gate touched. RESUME updated in place (predecessor in
+`Prompts/archive/`). Board not republished this round.
+
+### 2026-09-22 #2 - Author decisions D1-D7 and validation tracks
+
+- D1-D7 answered in chat and recorded in the plan (`writing/submission/IMP/3J_improvement_plan_from_2J_lessons_2026-09-22.md`, Section 7 "Author answers").
+- New Section 7a: validation tracks V1-V4, all approved by the author. Reference bands and gate verdicts stay frozen; new evidence sits beside them.
+- The no-simulation rule is lifted for V3 (seed repeats, plumbing check) and V4 (second tower model) only. Compute limit: the 32 allocated Speed CPUs, never `histnu`'s share; sequenced with 1J jobs on the same cap.
+- Nothing run. Board not republished this round.
+- Next: P10 (2030 drift check), then P3, then V3b.

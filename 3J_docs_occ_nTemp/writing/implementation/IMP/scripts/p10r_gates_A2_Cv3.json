@@ -1,0 +1,24 @@
+{
+  "a": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "b": {
+    "status": "PASS",
+    "detail": "2030_synthetic_diaries_4split_calibrated_mindwell_C_v3.csv md5=6ee73094\n      GATED: band=hybrid       LFTAG=1 n=12304 home: +0.06 pp  ok\n      GATED: band=hybrid       LFTAG=1 n=12304 work: -0.13 pp  ok\n      GATED: band=hybrid       LFTAG=2 n=  440 home: +1.23 pp  ok\n      GATED: band=hybrid       LFTAG=2 n=  440 work: -0.23 pp  ok\n      INFO band=ALL          LFTAG=1 n=36912 home: -0.14 pp\n      INFO band=ALL          LFTAG=1 n=36912 work: -0.11 pp\n      INFO band=ALL          LFTAG=2 n= 1320 home: +1.15 pp\n      INFO band=ALL          LFTAG=2 n= 1320 work: -0.19 pp\n      INFO band=conservative LFTAG=1 n=12304 home: -3.08 pp\n      INFO band=conservative LFTAG=1 n=12304 work: +1.06 pp\n      INFO band=conservative LFTAG=2 n=  440 home: +0.94 pp\n      INFO band=conservative LFTAG=2 n=  440 work: -0.20 pp\n      INFO band=fullyhybrid  LFTAG=1 n=12304 home: +2.60 pp\n      INFO band=fullyhybrid  LFTAG=1 n=12304 work: -1.25 pp\n      INFO band=fullyhybrid  LFTAG=2 n=  440 home: +1.28 pp\n      INFO band=fullyhybrid  LFTAG=2 n=  440 work: -0.15 pp"
+  },
+  "c": {
+    "status": "PASS",
+    "detail": "H8 0 conflicts: 2030_synthetic_diaries_4split_calibrated_mindwell_C_v3.csv (111,024 rows)\n      calibration log: post-StageB: 0 violations (clean)\n      calibration log: post-GlobalMindwell: 0 violations (clean)\n      calibration log: post-StageC0: 0 violations (clean)\n      calibration log: post-StageC1: cleared home&work=11,215 (->home=0), home&retail=0 (->home=0), work&retail=0 (->retail=0) [priority work > retail > home\n      calibration log: post-StageRetail: 0 violations (clean)\n      calibration log: post-StageC2: 0 violations (clean)\n      calibration log: final conflicts = 0"
+  },
+  "c_control": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "d": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "exit": 0,
+  "expect": "PASS"
+}

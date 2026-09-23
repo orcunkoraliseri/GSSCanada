@@ -1,0 +1,55 @@
+# Nomenclature
+
+- $s$: day-type stratum (weekday, Saturday, Sunday); in Eqs. B.1 and B.2 only, a 30-minute slot index.
+- $t$: a 30-minute slot index, $t = 1,\dots,48$, 04:00 origin.
+- $h$: a household index (Eqs. 6, B.6, B.7 and B.12).
+- $h_i$: the peak hour of day $i$ (Eq. B.9).
+- $d$: a day type, weekday or weekend (Eqs. 6, B.6, B.7 and B.12); in Section 2.6, a day of the year.
+- $k$: an hour-of-day index, $k = 1,\dots,24$.
+- $a$: a dwelling archetype (Section 2.5, Eq. 4); in Eq. 1, an activity.
+- $c$: a city (Section 2.5, Eq. 4); in Eq. 6, a simulated cell.
+- $C_a$: the set of cities simulated for archetype $a$ (Eq. 4).
+- $\text{act30}_t$: the 48-slot activity code for one diary-day (Eqs. B.1 and B.7).
+- $\text{hom30}_t$: the 48-slot at-home indicator for one diary-day (Eqs. B.2 and B.6).
+- $M_h$: number of member diary-days of household $h$ pooled into one day type (Eqs. B.6 and B.7).
+- $p_{s,t}$: an external target at-home rate for stratum $s$, slot $t$ (Eq. B.4).
+- $N_s$: number of diary-days in stratum $s$ being raked (Eq. B.4).
+- $\lambda$: the work-from-home persistence share retained in the 2030 scenario, $\lambda \in \{0, 0.5, 1\}$ (Eq. 3).
+- $\lambda_{\text{act}}$: fixed training loss weight of the activity term (Eq. B.3).
+- $\lambda_{\text{home}}$: fixed training loss weight of the at-home term (Eq. B.3).
+- $\lambda_{\text{cop}}$: fixed training loss weight of the co-presence term (Eq. B.3).
+- $\lambda_{\text{marg}}$: fixed training loss weight of the at-home rate penalty (Eq. B.3).
+- $\lambda_{\text{aux}}$: fixed training loss weight of the auxiliary day-type loss (Eq. B.3).
+- $w_a$: national dwelling-stock share of archetype $a$ (Eq. 4).
+- $w_{a,c}$: the per-city split of $w_a$ (Eq. 4).
+- $B_{\text{shared}}$: appliance categories used once per household (Eq. 1).
+- $B_{\text{personal}}$: appliance categories used once per present person (Eq. 1).
+- $w_b(a)$: fixed weight of activity $a$ toward appliance category $b$ (Eq. 1).
+- $P_b$: fixed rated power of appliance category $b$ (Eq. 1).
+- $P_{\text{base}}$: the fixed baseload power (Eq. 1).
+- $\eta(n)$: fixed diminishing-returns factor for $n$ co-present members sharing a device (Eq. 1).
+- $f_e$: the equipment calibration scalar, target annual energy divided by raw annual energy (Eq. 2).
+- $R$: the resultant vector length of a circular mean (Eq. B.10).
+- $\bar{h}$: circular mean of an hour-of-day quantity (Eq. B.9).
+- $\text{sd}_{\text{circ}}$: circular standard deviation of an hour-of-day quantity (Eq. B.10).
+- $R_{d,k}$: the fixed reference schedule of the fixed-schedule arm (Eq. B.12).
+- $S$: an hourly schedule value (Eqs. 6 and B.12).
+- $d_i$: the paired difference in a metric for household $i$ between two conditions (Eq. B.11).
+- $\bar{d}$: mean of $d_i$ across the $n$ paired households (Eq. 5).
+- $s_d$: standard deviation of $d_i$ across the $n$ paired households (Eq. 5).
+- $n$: number of paired households in a comparison (Eq. 5); $t_{0.975,\,n-1}$: the Student-t quantile used for the 95 percent interval (Eq. 5).
+- $n_t$: number of household members at home in slot $t$; $a_1, \dots, a_{n_t}$: their activities (Eq. 1).
+- $P_t$: raw household equipment power in slot $t$ (Eq. 1); $P_{\text{dw}}(t)$: the dishwasher term (Eq. 1).
+- $\text{light}_t$: binary lighting indicator in slot $t$ (Section 2.4).
+- $E_{\text{raw}}$, $E_{\text{tgt}}$: raw simulated annual equipment energy and its national survey target (Eq. 2).
+- $\text{slope}_{s,t}$: the 2005 to 2015 linear trend of the at-home rate for stratum $s$, slot $t$ (Eq. 3).
+- $\text{jump}_{s,t}$: the 2022 deviation of the at-home rate from that trend (Eq. 3).
+- $\text{stock}_{2022}[s,t]$, $\text{target}_{\lambda}[s,t]$: the 2022 at-home rate and the 2030 scenario target (Eq. 3).
+- $x_{a,c}$, $\bar{x}$: a cell-level metric and its stock-weighted national average (Section 2.5).
+- $y$: a simulated year (Eq. 6).
+- $\text{Pool}_c$: the full candidate population of cell $c$ (Eq. 6).
+- $S^{\text{full}}$, $S^{\text{avg}}$: the household schedule of the full model and of the average-profile arm (Eq. 6).
+- $P_h$, $P_{d,h}$: hourly whole-building load, and the load in hour $h$ of day $d$ (Section 2.6).
+- $\overline{P}$, $P_{\max}$: mean hourly load and annual peak hourly load (Section 2.6).
+- $\text{LF}$, $\text{midday}$, $\text{ramp}$: load factor, midday share and evening ramp (Section 2.6).
+- $\theta_i$: the peak hour of day $i$ expressed as an angle (Eq. B.9).

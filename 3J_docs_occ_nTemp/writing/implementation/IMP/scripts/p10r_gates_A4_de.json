@@ -1,0 +1,28 @@
+{
+  "a": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "b": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "c_control": {
+    "status": "NOT_RUN",
+    "detail": ""
+  },
+  "d": {
+    "status": "PASS",
+    "detail": "B_central__Tall__MTL hotel       hotel_schedule_multiplier_2030_central.csv    md5=4b3d3a46 in_P10R_dir=True frozen_md5=False registry=4b3d3a46 disk=4b3d3a46 -> ok\n      B_central__Tall__MTL office      office_presence_multiplier_2030.csv           md5=d78650c0 in_P10R_dir=True frozen_md5=False registry=d78650c0 disk=d78650c0 -> ok\n      B_central__Tall__MTL residential BEM_Schedules_4split_2030_central.csv         md5=65a078b7 in_P10R_dir=True frozen_md5=False registry=65a078b7 disk=65a078b7 -> ok\n      B_central__Tall__MTL retail      retail_presence_multiplier_2030_central.csv   md5=0ec541ae in_P10R_dir=True frozen_md5=False registry=0ec541ae disk=0ec541ae -> ok"
+  },
+  "e": {
+    "status": "PASS",
+    "detail": "B_central__Tall__MTL/injected_resized.idf: office objects on MXU_Office_*: 12; counts Hotel/ELECTRICEQUIPMENT/Load=3, Hotel/LIGHTS/Load=3, Office/ELECTRICEQUIPMENT/Load=6, Office/LIGHTS/Load=6, Retail/ELECTRICEQUIPMENT/Load=3, Retail/LIGHTS/Load=4\n      LIGHTS            OpenOffice Lights                  -> MXU_Office_Load_f045_B_central__Tall__MTL    min=0.0453 ok\n      LIGHTS            Classroom Lights                   -> MXU_Office_Load_f045_B_central__Tall__MTL    min=0.0453 ok\n      LIGHTS            Conference Lights                  -> MXU_Office_Load_f045_B_central__Tall__MTL    min=0.0453 ok\n      LIGHTS            Dining Lights                      -> MXU_Office_Load_f045_B_central__Tall__MTL    min=0.0453 ok\n      LIGHTS            ClosedOffice Lights                -> MXU_Office_Load_f045_B_central__Tall__MTL    min=0.0453 ok\n      LIGHTS            Restroom Lights                    -> MXU_Office_Load_f045_B_central__Tall__MTL    min=0.0453 ok\n      ELECTRICEQUIPMENT OpenOffice Elec Equip              -> MXU_Office_Load_f200_B_central__Tall__MTL    min=0.2 ok\n      ELECTRICEQUIPMENT Classroom Elec Equip               -> MXU_Office_Load_f200_B_central__Tall__MTL    min=0.2 ok\n      ELECTRICEQUIPMENT Conference Elec Equip              -> MXU_Office_Load_f200_B_central__Tall__MTL    min=0.2 ok\n      ELECTRICEQUIPMENT Dining Elec Equip                  -> MXU_Office_Load_f200_B_central__Tall__MTL    min=0.2 ok\n      ELECTRICEQUIPMENT ClosedOffice Elec Equip            -> MXU_Office_Load_f200_B_central__Tall__MTL    min=0.2 ok\n      ELECTRICEQUIPMENT Restroom Elec Equip                -> MXU_Office_Load_f200_B_central__Tall__MTL    min=0.2 ok"
+  },
+  "exit": 0,
+  "expect": "PASS"
+}
