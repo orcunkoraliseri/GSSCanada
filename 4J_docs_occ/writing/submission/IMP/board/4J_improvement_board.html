@@ -132,7 +132,7 @@
         <div class="pct" id="pct">0%</div>
         <div class="pct-label">of improvement tasks done</div>
       </div>
-      <span class="pill">target: Energy and Buildings · ~9,000–10,000 words</span>
+      <span class="pill">target: Energy and Buildings · about 7,500 words</span>
     </div>
     <div class="bar"><span id="barDone" style="width:0%"></span></div>
     <div class="steps-strip" id="strip" aria-label="Status of the nine steps"></div>
@@ -171,7 +171,7 @@
   // A task is a string, or {t, who} where who = "author" marks work only the author can do.
   var STEPS = [
     {id:"s1", title:"Author decisions", tasks:[
-      "Answer the six decisions: improve first, plain title, appliance runs approved, deposit the pre-registration at submission, 9,000–10,000 words, Energy and Buildings."]},
+      "Answer the six decisions: improve first, plain title, appliance runs approved, deposit the pre-registration at submission, about 7,500 words, Energy and Buildings."]},
     {id:"s2", title:"Checks that decide what the paper can claim", tasks:[
       "Find out whether appliance runs on real diaries already exist (they do not).",
       "Read the in-sample check: the model misses the bar on its own training countries too.",
@@ -181,7 +181,7 @@
     {id:"s3", title:"Appliance timing on real and reweighted diaries", tasks:[
       "Design the runs and fix the decision rule before seeing any number.",
       "Build the real and reweighted diary sets, and a switch to feed them to the appliance model.",
-      "Control: the old result comes back exactly (Spain peak 14:00, 518 W).",
+      "Control: the old result comes back exactly (Spain peak 14:00, 502.9 W from the data; the paper's 518 W was a typo).",
       "Run all 9 runs on the cluster (3 countries × real, reweighted, generated).",
       "Table of peak hours side by side; decide the wording from the fixed rule."]},
     {id:"s4", title:"Literature, equations and outside checks", tasks:[

@@ -28,6 +28,8 @@ from matplotlib.lines import Line2D
 plt.rcParams["font.family"] = "sans-serif"
 plt.rcParams["font.sans-serif"] = ["DejaVu Sans", "Arial", "Helvetica"]
 plt.rcParams["hatch.linewidth"] = 1.1
+plt.rcParams["pdf.fonttype"] = 42
+plt.rcParams["ps.fonttype"] = 42
 
 ROSE, INDIGO, TEAL, SAND, WINE = "#CC6677", "#332288", "#44AA99", "#DDCC77", "#882255"
 GREY_L, GREY_M, INK = "#F2F2F2", "#D0D0D0", "#111111"
@@ -89,7 +91,7 @@ T(1.95, 3.25, u"73,254 diaries · 2,024,068 episodes", 10.5, allow=3.3)
 MX, MW = 4.25, 4.20
 MY, MH = 3.90, 2.20
 box(MX, MY, MW, MH, fc=GREY_L, ec=INK, lw=2.0, r=0.20, z=3)
-T(MX + MW / 2, 5.62, "Britain's published census marginals", 12, weight="bold", allow=MW - 0.3)
+T(MX + MW / 2, 5.62, "the UK's published census marginals", 12, weight="bold", allow=MW - 0.3)
 T(MX + MW / 2, 5.00, u"age · sex · household type · economic status", 10, allow=MW - 0.3)
 T(MX + MW / 2, 4.38, "published before either candidate existed", 10, allow=MW - 0.3)
 
@@ -115,7 +117,7 @@ SX, SW = 15.60, 4.00
 SY, SH = 6.90, 1.70
 box(SX, SY, SW, SH, fc="white", ec=INK, lw=1.8, r=0.20, z=3)
 T(SX + SW / 2, SY + 1.12, "Time-budget mean absolute error", 12, weight="bold", allow=SW - 0.3)
-T(SX + SW / 2, SY + 0.52, "against Britain's published tables", 10.5, allow=SW - 0.3)
+T(SX + SW / 2, SY + 0.52, "against the UK's published tables", 10.5, allow=SW - 0.3)
 
 BASE = 3.00
 SCALE = 3.00 / 65.0
@@ -207,5 +209,9 @@ if not bad:
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                    "Figure_02_loco_design.png")
-fig.savefig(OUT, dpi=DPI, facecolor="white")
-print("written", os.path.normpath(OUT), int(W * DPI), "x", int(H * DPI))
+OUT_PDF = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                       "Figure_02_loco_design.pdf")
+fig.savefig(OUT, dpi=1000, facecolor="white")
+fig.savefig(OUT_PDF, facecolor="white")
+print("written", os.path.normpath(OUT), int(W * 1000), "x", int(H * 1000))
+print("written", os.path.normpath(OUT_PDF), "(vector PDF, fonts embedded)")

@@ -1,0 +1,412 @@
+<title>4thJournalOcc_Improvement</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f5f3f6; --surface:#ffffff; --surface-alt:#ece8ef;
+    --ink:#1d1a22; --muted:#655f6e;
+    --accent:#6a4c86; --accent-strong:#4a3163; --accent-soft:#e8dff1;
+    --good:#3d7a3f; --good-soft:#dfeede;
+    --warn:#a8721e; --warn-soft:#f4e6cd;
+    --border:#ddd7e2;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme:dark;
+      --bg:#131116; --surface:#1a171f; --surface-alt:#231f29;
+      --ink:#ebe6f0; --muted:#a39bad;
+      --accent:#b597d6; --accent-strong:#cfb8e8; --accent-soft:#2c2338;
+      --good:#79c07b; --good-soft:#1b311c;
+      --warn:#e0ad55; --warn-soft:#332a15;
+      --border:#2f2a37;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --bg:#131116; --surface:#1a171f; --surface-alt:#231f29;
+    --ink:#ebe6f0; --muted:#a39bad;
+    --accent:#b597d6; --accent-strong:#cfb8e8; --accent-soft:#2c2338;
+    --good:#79c07b; --good-soft:#1b311c;
+    --warn:#e0ad55; --warn-soft:#332a15;
+    --border:#2f2a37;
+  }
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    padding:20px 16px 48px; margin:0;
+  }
+  .wrap{max-width:820px; margin:0 auto; display:flex; flex-direction:column; gap:20px;}
+  .eyebrow{font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:600;}
+  header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap;}
+  h1{font-size:26px; margin:4px 0 6px; text-wrap:balance; letter-spacing:-.01em;}
+  .sub{color:var(--muted); font-size:14px; max-width:58ch; line-height:1.45;}
+  .pill{
+    display:inline-flex; align-items:center; gap:7px;
+    padding:6px 12px; border-radius:99px; font-size:12px; font-weight:600;
+    background:var(--surface-alt); border:1px solid var(--border); white-space:nowrap; color:var(--muted);
+  }
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--muted);}
+  .pill.live{color:var(--accent-strong);}
+  .pill.live .dot{background:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:22px;}
+  .hero-top{display:flex; justify-content:space-between; align-items:baseline; gap:12px; flex-wrap:wrap;}
+  .pct{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:44px; font-weight:600; font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
+  .pct-label{color:var(--muted); font-size:13px;}
+  .bar{height:12px; border-radius:99px; background:var(--surface-alt); overflow:hidden; display:flex; margin-top:16px; border:1px solid var(--border);}
+  .bar span{height:100%; background:var(--accent); transition:width .4s ease;}
+  .steps-strip{display:grid; grid-template-columns:repeat(9,1fr); gap:4px; margin-top:12px;}
+  .steps-strip i{height:6px; border-radius:3px; background:var(--surface-alt); border:1px solid var(--border);}
+  .steps-strip i.done{background:var(--good); border-color:var(--good);}
+  .steps-strip i.prog{background:var(--accent); border-color:var(--accent);}
+  .steps-strip i.wait{background:var(--warn); border-color:var(--warn);}
+  .hero-caption{margin-top:10px; font-size:13px; color:var(--muted); font-family:"IBM Plex Mono",ui-monospace,monospace;}
+
+  .you{background:var(--warn-soft); border:1px solid var(--border); border-radius:14px; padding:16px 18px;}
+  .you h3{font-size:13px; margin:0 0 8px; letter-spacing:.06em; text-transform:uppercase; color:var(--warn);}
+  .you ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:4px; font-size:13.5px; line-height:1.45;}
+  .you .none{font-size:13.5px; color:var(--muted);}
+
+  .sims{display:flex; flex-direction:column; gap:10px;}
+  .sim-card{background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px 18px;}
+  .sim-top{display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap;}
+  .sim-pct{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:24px; font-weight:600; font-variant-numeric:tabular-nums; margin-right:8px;}
+  .sim-label{font-size:13px; font-weight:600;}
+  .sim-where{font-size:11px; color:var(--muted); font-weight:600; letter-spacing:.05em; text-transform:uppercase;}
+  .sim-bar{height:8px; border-radius:99px; background:var(--surface-alt); overflow:hidden; display:flex; margin-top:10px; border:1px solid var(--border);}
+  .sim-bar .d{height:100%; background:var(--good); transition:width .4s ease;}
+  .sim-bar .r{height:100%; background:var(--accent); opacity:.55; transition:width .4s ease;}
+  .sim-caption{margin-top:8px; font-size:12px; color:var(--muted); font-family:"IBM Plex Mono",ui-monospace,monospace;}
+
+  .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+  @media (max-width:560px){ .grid{grid-template-columns:repeat(2,1fr);} }
+  .tile{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:6px;}
+  .tile .n{font-family:"IBM Plex Mono",ui-monospace,monospace; font-size:24px; font-weight:600; font-variant-numeric:tabular-nums;}
+  .tile .l{font-size:12px; color:var(--muted); font-weight:500;}
+  .tile.good .n{color:var(--good);}
+  .tile.acc .n{color:var(--accent-strong);}
+
+  .steps{display:flex; flex-direction:column; gap:10px;}
+  .step{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 18px;}
+  .step-head{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+  .step-head h2{font-size:15px; margin:0; text-wrap:balance;}
+  .step-head h2 .num{font-family:"IBM Plex Mono",ui-monospace,monospace; color:var(--muted); font-weight:500; margin-right:6px;}
+  .chip{font-size:11px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; padding:4px 10px; border-radius:99px; white-space:nowrap;}
+  .chip.todo{background:var(--surface-alt); color:var(--muted);}
+  .chip.prog{background:var(--accent-soft); color:var(--accent-strong);}
+  .chip.done{background:var(--good-soft); color:var(--good);}
+  .chip.wait{background:var(--warn-soft); color:var(--warn);}
+  .step-note{font-size:12px; color:var(--muted); margin-top:6px;}
+  ul.tasks{list-style:none; margin:12px 0 0; padding:0; display:flex; flex-direction:column; gap:2px;}
+  ul.tasks label{display:flex; gap:10px; align-items:flex-start; padding:6px 4px; border-radius:6px; cursor:pointer; font-size:13.5px; line-height:1.45;}
+  ul.tasks label:hover{background:var(--surface-alt);}
+  ul.tasks input{margin-top:3px; accent-color:var(--accent); width:15px; height:15px; flex:none;}
+  ul.tasks input:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  ul.tasks .done-t{color:var(--muted); text-decoration:line-through; text-decoration-color:var(--border);}
+  .who{font-size:10.5px; font-weight:600; letter-spacing:.05em; text-transform:uppercase; color:var(--warn); background:var(--warn-soft); padding:1px 7px; border-radius:99px; margin-left:6px; white-space:nowrap;}
+  .ro ul.tasks label{cursor:default;}
+
+  .card h3{font-size:14px; margin:0 0 12px; letter-spacing:.02em;}
+  .ev{display:flex; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px; line-height:1.45;}
+  .ev:last-child{border-bottom:none;}
+  .ev .t{font-family:"IBM Plex Mono",ui-monospace,monospace; color:var(--muted); font-size:12px; min-width:84px; flex:none;}
+
+  footer{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); padding-top:4px;}
+  footer code{font-family:"IBM Plex Mono",ui-monospace,monospace; background:var(--surface-alt); padding:2px 6px; border-radius:5px; overflow-wrap:anywhere;}
+  @media (prefers-reduced-motion: reduce){ .bar span, .sim-bar span{transition:none;} }
+</style>
+
+<div class="wrap" id="root">
+  <header>
+    <div>
+      <div class="eyebrow">Energy and Buildings · improvements before submission</div>
+      <h1>4th journal paper — improvement progress</h1>
+      <div class="sub">Can a fine-tuned language model generate time-use diaries for a country without survey data? Applying the lessons from the 2nd paper's review. Tick a task when it is done; the page saves it for everyone.</div>
+    </div>
+    <span class="pill" id="livePill"><span class="dot"></span><span id="liveText">SAVED COPY</span></span>
+  </header>
+
+  <div class="card">
+    <div class="hero-top">
+      <div>
+        <div class="pct" id="pct">0%</div>
+        <div class="pct-label">of improvement tasks done</div>
+      </div>
+      <span class="pill">target: Energy and Buildings · about 7,500 words</span>
+    </div>
+    <div class="bar"><span id="barDone" style="width:0%"></span></div>
+    <div class="steps-strip" id="strip" aria-label="Status of the nine steps"></div>
+    <div class="hero-caption" id="heroCaption">0 of 0 tasks</div>
+  </div>
+
+  <div class="you" id="youBox">
+    <h3>Waiting on you</h3>
+    <ul id="youList"></ul>
+  </div>
+
+  <div class="sims" id="sims"></div>
+
+  <div class="grid">
+    <div class="tile good"><div class="n" id="tDone">0</div><div class="l">Steps done</div></div>
+    <div class="tile acc"><div class="n" id="tProg">0</div><div class="l">Steps in progress</div></div>
+    <div class="tile"><div class="n" id="tTodo">0</div><div class="l">Steps not started</div></div>
+    <div class="tile"><div class="n" id="tRuns">0</div><div class="l">Cluster runs finished</div></div>
+  </div>
+
+  <div class="steps" id="steps"></div>
+
+  <div class="card">
+    <h3>Log</h3>
+    <div id="log"></div>
+  </div>
+
+  <footer>
+    <span>Plan: <code>4J_docs_occ/writing/submission/IMP/4J_improvement_plan_from_2J_lessons_2026-09-22.md</code> · work notes: <code>writing/submission/IMP/impl/</code></span>
+    <span id="lastTs">as of 2026-09-23</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  // A task is a string, or {t, who} where who = "author" marks work only the author can do.
+  var STEPS = [
+    {id:"s1", title:"Author decisions", tasks:[
+      "Answer the six decisions: improve first, plain title, appliance runs approved, deposit the pre-registration at submission, 9,000–10,000 words, Energy and Buildings."]},
+    {id:"s2", title:"Checks that decide what the paper can claim", tasks:[
+      "Find out whether appliance runs on real diaries already exist (they do not).",
+      "Read the in-sample check: the model misses the bar on its own training countries too.",
+      "Confirm which label in the in-sample file is the training country.",
+      "Add 95% intervals to the main results table (Table 3).",
+      "Number sheet, first pass: every number traced to its source, including the 35,290 / 35,090 / 840 cell counts."]},
+    {id:"s3", title:"Appliance timing on real and reweighted diaries", tasks:[
+      "Design the runs and fix the decision rule before seeing any number.",
+      "Build the real and reweighted diary sets, and a switch to feed them to the appliance model.",
+      "Control: the old result comes back exactly (Spain peak 14:00, 518 W).",
+      "Run all 9 runs on the cluster (3 countries × real, reweighted, generated).",
+      "Table of peak hours side by side; decide the wording from the fixed rule."]},
+    {id:"s4", title:"Literature, equations and outside checks", tasks:[
+      "Write the equation-sources prompt.",
+      "Write the literature and closest-competitor prompt.",
+      "Write the prompt for measured hourly household electricity profiles (Spain, Italy, UK).",
+      {t:"Run the prompts in Gemini and bring back the answers.", who:"author"},
+      {t:"Open and check every new citation.", who:"author"},
+      "Vet the returns and rebuild the comparison table (about 40–50 references)."]},
+    {id:"s5", title:"New structure", tasks:[
+      "One method section in six parts, with a table of what each dataset is used for.",
+      "Move everything the paper does not claim to the supplement.",
+      "Say plainly which conclusions depend on the building half and which do not."]},
+    {id:"s6", title:"From report to paper", tasks:[
+      "List the project jargon; replace or define each term once.",
+      "Delete the internal instruction printed in Section 3.4 and every meta sentence.",
+      "Round the over-precise numbers; call the UK the UK, not Britain.",
+      "Name the backbone model and its version in the paper and supplement."]},
+    {id:"s7", title:"Rewrite the paper", tasks:[
+      "New title and a plain 200–250-word abstract; new highlights.",
+      "Short sentences; Discussion about 1,200 words, Limitations about 900, every point kept.",
+      "Add the in-sample and appliance results where they belong.",
+      "Declarations at the end, including the generative-AI declaration; one funding spelling.",
+      "Number sheet, second pass; rebuild the Word files and supplement."]},
+    {id:"s8", title:"Journal package", tasks:[
+      {t:"Save the Energy and Buildings Guide for Authors page from your browser (the fetch tool is blocked).", who:"author"},
+      "Check word limit, abstract limit, figure resolution and declaration order against the guide.",
+      "Cover letter.",
+      {t:"Deposit the frozen pre-registration and its hash on a public registry.", who:"author"},
+      "Write the final outside-audit prompt.",
+      {t:"Run the audit in Gemini and a second model.", who:"author"}]},
+    {id:"s9", title:"Submit to Energy and Buildings", tasks:[
+      {t:"Read the final draft.", who:"author"},
+      {t:"Submit.", who:"author"}]}
+  ];
+
+  // Shown only when the saved progress cannot be loaded (preview, offline).
+  var FALLBACK = {
+    updated_at: "2026-09-23",
+    checks: {s1:[true], s2:[true,true], s3:[true]},
+    waiting: {s9:"Waits for every step above."},
+    sims: [
+      {label:"Appliance runs on real and reweighted diaries", where:"cluster", done:0, running:0, total:9,
+       note:"being set up; a control run must reproduce the old result first"}
+    ],
+    log: [
+      {d:"2026-09-22", x:"Improvement plan written from the 2nd paper's review."},
+      {d:"2026-09-23", x:"All six author decisions answered."},
+      {d:"2026-09-23", x:"In-sample check read: the model also misses the bar on its training countries."},
+      {d:"2026-09-23", x:"Appliance runs on real diaries do not exist; design written, runs being set up."}
+    ]
+  };
+
+  var state = FALLBACK;
+  var canWrite = false;
+  var dbRef = null;
+
+  function textOf(t){ return typeof t === "string" ? t : t.t; }
+  function checksFor(s, st){
+    var arr = (st.checks && st.checks[s.id]) || [];
+    return s.tasks.map(function(_, i){ return !!arr[i]; });
+  }
+  function statusOf(s, st){
+    var c = checksFor(s, st), n = c.filter(Boolean).length;
+    if(n === s.tasks.length) return "done";
+    if(st.waiting && st.waiting[s.id] && n === 0) return "wait";
+    return n > 0 ? "prog" : "todo";
+  }
+  var LABEL = {done:"Done", prog:"In progress", todo:"Not started", wait:"Waiting"};
+
+  function renderYou(){
+    var list = document.getElementById("youList"); list.innerHTML = "";
+    var items = [];
+    STEPS.forEach(function(s){
+      var c = checksFor(s, state);
+      s.tasks.forEach(function(t, i){
+        if(typeof t !== "string" && t.who === "author" && !c[i]) items.push(t.t);
+      });
+    });
+    (state.you_now || []).forEach(function(x){ items.unshift(x); });
+    items.slice(0, 8).forEach(function(x){
+      var li = document.createElement("li"); li.textContent = x; list.appendChild(li);
+    });
+    document.getElementById("youBox").hidden = items.length === 0;
+  }
+
+  function renderSims(){
+    var host = document.getElementById("sims"); host.innerHTML = "";
+    var runsDone = 0, runsTotal = 0;
+    (state.sims || []).forEach(function(sim){
+      if(typeof sim.done !== "number" || typeof sim.total !== "number" || !sim.total) return;
+      runsDone += sim.done; runsTotal += sim.total;
+      var running = typeof sim.running === "number" ? sim.running : 0;
+      var pct = Math.round(sim.done / sim.total * 100);
+      var card = document.createElement("div"); card.className = "sim-card";
+      var top = document.createElement("div"); top.className = "sim-top";
+      var left = document.createElement("div");
+      var p = document.createElement("span"); p.className = "sim-pct"; p.textContent = pct + "%";
+      var l = document.createElement("span"); l.className = "sim-label"; l.textContent = sim.label || "Simulations";
+      left.appendChild(p); left.appendChild(l);
+      var w = document.createElement("span"); w.className = "sim-where"; w.textContent = sim.where || "";
+      top.appendChild(left); top.appendChild(w); card.appendChild(top);
+      var bar = document.createElement("div"); bar.className = "sim-bar";
+      var d = document.createElement("span"); d.className = "d"; d.style.width = (sim.done / sim.total * 100) + "%";
+      var r = document.createElement("span"); r.className = "r"; r.style.width = (running / sim.total * 100) + "%";
+      bar.appendChild(d); bar.appendChild(r); card.appendChild(bar);
+      var cap = document.createElement("div"); cap.className = "sim-caption";
+      cap.textContent = sim.done + " of " + sim.total + " done" +
+        (running ? " · " + running + " running" : "") +
+        (sim.note ? " — " + sim.note : "") +
+        (sim.updated ? " (as of " + sim.updated + ")" : "");
+      card.appendChild(cap);
+      host.appendChild(card);
+    });
+    document.getElementById("tRuns").textContent = runsTotal ? runsDone + "/" + runsTotal : "—";
+  }
+
+  function render(){
+    var st = state;
+    var total = 0, done = 0, counts = {done:0, prog:0, todo:0, wait:0};
+    var strip = document.getElementById("strip"); strip.innerHTML = "";
+    var host = document.getElementById("steps"); host.innerHTML = "";
+
+    STEPS.forEach(function(s, si){
+      var c = checksFor(s, st), status = statusOf(s, st);
+      total += c.length; done += c.filter(Boolean).length; counts[status]++;
+
+      var seg = document.createElement("i");
+      seg.className = status === "todo" ? "" : status;
+      seg.title = "Step " + (si+1) + ": " + LABEL[status];
+      strip.appendChild(seg);
+
+      var card = document.createElement("section");
+      card.className = "step";
+      var head = document.createElement("div"); head.className = "step-head";
+      var h = document.createElement("h2");
+      var num = document.createElement("span"); num.className = "num"; num.textContent = "Step " + (si+1);
+      h.appendChild(num); h.appendChild(document.createTextNode(s.title));
+      var chip = document.createElement("span"); chip.className = "chip " + status; chip.textContent = LABEL[status];
+      head.appendChild(h); head.appendChild(chip); card.appendChild(head);
+
+      if(st.waiting && st.waiting[s.id] && status === "wait"){
+        var note = document.createElement("div"); note.className = "step-note"; note.textContent = st.waiting[s.id];
+        card.appendChild(note);
+      }
+
+      var ul = document.createElement("ul"); ul.className = "tasks";
+      s.tasks.forEach(function(t, ti){
+        var li = document.createElement("li");
+        var lab = document.createElement("label");
+        var cb = document.createElement("input"); cb.type = "checkbox";
+        cb.id = s.id + "_t" + ti; cb.checked = c[ti]; cb.disabled = !canWrite;
+        cb.addEventListener("change", function(){ toggle(s.id, ti, cb.checked); });
+        var span = document.createElement("span"); span.textContent = textOf(t); if(c[ti]) span.className = "done-t";
+        lab.appendChild(cb); lab.appendChild(span);
+        if(typeof t !== "string" && t.who === "author"){
+          var who = document.createElement("span"); who.className = "who"; who.textContent = "you";
+          span.appendChild(who);
+        }
+        li.appendChild(lab); ul.appendChild(li);
+      });
+      card.appendChild(ul);
+      host.appendChild(card);
+    });
+
+    var pct = total ? Math.round(done / total * 100) : 0;
+    document.getElementById("pct").textContent = pct + "%";
+    document.getElementById("barDone").style.width = (total ? done/total*100 : 0) + "%";
+    document.getElementById("heroCaption").textContent =
+      done + " of " + total + " tasks · " + counts.done + " of " + STEPS.length + " steps done";
+    document.getElementById("tDone").textContent = counts.done;
+    document.getElementById("tProg").textContent = counts.prog;
+    document.getElementById("tTodo").textContent = counts.todo + counts.wait;
+    document.getElementById("lastTs").textContent = "as of " + (st.updated_at || "—");
+
+    renderYou();
+    renderSims();
+
+    var log = document.getElementById("log"); log.innerHTML = "";
+    (st.log || []).slice().reverse().forEach(function(ev){
+      var row = document.createElement("div"); row.className = "ev";
+      var t = document.createElement("span"); t.className = "t"; t.textContent = ev.d || "";
+      var x = document.createElement("span"); x.textContent = ev.x || "";
+      row.appendChild(t); row.appendChild(x); log.appendChild(row);
+    });
+    document.getElementById("root").classList.toggle("ro", !canWrite);
+  }
+
+  var writing = Promise.resolve();
+  function toggle(stepId, idx, val){
+    if(!dbRef || !canWrite) return;
+    var step = STEPS.filter(function(s){ return s.id === stepId; })[0];
+    var arr = checksFor(step, state); arr[idx] = val;
+    state = JSON.parse(JSON.stringify(state));
+    state.checks = state.checks || {}; state.checks[stepId] = arr;
+    state.updated_at = new Date().toISOString().slice(0,10);
+    render();
+    var full = JSON.parse(JSON.stringify(state));
+    writing = writing.then(function(){ return dbRef.set(full); }).catch(function(e){
+      if(e && (e.code === "invalid_argument" || e.code === "permission_denied")){ canWrite = false; render(); }
+    });
+  }
+
+  function setLive(on){
+    document.getElementById("livePill").classList.toggle("live", on);
+    document.getElementById("liveText").textContent = on ? "LIVE" : "SAVED COPY";
+  }
+
+  render();
+
+  (async function connect(){
+    try{
+      if(!window.claude || !window.claude.use) return;
+      var db = await window.claude.use("db");
+      if(!db){ setLive(false); return; }
+      var user = await window.claude.use("user");
+      var w = null;
+      try{ w = user && user.can ? await user.can("data.write") : null; }catch(e){ w = null; }
+      canWrite = (w === null || w === undefined) ? true : !!w;
+      dbRef = db.doc("board/progress");
+      dbRef.onSnapshot(function(snap){
+        if(snap.exists){ state = snap.data(); }
+        setLive(true); render();
+      }, function(){ setLive(false); });
+    }catch(e){ setLive(false); }
+  })();
+})();
+</script>

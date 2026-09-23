@@ -43,3 +43,13 @@ fits this wording. Transfer verdict (Table 3) unchanged.
 
 **Test before writing:** confirm the fold / training-country order in the JSON (see note above) and
 re-read the MAE values at the six lines before any number enters the manuscript.
+
+## Label order confirmed (2026-09-23, manager)
+
+In `g66_leg5_generated.json` a pair "a/b" = model of fold a (country a held out) scored IN-SAMPLE on
+training country b: block "es/it" has `published_country: "it"` (line ~36). So the six cells are
+es-fold on it and uk, it-fold on es and uk, uk-fold on es and it. `worst_mape` and `worst_mae_min_day`
+per pair are the numbers to quote. (`held_out_mape` repeats per training country, e.g. 111.93 for both
+es/it and uk/it: it is clause 2's comparator keyed by b, not the held-out score of fold a; do not quote it
+without re-reading `tools/4thJ_step6_g66_heldin.py`.) Status: P10 DONE; numbers enter Results 3.1 at the
+rewrite.

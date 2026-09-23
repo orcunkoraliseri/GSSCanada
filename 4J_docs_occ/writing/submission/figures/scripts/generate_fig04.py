@@ -2,7 +2,7 @@
 # Recoloured 2026-09-14 (second pass, author request).  House palette is now the
 # Tol muted set: colour-blind safe and separable in greyscale by lightness as well
 # as by line style / marker / hatch.
-#   Spain  #CC6677 rose    Britain #332288 indigo   Italy #44AA99 teal
+#   Spain  #CC6677 rose    UK #332288 indigo   Italy #44AA99 teal
 #   secondary series #DDCC77 sand   negative channel #882255 wine
 #   reference and threshold lines #000000   all value labels #111111
 # Explanatory notes and verdict lines were REMOVED from inside the image on the
@@ -27,9 +27,11 @@ plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Helvetica']
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['axes.edgecolor'] = '#333333'
 plt.rcParams['axes.linewidth'] = 0.8
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 
 fig = plt.figure(figsize=(12, 7.2), dpi=300)
-gs = fig.add_gridspec(1, 3, width_ratios=[1.7, 1.0, 1.0], wspace=0.48, left=0.075, right=0.97, top=0.83, bottom=0.24)
+gs = fig.add_gridspec(1, 3, width_ratios=[1.7, 1.0, 1.0], wspace=0.48, left=0.075, right=0.97, top=0.90, bottom=0.24)
 
 ax1 = fig.add_subplot(gs[0, 0])
 ax2 = fig.add_subplot(gs[0, 1])
@@ -47,7 +49,7 @@ folds_data = [
         "linestyle": "-"
     },
     {
-        "name": "Britain held out",
+        "name": "UK held out",
         "y": [35.76, 34.06, 24.38, 18.77, 15.39],
         "slope": 0.5329,
         "color": "#332288",
@@ -69,7 +71,7 @@ folds_data = [
 # the "steering" block (aggregate AC2, r2_min 0.80, passes true).
 steering_r2 = {
     "Spain held out": 0.9897,
-    "Britain held out": 0.9914,
+    "UK held out": 0.9914,
     "Italy held out": 0.9941,
 }
 
@@ -80,7 +82,7 @@ for d in folds_data:
     last_y = d["y"][-1]
     if d["name"] == "Spain held out":
         y_offset = -0.5
-    elif d["name"] == "Britain held out":
+    elif d["name"] == "UK held out":
         y_offset = -2.2
     else: # Italy
         y_offset = 1.8
@@ -147,11 +149,8 @@ ax3.set_axisbelow(True)
 ax3.spines['top'].set_visible(False)
 ax3.spines['right'].set_visible(False)
 
-fig.suptitle("Figure 4: The Fictional-Country Control: Direction Versus Amplitude",
-             fontsize=11.5, fontweight='bold', y=0.965)
-
-note_a = ("Note a. Direction (steering) was measured on the reported 7.30 B model, not inherited "
-          "from the pilot: R-squared 0.9897 Spain held out, 0.9914 Britain held out, 0.9941 Italy "
+note_a =("Note a. Direction (steering) was measured on the reported 7.30 B model, not inherited "
+          "from the pilot: R-squared 0.9897 Spain held out, 0.9914 UK held out, 0.9941 Italy "
           "held out, against the registered floor of 0.80.")
 note_b = ("Note b. The amplitude slopes plotted here use the five-channel definition ruled in "
           "D-S6-13; the residual channel AC4-8 is excluded by name and is not counted toward "
@@ -163,10 +162,17 @@ prompts_dir = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\4J_docs_occ\wr
 figures_dir = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\4J_docs_occ\writing\submission\figures"
 
 out1 = os.path.join(prompts_dir, "Figure_04_amplitude_slope.png")
+out1_pdf = os.path.join(prompts_dir, "Figure_04_amplitude_slope.pdf")
 out1_alias = os.path.join(prompts_dir, "4thJ_figure04_amplitude_slope.png")
+out1_alias_pdf = os.path.join(prompts_dir, "4thJ_figure04_amplitude_slope.pdf")
 out2 = os.path.join(figures_dir, "Figure_04_amplitude_slope.png")
+out2_pdf = os.path.join(figures_dir, "Figure_04_amplitude_slope.pdf")
 
-plt.savefig(out1, dpi=300)
-plt.savefig(out1_alias, dpi=300)
-plt.savefig(out2, dpi=300)
+plt.savefig(out1, dpi=1000)
+plt.savefig(out1_pdf)
+plt.savefig(out1_alias, dpi=1000)
+plt.savefig(out1_alias_pdf)
+plt.savefig(out2, dpi=1000)
+plt.savefig(out2_pdf)
 print(f"Generated Figure 4: {out1} ({os.path.getsize(out1)} bytes)")
+print(f"Generated Figure 4 PDF: {out2_pdf} ({os.path.getsize(out2_pdf)} bytes)")

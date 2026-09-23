@@ -2,7 +2,7 @@
 # Recoloured 2026-09-14 (second pass, author request).  House palette is now the
 # Tol muted set: colour-blind safe and separable in greyscale by lightness as well
 # as by line style / marker / hatch.
-#   Spain  #CC6677 rose    Britain #332288 indigo   Italy #44AA99 teal
+#   Spain  #CC6677 rose    UK #332288 indigo   Italy #44AA99 teal
 #   secondary series #DDCC77 sand   negative channel #882255 wine
 #   reference and threshold lines #000000   all value labels #111111
 # Explanatory notes and verdict lines were REMOVED from inside the image on the
@@ -16,10 +16,12 @@ plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Helvetica']
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['axes.edgecolor'] = '#333333'
 plt.rcParams['axes.linewidth'] = 0.8
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 
 fig = plt.figure(figsize=(12, 8.5), dpi=300)
 gs = fig.add_gridspec(2, 2, height_ratios=[1.15, 1.0], hspace=0.30, wspace=0.25,
-                      left=0.08, right=0.95, top=0.91, bottom=0.09)
+                      left=0.08, right=0.95, top=0.95, bottom=0.09)
 
 ax_a = fig.add_subplot(gs[0, :])
 ax_b1 = fig.add_subplot(gs[1, 0])
@@ -28,7 +30,7 @@ ax_b2 = fig.add_subplot(gs[1, 1])
 # ----------------------------------------------------
 # Panel A: Peak effect vs Between-diary spread
 # ----------------------------------------------------
-countries = ["Spain", "Britain", "Italy"]
+countries = ["Spain", "UK", "Italy"]
 peak_effects = [2.7145, 0.0393, -0.6332]
 spreads = [4.9837, 2.3797, 1.5959]
 ratios = [0.54, 0.02, 0.40]
@@ -130,10 +132,6 @@ ax_b2.set_axisbelow(True)
 ax_b2.spines['top'].set_visible(False)
 ax_b2.spines['right'].set_visible(False)
 
-# Figure Title
-fig.suptitle("Figure 7: Occupancy into Heating is a Null, and What Survives Instead",
-             fontsize=11.5, fontweight='bold', y=0.97)
-
 # ---------------------------------------------------------------- overflow check
 # Panel A's value labels grew from 2 decimal places to 4 (peak effect, between-diary spread) to carry
 # the same precision as Table 10 without rounding. Measure every label actually drawn and confirm none
@@ -163,10 +161,17 @@ prompts_dir = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\4J_docs_occ\wr
 figures_dir = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\4J_docs_occ\writing\submission\figures"
 
 out1 = os.path.join(prompts_dir, "Figure_07_heating_null.png")
+out1_pdf = os.path.join(prompts_dir, "Figure_07_heating_null.pdf")
 out1_alias = os.path.join(prompts_dir, "4thJ_figure07_heating_null.png")
+out1_alias_pdf = os.path.join(prompts_dir, "4thJ_figure07_heating_null.pdf")
 out2 = os.path.join(figures_dir, "Figure_07_heating_null.png")
+out2_pdf = os.path.join(figures_dir, "Figure_07_heating_null.pdf")
 
-plt.savefig(out1, dpi=300)
-plt.savefig(out1_alias, dpi=300)
-plt.savefig(out2, dpi=300)
+plt.savefig(out1, dpi=1000)
+plt.savefig(out1_pdf)
+plt.savefig(out1_alias, dpi=1000)
+plt.savefig(out1_alias_pdf)
+plt.savefig(out2, dpi=1000)
+plt.savefig(out2_pdf)
 print(f"Generated Figure 7: {out1} ({os.path.getsize(out1)} bytes)")
+print(f"Generated Figure 7 PDF: {out2_pdf} ({os.path.getsize(out2_pdf)} bytes)")

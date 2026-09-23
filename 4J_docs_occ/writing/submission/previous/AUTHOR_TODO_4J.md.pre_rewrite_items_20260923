@@ -1,0 +1,35 @@
+# 4J — what only the author can do (2026-09-23)
+
+One list, in order of what unblocks the most. Details live in the files named; nothing here is new evidence.
+
+## A. Before submission (blocking)
+
+1. **Open the closest competitor.** Jutras-Dubé et al. (2024), Transportation Research Part C 169, 104830
+   (arXiv 2302.09193 is the cheap first look). Answer four questions: does it test transfer to a region not
+   in training; is IPF a baseline; is that IPF seeded from the target region or another region; who wins.
+   Until then the paper says only the one metadata sentence (`DeepResearchPrompts/VETTING_RL35.md` section 5).
+   Same questions for Qian et al. (2026) (arXiv 2407.01643, open access) and Jung (2026, BuildOcc).
+2. **Open the equation sources** marked `[AUTHOR TO OPEN]` in `writing/submission/IMP/prep/appendixB_equations_draft.md`
+   (14 items; list and exact questions in `VETTING_RL34.md` section 4). Most important: Richardson et al. (2010)
+   Section 2.7 (closed-form or iterative calibration).
+3. **Other literature marked "accept after open"** (`VETTING_RL35.md` section 4, items 4-8). Skip any you do
+   not want cited; the rewrite cites none of them beyond what the vetting allows.
+4. **Deposit the frozen pre-registration and its hash** (D4) on a public registry (for example OSF or Zenodo);
+   bring back the link. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`.
+5. **Graphical abstract** (the journal requires one): prompt at `writing/submission/IMP/prep/graphical_abstract_prompt.md`.
+   I do not make images.
+6. **Suggested reviewers** in the cover letter (`writing/submission/4J_cover_letter.md`, placeholder).
+7. **Confirm the generative-AI declaration wording** at the end of the manuscript.
+8. **Run the outside audit** (`writing/submission/IMP/prep/external_audit_prompt.md`) in Gemini and a second
+   model on the final draft; paste the answers back for vetting.
+9. **Read the final draft; submit.**
+
+## B. Optional (would strengthen the appliance-timing result; not blocking)
+
+Measured household profiles to compare with the real-diary peaks (UK 18:00, Italy 19:00, Spain 21:00).
+Routes in `VETTING_RL36.md` section 3:
+- Spain: IDAE SPAHOUSEC report, chapter 4 (does it print an hourly appliance curve?).
+- Italy: Besagni, Premoli Vilà and Borgarello (2020), Buildings 10(12) 217 (open in a browser).
+- UK: Low Carbon London smart-meter data (London Datastore); we can compute its peak on the cluster once
+  you say yes to downloading it.
+Fix the comparison rule before any file is opened (daily maximum hour, weekday).

@@ -372,3 +372,10 @@ Buildings, after P2 and P7 re-centre the paper on building-stock occupancy.
 - [ ] Journal guide read live; declarations complete including generative AI; cover letter written
 - [ ] Pre-submission external audit run and vetted
 - [ ] `Prompts/RESUME.md`, the tracker artifact and memory updated (the 4J closure ritual)
+
+**Update 2026-09-23 (after reading the live Energy and Buildings guide, `IMP/impl/P14_journal_guide_EandB_2026-09-23.md`):**
+the guide prefers original papers of at most about 20 double-spaced pages including tables and figures.
+The author changed D5: target is now **about 7,500 words** of main text, about 8 figures and tables in the
+main text, the rest in the supplement. Other guide rules (abstract at most 250 words, highlights and
+graphical abstract as separate files, generative-AI declaration at the end, data statement, line numbers,
+figure dpi) are listed in that file and feed P13 and P14.

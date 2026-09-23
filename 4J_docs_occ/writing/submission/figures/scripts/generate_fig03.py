@@ -2,7 +2,7 @@
 # Recoloured 2026-09-14 (second pass, author request).  House palette is now the
 # Tol muted set: colour-blind safe and separable in greyscale by lightness as well
 # as by line style / marker / hatch.
-#   Spain  #CC6677 rose    Britain #332288 indigo   Italy #44AA99 teal
+#   Spain  #CC6677 rose    UK #332288 indigo   Italy #44AA99 teal
 #   secondary series #DDCC77 sand   negative channel #882255 wine
 #   reference and threshold lines #000000   all value labels #111111
 # Explanatory notes and verdict lines were REMOVED from inside the image on the
@@ -15,6 +15,8 @@ plt.rcParams['font.sans-serif'] = ['DejaVu Sans', 'Arial', 'Helvetica']
 plt.rcParams['font.family'] = 'sans-serif'
 plt.rcParams['axes.edgecolor'] = '#333333'
 plt.rcParams['axes.linewidth'] = 0.8
+plt.rcParams['pdf.fonttype'] = 42
+plt.rcParams['ps.fonttype'] = 42
 
 fig, ax = plt.subplots(figsize=(12, 7.2), dpi=300)
 
@@ -22,9 +24,9 @@ data = [
     ("Spain held out", "Y25-44", 36.81, 9.94, False),
     ("Spain held out", "Y45-64", 34.52, 8.82, False),
     ("Spain held out", "Y_GE65", 44.32, 11.81, False),
-    ("Britain held out", "Y25-44", 58.91, 21.79, False),
-    ("Britain held out", "Y45-64", 60.44, 19.21, False),
-    ("Britain held out", "Y_GE65", 21.24, 18.54, True),
+    ("UK held out", "Y25-44", 58.91, 21.79, False),
+    ("UK held out", "Y45-64", 60.44, 19.21, False),
+    ("UK held out", "Y_GE65", 21.24, 18.54, True),
     ("Italy held out", "Y25-44", 62.24, 19.51, False),
     ("Italy held out", "Y45-64", 33.95, 13.85, False),
     ("Italy held out", "Y_GE65", 35.84, 15.51, False),
@@ -103,18 +105,23 @@ ax.spines['right'].set_visible(False)
 leg = ax.legend(loc='upper right', bbox_to_anchor=(0.99, 0.99), frameon=True, facecolor='#FFFFFF', edgecolor='#CCCCCC', fontsize=9)
 leg.get_frame().set_linewidth(0.8)
 
-fig.suptitle("Figure 3: Time-Budget Mean Absolute Error Across Nine Cells", fontsize=11.5, fontweight='bold', y=0.97)
-
-plt.subplots_adjust(left=0.22, right=0.96, top=0.91, bottom=0.10)
+plt.subplots_adjust(left=0.22, right=0.96, top=0.96, bottom=0.10)
 
 prompts_dir = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\4J_docs_occ\writing\submission\figures\Prompts_Images"
 figures_dir = r"C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\4J_docs_occ\writing\submission\figures"
 
 out1 = os.path.join(prompts_dir, "Figure_03_nine_cells.png")
+out1_pdf = os.path.join(prompts_dir, "Figure_03_nine_cells.pdf")
 out1_alias = os.path.join(prompts_dir, "4thJ_figure03_nine_cells.png")
+out1_alias_pdf = os.path.join(prompts_dir, "4thJ_figure03_nine_cells.pdf")
 out2 = os.path.join(figures_dir, "Figure_03_nine_cells.png")
+out2_pdf = os.path.join(figures_dir, "Figure_03_nine_cells.pdf")
 
-plt.savefig(out1, dpi=300)
-plt.savefig(out1_alias, dpi=300)
-plt.savefig(out2, dpi=300)
+plt.savefig(out1, dpi=1000)
+plt.savefig(out1_pdf)
+plt.savefig(out1_alias, dpi=1000)
+plt.savefig(out1_alias_pdf)
+plt.savefig(out2, dpi=1000)
+plt.savefig(out2_pdf)
 print(f"Generated Figure 3: {out1} ({os.path.getsize(out1)} bytes)")
+print(f"Generated Figure 3 PDF: {out2_pdf} ({os.path.getsize(out2_pdf)} bytes)")

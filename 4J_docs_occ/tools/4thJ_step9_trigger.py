@@ -521,13 +521,27 @@ def _import_step7(tools_dir):
 
 
 def build_dwellings(root, fold, leg, year, seed, n_households, timestep_min,
-                    verify_against_step8=True):
-    """The 100 dwellings, their member-years, and their presence series."""
+                    verify_against_step8=True, pool_path=None):
+    """The 100 dwellings, their member-years, and their presence series.
+
+    🔴 P3, 2026-09-23 (additive). `pool_path` is a NEW, OPTIONAL parameter. Left
+    at its default (`None`) the function is byte-identical to before: it builds
+    the same hard-coded generated-diary path it always did. Only a caller that
+    passes an explicit `pool_path` gets a different diary source, and only then
+    does the Step 8 dwelling-identity check (`_assert_same_dwellings`) get
+    skipped -- that check compares against Step 8's SHIPPED presence schedules,
+    which were themselves built from the DEFAULT generated pool, so a real or
+    raked-donor pool is EXPECTED to diverge from them. Skipping is reported on
+    stdout, never silent.
+    """
     s7 = _import_step7(os.path.join(root, "tools"))
     step2 = os.path.join(root, "Step2_docs", "outputs_step2")
     bitpos = s7.load_bit_positions(os.path.join(step2, "crosswalk_copresence.csv"))
-    pool_path = os.path.join(root, "Step7_docs", "outputs_step7",
-                             "generated_%s_%s_constrained.jsonl" % (leg, fold))
+    default_pool_path = os.path.join(root, "Step7_docs", "outputs_step7",
+                                     "generated_%s_%s_constrained.jsonl" % (leg, fold))
+    is_default_pool = (pool_path is None or
+                       os.path.abspath(pool_path) == os.path.abspath(default_pool_path))
+    pool_path = pool_path or default_pool_path
     pools, pool_meta = s7.load_pool(pool_path, step2, bitpos)
     cal = s7.year_day_types(year)
     rng = random.Random(seed)
@@ -545,11 +559,24 @@ def build_dwellings(root, fold, leg, year, seed, n_households, timestep_min,
         out.append({"hid": hid, "members": member_days, "presence": series,
                     "n_members": len(members)})
 
-    if verify_against_step8:
+    if not is_default_pool:
+        # ADDITIVE ONLY: these keys are added to `pool_meta` (and so land in
+        # `step9_manifest_<fold>.json`) only for a non-default pool, so a
+        # default run's manifest is untouched.
+        pool_meta["pool_is_default_generated"] = False
+        pool_meta["backoff_tally"] = dict(backoff)
+
+    if verify_against_step8 and is_default_pool:
         shipped_dir = os.path.join(
             root, "Step7_docs", "outputs_step7", "schedules",
             "%s_%s_independent_seed1" % (leg, fold))
         _assert_same_dwellings(shipped_dir, fold, out)
+    elif verify_against_step8 and not is_default_pool:
+        print("NOTE: --pool overrides the default generated diary source "
+             "(%s); the Step 8 dwelling-identity check is skipped -- a "
+             "different diary source is EXPECTED to diverge from Step 8's "
+             "shipped presence schedules, which were built from the default "
+             "pool." % pool_path)
     return out, pool_meta, s7
 
 
@@ -936,11 +963,18 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
              collapse_dhw_events=False, extra_runtime_columns=(),
              force_two_digit_mapping=False, zero_load_share=0.0,
              verify_against_step8=True, map_path=None, calibration_passes=6,
-             rotate_origin=True):
+             rotate_origin=True, pool_path=None):
     """One fold, end to end. Every keyword after `dhw_l_per_day` exists ONLY so
     the registered perturbation battery has something to perturb; all of them
     default to the correct behaviour and any non-default is stamped into the
-    manifest so a perturbed run can never be mistaken for a campaign run."""
+    manifest so a perturbed run can never be mistaken for a campaign run.
+
+    `pool_path` (P3, 2026-09-23, additive): `None` keeps today's behaviour
+    (the hard-coded Step 7 generated-diary path). Any other value swaps ONLY
+    the diary source that `build_dwellings` reads; households, calendar, seed
+    rule, trigger probabilities, appliance parameters and the aggregation
+    below are untouched.
+    """
     if map_path is None:
         map_path = os.path.join(root, "Step9_docs", "outputs_step9",
                                 "activity_appliance_map.csv")
@@ -952,7 +986,7 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
 
     dwellings, pool_meta, _s7 = build_dwellings(
         root, fold, leg, year, seed, n_households, timestep_min,
-        verify_against_step8=verify_against_step8)
+        verify_against_step8=verify_against_step8, pool_path=pool_path)
     n_days = len(dwellings[0]["members"][0])
 
     own_rng = random.Random(seed * 7919 + 13)
@@ -1262,6 +1296,16 @@ def main(argv=None):
     ap.add_argument("--households", type=int, default=100)
     ap.add_argument("--timestep", type=int, default=60)
     ap.add_argument("--out", default=None)
+    ap.add_argument("--pool", default=None,
+                    help="P3, 2026-09-23 (additive). Path to a jsonl pool "
+                         "in the same record format `s7.load_pool` reads "
+                         "(one JSON object per line with a `text` field). "
+                         "Default (omitted) is today's behaviour: the "
+                         "hard-coded Step 7 generated diary batch for this "
+                         "leg/fold. Any other path swaps ONLY the diary "
+                         "source -- households, calendar, seed rule, trigger "
+                         "probabilities and appliance parameters are "
+                         "unaffected.")
     ap.add_argument("--dhw-l-per-day", type=float, default=200.0,
                     help="Jordan & Vajen's single-family-house reference. NOT "
                          "scaled by household size: that scaling is not in the "
@@ -1269,7 +1313,8 @@ def main(argv=None):
     args = ap.parse_args(argv)
     out = args.out or os.path.join(args.root, "Step9_docs", "outputs_step9")
     m = run_fold(args.root, args.fold, args.leg, args.year, args.seed,
-                 args.households, args.timestep, out, args.dhw_l_per_day)
+                 args.households, args.timestep, out, args.dhw_l_per_day,
+                 pool_path=args.pool)
     print("fold                       %s" % m["fold"])
     print("dwellings / people         %d / %d" % (m["n_dwellings"], m["n_people"]))
     print("electricity kWh/dwelling.y %.1f" % m["stock_elec_kwh_per_dwelling_year"])

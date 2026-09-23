@@ -1,3 +1,42 @@
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+298) — SUPERSEDES last+297 BELOW
+
+State (read the docs, not this summary, before acting):
+- REWRITE DONE and vetted: `writing/submission/4J_manuscript_submission.md` (~7,200 prose words, abstract 248; log in
+  `writing/submission/IMP/impl/P2_P13_rewrite_brief.md`, 7 open questions for the author there). SI, highlights
+  (5 bullets <= 85 chars), limitations checklist done. Archives in `writing/submission/previous/`.
+- APPENDIX B MERGED and vetted: 44 equations (B.1)-(B.44), each defined once, every in-text reference resolves and
+  points to the right subsection; 124-row Nomenclature; no "author to open" source printed (3 equations uncited:
+  B.21, B.27, B.28). Archive `previous/4J_manuscript_submission.md.pre_appB_20260923`.
+- FIGURES fixed (UK labels, no in-image titles, appliance figure = 3 panels x 3 sources). Main text: Figures 1-3
+  (1 = old pipeline picture, author item 7b); SI: Figures S1-S4. Copies in `writing/submission/EB_upload/`
+  (Figure_1.png, Figure_2.pdf, Figure_3.pdf, highlights and cover letter .docx).
+- P9 SECOND PASS DONE: all 116 numbers match; one "British" fixed in SI; log in the rewrite brief. Figure S3 now cited in 3.5.
+  Test docx build passes (100 display equations as Word math, no raw LaTeX); SI docx built (`writing/submission/4J_supplementary_material.docx`; the build script is manuscript-only, so SI used the same pandoc flags + layout script by hand).
+- P5 RUNNING on Speed (job 1342918, 1 CPU, started ~09:10, ~5-6 h). Then: scp
+  `/speed-scratch/o_iseri/4J_P5_docs_occ/Step6_docs/outputs_step6/P5_table3_bootstrap.json` to local
+  `Step6_docs/outputs_step6/`, record in `IMP/impl/P5_intervals_table3.md`, fill the `[P5]` markers (Table 2 rows +
+  Section 2.6 sentence; watch UK 65+, margin -2.70).
+- Figure S3 citation in 3.5: DONE.
+- Board db v16. Author list: `writing/submission/IMP/impl/AUTHOR_TODO_4J.md` (cover-letter date + reviewers too).
+Next: [P5] fill (job 1342918 on Speed, 1 CPU, started ~2026-09-23 midday, ~5-6 h; if this session is gone: `squeue -j 1342918`, then scp `/speed-scratch/o_iseri/4J_P5_docs_occ/Step6_docs/outputs_step6/P5_table3_bootstrap.json` to local `Step6_docs/outputs_step6/`, fill Table 2 rows + the §2.6 "[P5]" sentence, archive first) -> final manuscript docx build (`bash tools/4thJ_build_submission_docx.sh`, check both PATCH lines) + copy to EB_upload -> board db + RESUME + memory.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+297) — SUPERSEDES last+296 BELOW
+
+State (read the docs, not this summary, before acting):
+- P10 DONE (label order confirmed). P9 number sheet DONE (`writing/submission/IMP/prep/results_number_sheet.md`: 8 mismatches to fix at rewrite).
+- P3 DONE: `writing/submission/IMP/impl/P3_appliance_real_and_donor.md` last entry. Job completed; outputs in
+  `Step9_docs/outputs_step9_P3/`. Real diaries peak UK 18:00 < Italy 19:00 < Spain 21:00, generated order differs
+  -> decision rule branch 2, timing claim NARROWS. Strict reproduction check failed on one 0.001 rounding cell
+  (Windows vs Linux); stock series byte-identical, so reproduction of the reported quantity holds (recorded).
+- P5 RUNNING on Speed (job 1342918, 1 CPU, ~5-6 h); read-back commands in `IMP/impl/P5_intervals_table3.md`.
+- REWRITE RUNNING: one writing agent on `writing/submission/IMP/impl/P2_P13_rewrite_brief.md` (its Execution log
+  is the state; if empty, the agent did not finish -- check the archive copies in `writing/submission/previous/*.pre_rewrite_20260923`).
+- Board db at version 10. All compute Speed only, sbatch, 32-CPU cap shared with 1J/3J.
+Also running (2026-09-23): Appendix B equations agent -> `writing/submission/IMP/prep/appendixB_equations_draft.md`; package agent -> `4J_cover_letter.md`, `IMP/prep/graphical_abstract_prompt.md`, `IMP/impl/P14_package_checklist.md`, `IMP/prep/external_audit_prompt.md`. Author list: `writing/submission/IMP/impl/AUTHOR_TODO_4J.md`. Build now adds double spacing + line numbers (`tools/4thJ_docx_eb_layout.py`, tested). Board page republished (v3).
+Next: when the rewrite log is filled -> fill [P5] markers when P5 ends -> Appendix B equations -> P9 second pass -> docx build -> board republish (s1 text says 9-10k words; fix to 7,500).
+
+---
 # START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+296) — SUPERSEDES last+295 BELOW
 
 The author answered D1-D6 on 2026-09-23 (final; the withdrawn 2026-09-22 answers do not matter any
@@ -22,6 +61,10 @@ Its job id and results land in that doc's "Execution log"; if empty, the agent d
 
 Improvement board (new, 2026-09-23): https://claude.ai/artifact/SJX4RXb7CneNRARitNnHez -- update db doc
 `board/progress` after every step (ArtifactData); page source `writing/submission/IMP/board/4J_improvement_board.html`.
+
+2026-09-23 later: E&B guide read (`writing/submission/IMP/impl/P14_journal_guide_EandB_2026-09-23.md`); author changed D5
+to about 7,500 words. Gemini prompts written: `DeepResearchPrompts/L34_equation_sources.md`, `L35_literature_and_competitors.md`,
+`L36_measured_residential_load_profiles.md`; author runs them, returns saved as RL34/RL35/RL36 in the same folder, vet before use.
 
 Next: read P3 execution log.
 

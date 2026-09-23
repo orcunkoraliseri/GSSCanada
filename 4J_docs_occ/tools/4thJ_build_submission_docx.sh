@@ -178,6 +178,16 @@ TMP_DOCX="$TMP_BUILD_DIR/out.docx"
   "$(basename "$TMP_MD")" \
   -o "$TMP_DOCX" )
 
+# Energy and Buildings layout (2026-09-23): double-spaced body text + continuous line numbers.
+# Set EB_LAYOUT=0 to skip. The patch prints its own counts and exits 1 if a patch did not apply.
+if [ "${EB_LAYOUT:-1}" = "1" ]; then
+  py -3 "$SCRIPT_DIR/4thJ_docx_eb_layout.py" "$TMP_DOCX" "$TMP_BUILD_DIR/out_eb.docx"
+  mv "$TMP_DOCX" "$TMP_BUILD_DIR/out_plain.docx"
+  cp "$TMP_BUILD_DIR/out_eb.docx" "$TMP_DOCX"
+else
+  echo "EB_LAYOUT=0: layout patch skipped."
+fi
+
 cp "$TMP_DOCX" "$DOCX_OUT"
 echo "Built -> $DOCX_OUT"
 

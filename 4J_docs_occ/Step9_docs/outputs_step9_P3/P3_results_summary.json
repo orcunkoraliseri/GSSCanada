@@ -1,0 +1,133 @@
+{
+  "controls": {
+    "C_a_hash_ok": false,
+    "C_a_overall": false,
+    "C_a_peak_matches_actual_shipped": true,
+    "C_b_overall": true,
+    "C_c_overall": true
+  },
+  "results": {
+    "es|generated": {
+      "enduse_md5": "734daae1a7962ecddeec246b863d2325",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/es/enduse_by_dwelling_es.csv",
+      "fold": "es",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/es/step9_manifest_es.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/es",
+      "peak_hour": 14.0,
+      "peak_w": 502.8777,
+      "source": "generated",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/es/stock_series_es.csv"
+    },
+    "es|raked": {
+      "enduse_md5": "3e024b5fa8cb020a85f3e366e3677c5d",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/es/enduse_by_dwelling_es.csv",
+      "fold": "es",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/es/step9_manifest_es.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/es",
+      "peak_hour": 19.0,
+      "peak_w": 408.5174,
+      "source": "raked",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/es/stock_series_es.csv"
+    },
+    "es|real": {
+      "enduse_md5": "5fcc6974335e81ecf2a5629750db8dd5",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/es/enduse_by_dwelling_es.csv",
+      "fold": "es",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/es/step9_manifest_es.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/es",
+      "peak_hour": 21.0,
+      "peak_w": 421.5313,
+      "source": "real",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/es/stock_series_es.csv"
+    },
+    "it|generated": {
+      "enduse_md5": "0450a0acaeda61b90ce04240df0e77af",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/it/enduse_by_dwelling_it.csv",
+      "fold": "it",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/it/step9_manifest_it.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/it",
+      "peak_hour": 18.0,
+      "peak_w": 403.5225,
+      "source": "generated",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/it/stock_series_it.csv"
+    },
+    "it|raked": {
+      "enduse_md5": "7a17aa8e10bb9dc78deddc742b794a1a",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/it/enduse_by_dwelling_it.csv",
+      "fold": "it",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/it/step9_manifest_it.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/it",
+      "peak_hour": 21.0,
+      "peak_w": 396.4598,
+      "source": "raked",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/it/stock_series_it.csv"
+    },
+    "it|real": {
+      "enduse_md5": "04ee5b56236d5bac4c21fe357c1bf91b",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/it/enduse_by_dwelling_it.csv",
+      "fold": "it",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/it/step9_manifest_it.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/it",
+      "peak_hour": 19.0,
+      "peak_w": 444.3654,
+      "source": "real",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/it/stock_series_it.csv"
+    },
+    "uk|generated": {
+      "enduse_md5": "c1b0b4d981194f9e635edf30a3abb7eb",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/uk/enduse_by_dwelling_uk.csv",
+      "fold": "uk",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/uk/step9_manifest_uk.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/uk",
+      "peak_hour": 20.0,
+      "peak_w": 416.1349,
+      "source": "generated",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/generated/uk/stock_series_uk.csv"
+    },
+    "uk|raked": {
+      "enduse_md5": "01f30939a0fdf9f709033552a70de5e8",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/uk/enduse_by_dwelling_uk.csv",
+      "fold": "uk",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/uk/step9_manifest_uk.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/uk",
+      "peak_hour": 21.0,
+      "peak_w": 425.949,
+      "source": "raked",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/raked/uk/stock_series_uk.csv"
+    },
+    "uk|real": {
+      "enduse_md5": "6f93172454a4f46acd9a8718b7854078",
+      "enduse_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/uk/enduse_by_dwelling_uk.csv",
+      "fold": "uk",
+      "is_campaign_run": true,
+      "manifest_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/uk/step9_manifest_uk.json",
+      "n_dwellings": 100,
+      "out_dir": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/uk",
+      "peak_hour": 18.0,
+      "peak_w": 427.1664,
+      "source": "real",
+      "stock_path": "/speed-scratch/o_iseri/4J_P3_docs_occ/Step9_docs/outputs_step9_P3/real/uk/stock_series_uk.csv"
+    }
+  },
+  "table7_manuscript_vs_actual_mismatch": {
+    "actual_shipped_es_14h_w": 502.8777,
+    "manuscript_es_14h_w": 518,
+    "note": "pre-existing, not caused by P3, not corrected here"
+  }
+}
