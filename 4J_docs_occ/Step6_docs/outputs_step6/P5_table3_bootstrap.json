@@ -1,0 +1,324 @@
+{
+  "controls": {
+    "C1": {
+      "messages": [],
+      "passes": true
+    },
+    "C2": {
+      "band": "Y_GE65",
+      "ci_hi": 1.6618026810930562,
+      "ci_lo": -1.5251667053341702,
+      "fold": "uk",
+      "n_bootstrap_used": 2000,
+      "n_nonconverged": 0,
+      "passes": true
+    },
+    "C3": {
+      "messages": [],
+      "passes": true
+    }
+  },
+  "elapsed_sec": 30938.6,
+  "folds": {
+    "es": {
+      "Y25-44": {
+        "ci_hi": -23.77956865824563,
+        "ci_lo": -30.014978482855568,
+        "kish_ess0": 7411.035192420393,
+        "margin0": -26.878394854564895,
+        "model_mae0": 36.813196691837454,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "it": 10431,
+          "uk": 4567
+        },
+        "n_model": 1854,
+        "n_nonconverged": 0,
+        "null_mae0": 9.934801837272557
+      },
+      "Y45-64": {
+        "ci_hi": -21.772705048139873,
+        "ci_lo": -29.70217419293978,
+        "kish_ess0": 9165.368552046912,
+        "margin0": -25.694367630121498,
+        "model_mae0": 34.5181758096497,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "it": 12543,
+          "uk": 5027
+        },
+        "n_model": 1513,
+        "n_nonconverged": 0,
+        "null_mae0": 8.8238081795282
+      },
+      "Y_GE65": {
+        "ci_hi": -26.958116559589612,
+        "ci_lo": -37.84305116464895,
+        "kish_ess0": 7214.8280301773,
+        "margin0": -32.50680889161227,
+        "model_mae0": 44.32038834951455,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "it": 9581,
+          "uk": 3356
+        },
+        "n_model": 1030,
+        "n_nonconverged": 0,
+        "null_mae0": 11.813579457902279
+      }
+    },
+    "it": {
+      "Y25-44": {
+        "ci_hi": -39.20666878866229,
+        "ci_lo": -46.87359648533084,
+        "kish_ess0": 8502.20806657225,
+        "margin0": -42.73384385929165,
+        "model_mae0": 62.24145164673799,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "es": 6075,
+          "uk": 4567
+        },
+        "n_model": 1589,
+        "n_nonconverged": 0,
+        "null_mae0": 19.507607787446343
+      },
+      "Y45-64": {
+        "ci_hi": -17.56976568773126,
+        "ci_lo": -23.236830083151606,
+        "kish_ess0": 8488.60079274097,
+        "margin0": -20.094266185731207,
+        "model_mae0": 33.94649177597336,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "es": 6460,
+          "uk": 5027
+        },
+        "n_model": 1601,
+        "n_nonconverged": 0,
+        "null_mae0": 13.852225590242151
+      },
+      "Y_GE65": {
+        "ci_hi": -16.37001141842423,
+        "ci_lo": -24.23795399968778,
+        "kish_ess0": 5635.240779991309,
+        "margin0": -20.335046063728832,
+        "model_mae0": 35.84205505587354,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "es": 4036,
+          "uk": 3356
+        },
+        "n_model": 1223,
+        "n_nonconverged": 0,
+        "null_mae0": 15.507008992144705
+      }
+    },
+    "uk": {
+      "Y25-44": {
+        "ci_hi": -33.44290876836797,
+        "ci_lo": -40.76625202371777,
+        "kish_ess0": 9833.883435002568,
+        "margin0": -37.113045196085324,
+        "model_mae0": 58.90464447184547,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "es": 6075,
+          "it": 10431
+        },
+        "n_model": 1622,
+        "n_nonconverged": 0,
+        "null_mae0": 21.79159927576015
+      },
+      "Y45-64": {
+        "ci_hi": -38.02205902362752,
+        "ci_lo": -44.352701406619644,
+        "kish_ess0": 11669.400211821918,
+        "margin0": -41.231275023307674,
+        "model_mae0": 60.44408602150537,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "es": 6460,
+          "it": 12543
+        },
+        "n_model": 1550,
+        "n_nonconverged": 0,
+        "null_mae0": 19.2128109981977
+      },
+      "Y_GE65": {
+        "ci_hi": 0.39078651767288236,
+        "ci_lo": -6.174605041817548,
+        "kish_ess0": 8779.553641370194,
+        "margin0": -2.6979856003616085,
+        "model_mae0": 21.2357071213641,
+        "n_bootstrap_used": 2000,
+        "n_donor_by_country": {
+          "es": 4036,
+          "it": 9581
+        },
+        "n_model": 997,
+        "n_nonconverged": 0,
+        "null_mae0": 18.537721521002492
+      }
+    }
+  },
+  "leg": 5,
+  "num_reps": 2000,
+  "seed_prefix": "p5",
+  "table3_rows": [
+    {
+      "band": "Y25-44",
+      "ci_hi": -23.77956865824563,
+      "ci_lo": -30.014978482855568,
+      "fold": "es",
+      "kish_ess0": 7411.035192420393,
+      "margin0": -26.878394854564895,
+      "model_mae0": 36.813196691837454,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "it": 10431,
+        "uk": 4567
+      },
+      "n_model": 1854,
+      "n_nonconverged": 0,
+      "null_mae0": 9.934801837272557
+    },
+    {
+      "band": "Y45-64",
+      "ci_hi": -21.772705048139873,
+      "ci_lo": -29.70217419293978,
+      "fold": "es",
+      "kish_ess0": 9165.368552046912,
+      "margin0": -25.694367630121498,
+      "model_mae0": 34.5181758096497,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "it": 12543,
+        "uk": 5027
+      },
+      "n_model": 1513,
+      "n_nonconverged": 0,
+      "null_mae0": 8.8238081795282
+    },
+    {
+      "band": "Y_GE65",
+      "ci_hi": -26.958116559589612,
+      "ci_lo": -37.84305116464895,
+      "fold": "es",
+      "kish_ess0": 7214.8280301773,
+      "margin0": -32.50680889161227,
+      "model_mae0": 44.32038834951455,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "it": 9581,
+        "uk": 3356
+      },
+      "n_model": 1030,
+      "n_nonconverged": 0,
+      "null_mae0": 11.813579457902279
+    },
+    {
+      "band": "Y25-44",
+      "ci_hi": -33.44290876836797,
+      "ci_lo": -40.76625202371777,
+      "fold": "uk",
+      "kish_ess0": 9833.883435002568,
+      "margin0": -37.113045196085324,
+      "model_mae0": 58.90464447184547,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "es": 6075,
+        "it": 10431
+      },
+      "n_model": 1622,
+      "n_nonconverged": 0,
+      "null_mae0": 21.79159927576015
+    },
+    {
+      "band": "Y45-64",
+      "ci_hi": -38.02205902362752,
+      "ci_lo": -44.352701406619644,
+      "fold": "uk",
+      "kish_ess0": 11669.400211821918,
+      "margin0": -41.231275023307674,
+      "model_mae0": 60.44408602150537,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "es": 6460,
+        "it": 12543
+      },
+      "n_model": 1550,
+      "n_nonconverged": 0,
+      "null_mae0": 19.2128109981977
+    },
+    {
+      "band": "Y_GE65",
+      "ci_hi": 0.39078651767288236,
+      "ci_lo": -6.174605041817548,
+      "fold": "uk",
+      "kish_ess0": 8779.553641370194,
+      "margin0": -2.6979856003616085,
+      "model_mae0": 21.2357071213641,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "es": 4036,
+        "it": 9581
+      },
+      "n_model": 997,
+      "n_nonconverged": 0,
+      "null_mae0": 18.537721521002492
+    },
+    {
+      "band": "Y25-44",
+      "ci_hi": -39.20666878866229,
+      "ci_lo": -46.87359648533084,
+      "fold": "it",
+      "kish_ess0": 8502.20806657225,
+      "margin0": -42.73384385929165,
+      "model_mae0": 62.24145164673799,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "es": 6075,
+        "uk": 4567
+      },
+      "n_model": 1589,
+      "n_nonconverged": 0,
+      "null_mae0": 19.507607787446343
+    },
+    {
+      "band": "Y45-64",
+      "ci_hi": -17.56976568773126,
+      "ci_lo": -23.236830083151606,
+      "fold": "it",
+      "kish_ess0": 8488.60079274097,
+      "margin0": -20.094266185731207,
+      "model_mae0": 33.94649177597336,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "es": 6460,
+        "uk": 5027
+      },
+      "n_model": 1601,
+      "n_nonconverged": 0,
+      "null_mae0": 13.852225590242151
+    },
+    {
+      "band": "Y_GE65",
+      "ci_hi": -16.37001141842423,
+      "ci_lo": -24.23795399968778,
+      "fold": "it",
+      "kish_ess0": 5635.240779991309,
+      "margin0": -20.335046063728832,
+      "model_mae0": 35.84205505587354,
+      "n_bootstrap_used": 2000,
+      "n_donor_by_country": {
+        "es": 4036,
+        "uk": 3356
+      },
+      "n_model": 1223,
+      "n_nonconverged": 0,
+      "null_mae0": 15.507008992144705
+    }
+  ],
+  "wave": "2010"
+}

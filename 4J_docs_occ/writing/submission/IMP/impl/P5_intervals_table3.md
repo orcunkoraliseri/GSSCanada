@@ -1,6 +1,16 @@
 # P5 — 95 % intervals and sample sizes for Table 3 (2026-09-23)
 
-**Status:** design written (manager); execution delegated. Author approved compute under D3/D1 ("continue
+**Status:** DONE 2026-09-23 (manager). Job 1342918 exit 0:0; JSON scp'd to
+`Step6_docs/outputs_step6/P5_table3_bootstrap.json` (8,429 B, md5 3e23ec745401d18dc870786940bae772).
+Controls C1/C2/C3 all `passes: true`; 2,000 replicates, 0 non-converged in all nine cells; elapsed 30,939 s.
+Intervals (lo to hi, min/day): es 25-44 -30.0 to -23.8; es 45-64 -29.7 to -21.8; es 65+ -37.8 to -27.0;
+uk 25-44 -40.8 to -33.4; uk 45-64 -44.4 to -38.0; uk 65+ -6.2 to 0.4 (INCLUDES ZERO); it 25-44 -46.9 to -39.2;
+it 45-64 -23.2 to -17.6; it 65+ -24.2 to -16.4. Point margins match Table 2 (margin0; uk 65+ -2.698).
+Filled in manuscript Table 2 + §2.6 (marker removed, "2,000 replicates", "converged in every replicate") +
+§3.1 (eight intervals below zero; UK 65+ includes zero, "cannot be separated"; "on the point estimates").
+Abstract and conclusion "all nine" kept: the registered verdict uses the point estimate.
+Backup: `writing/submission/previous/4J_manuscript_submission.md.pre_P5fill_20260923`.
+(Original status: design written (manager); execution delegated.) Author approved compute under D3/D1 ("continue
 till the end", 2026-09-23). Speed only, sbatch only, within the shared 32-CPU cap, never `histnu`.
 
 ## Aim

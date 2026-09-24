@@ -1,7 +1,7 @@
 # RESUME - THE 3J director prompt. Start every session here.
 
-**Last updated: 2026-09-23 (late evening), "P10R jobs CANCELLED by the author; restart when Speed CPUs are free" round.**
-Predecessor: `archive/RESUME.2026-09-23_pre_cancel.md` (older: `archive/RESUME.2026-09-23_pre_hold_return.md`, `archive/RESUME.2026-09-23_pre_speed_wait.md`).
+**Last updated: 2026-09-23 (evening), "P10R test fixed, resubmitted, HELD at the 32-CPU cap; author away" round.**
+Predecessor: `archive/RESUME.2026-09-23_pre_hold_return.md` (older: `archive/RESUME.2026-09-23_pre_speed_wait.md`).
 
 > 🔴 **CANCELLED 2026-09-23 (evening), by the author: P10R test 1346544 and array 1346545 are CANCELLED** (verified with `sacct`; nothing of
 > ours left in the queue under `3J_P10R`). The author will return when Speed CPUs are free. To restart: run `p10r_submit.sh`
@@ -44,10 +44,7 @@ Predecessor: `archive/RESUME.2026-09-23_pre_cancel.md` (older: `archive/RESUME.2
 > - V3c fair code control **1342434** (4 tasks, 1 done). Details: `IMP/V3_design_and_runs.md`, `IMP/V3c_fair_control.md`.
 >
 > **First actions on return, in order (rewritten 2026-09-23, author away):**
-> 0. **NO P10R JOBS ARE LIVE (1346544 and 1346545 were CANCELLED, see the box above).** First action on return: sum the CPUS of
->    `squeue -u o_iseri -t R` excluding `histnu`; if it is 31 or less, resubmit with `p10r_submit.sh` (test cell first), else wait.
->    The text below about 1346544/1346545 is the history of the held state; use the new job IDs after resubmitting.
->    (old) test cell 1346544 (HELD) + array 1346545 (waits on it). Old IDs 1342535/1342536 are dead.
+> 0. **CURRENT JOBS = test cell 1346544 (HELD) + array 1346545 (waits on it).** Old IDs 1342535/1342536 are dead.
 >    `sacct -j 1346544,1346545 -X`, then sum the CPUS of `squeue -u o_iseri -t R` EXCLUDING `histnu`.
 >    If that sum is <= 31: `scontrol release 1346544` (ssh, no python on login). If 32, leave it held and
 >    re-check later; never pass 32 (author, 2026-09-23). When the test finishes, `sacct` it; ok cell = manifest

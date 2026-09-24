@@ -1,4 +1,162 @@
-# START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+298) — SUPERSEDES last+297 BELOW
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+302) — SUPERSEDES last+301 BELOW
+
+State:
+- AUTHOR RAN GEMINI_04 (report pasted 2026-09-24). MANAGER RE-CHECK with own harness
+  (scratchpad `recheck_g04.py`: runs each script in-process with file writes disabled):
+  - Embedded clash check: 0 problems on BOTH current scripts. SEEN FAILING on the real function (not Gemini's scratch
+    copy): putting back the old hour axis (72-98, "h:00") gives 9 hits incl. "22:00" outside canvas; old UK tile gives
+    padding -2.15 pt; "3.9" back on the dot gives 2 marker hits. Old scripts were untracked with no backup, so this
+    mutation test replaces a true before-run.
+  - PNGs on disk are byte-identical to a fresh render of the current scripts (GA md5 bb12bcde..., 3072 x 1230 px;
+    Figure 1 md5 b9d57496..., 7500 x 4500 px).
+  - GEMINI_03 items still hold: fonts 7.1/7.3 pt and 10 pt, IT + UK reweighted at 21 (ES 19), solid line, 9 dot ratios
+    unchanged, marker hours per GEMINI_04 item C, each method box has its own arrow to "Scored". Nothing under the UK
+    tile (bus ends x 16.8, UK tile starts 18.0).
+  - FIGURE 1: PASS, viewed. Row-3 boxes padded, arrows unchanged.
+  - GRAPHICAL ABSTRACT: 3 defects left. The embedded check is BLIND to text vs lines and to edge margins (gap found by
+    the manager's extra line check):
+    - "1.1" label sits on the reference line at 1.
+    - Right title 0.9 pt and centre title 1.6 pt from the top edge.
+    - Right title and subtitle 0.57 pt apart, both bold, so they read as one 4-line title.
+- WRITTEN: `writing/submission/Gemini_prompts/GEMINI_05_graphical_abstract_last_touches.md`. Step 0 widens the check
+  (text vs lines/arrows, 2 pt edge margin) and must flag those three first. Then fixes A-C.
+- ITEM 3 DONE FOR FIGURE 1:
+  - docx rebuilt (`bash tools/4thJ_build_submission_docx.sh`, run from `4J_docs_occ/`). Both PATCH lines printed
+    (double-spacing 4, line numbers 1). D1 superscript PASS. 3 captions, 0 pandoc captions.
+  - Embedded Figure 1 md5 = b9d57496... = the new picture. Caption and AI declaration lines checked inside the docx.
+  - Copied to `EB_upload/`: Figure_1.png (new), Figure_1.pdf (new file), 4J_manuscript_submission.docx (md5 2636044b...).
+  - Backups: `previous/EB_upload_Figure_1.pre_fig1_20260924.png`,
+    `previous/EB_upload_4J_manuscript_submission.pre_fig1_20260924.docx`, and the build's own
+    `previous/4J_manuscript_submission.pre_build_2026-09-24_073509.docx`.
+  - Graphical abstract NOT copied to EB_upload yet (waits for GEMINI_05). It is a separate upload, not in the docx, so
+    no rebuild is needed after GEMINI_05.
+
+FULL ORDERED TO-DO (2026-09-24, last+302):
+1. WAITING ON AUTHOR: run GEMINI_05 in Gemini (Antigravity, inside the repo) and paste its report back.
+2. MANAGER: re-run the scratchpad-style harness (or rebuild it: exec the script with savefig/copyfile disabled). Check:
+   - the widened check flagged "1.1"/line and both titles on the current script (else blind), and now ends at 0;
+   - the manager's own text-vs-line check also gives 0 hits;
+   - all items listed above still hold;
+   - view the PNG.
+   Any failure goes into GEMINI_06 with only the failed items.
+3. MANAGER: copy `figures/4J_graphical_abstract.png` to `EB_upload/Graphical_abstract.png` (check md5). Update the board
+   db (board/progress), AUTHOR_TODO items 5 and 7b, and memory.
+4-7. Unchanged: items 5-8 of the last+300 list below (second-model outside review with citations; author jobs;
+   optional UK Low Carbon London job; final read and submit).
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+301) — SUPERSEDED by last+302 above
+
+State:
+- AUTHOR RAN GEMINI_03 (report pasted 2026-09-24). MANAGER RE-CHECK (scripts read + PNGs viewed, not the report):
+  all four asked fixes PASS. Figure 1: canvas 7.5 x 4.5 in, every font 10 pt (7.35 pt at 14 cm), 1000 dpi, arrows match
+  `figures/Prompts_Images/4thJ_figure01_workflow_three_rows.md` lines 54-83. Graphical abstract: 5.12 x 2.05 in, fonts
+  7.1/7.3 pt, PNG 3072 px wide, model and real-diary boxes each with own arrow to "Scored", none between; IT and UK
+  reweighted both hour_to_x(21.0), ES 19; reference line ls="-"; dot ratios incl. 1.15 and 3.91 match
+  `IMP/prep/results_number_sheet.md:80`.
+- NEW CLASHES from the smaller canvas (graphical abstract NOT submittable): hour labels 12:00-22:00 overlap and 22:00 is
+  cut off; subtitle hits the UK/IT/ES labels; row names run over row lines; "reweighted real diaries" label covers a Spain
+  dot; axis title crosses the divider; "(held out)" touches its tile border; right drop arrow sits under the UK tile
+  (reads as UK feeding the real-diary box). Figure 1: row-3 middle box text almost touches box edges (no padding).
+- WRITTEN: `writing/submission/Gemini_prompts/GEMINI_04_fix_graphical_abstract_layout.md` (items A-H + an automatic
+  clash check that must first be seen flagging the current hour-label overlap, then end at 0 problems).
+- ITEM 3 DONE (2026-09-24, same session): manuscript line 47 now `figures/HETUS_LLM_Workflow_Figure1.png`; caption
+  adds "Plotting code drafted with Gemini (Google), checked and edited by the author."; AI declaration (line 753) adds
+  "and to draft the plotting code for Figure 1 and the graphical abstract". Backup
+  `writing/submission/previous/4J_manuscript_submission.md.pre_fig1install_20260924` (863 lines). GEMINI_04 overwrites
+  the same PNG path, so no manuscript edit is needed after it. The docx build script has no figure-path patch (grep).
+  AUTHOR_TODO item 7b updated. Board db board/progress v20 logged.
+- NOT DONE ON PURPOSE: docx rebuild and EB_upload copy (item 4) wait for GEMINI_04, since both pictures still change.
+  Manager does not draw or edit the figure scripts itself (never-create-images rule).
+
+FULL ORDERED TO-DO (2026-09-24, last+301):
+1. WAITING ON AUTHOR: run `writing/submission/Gemini_prompts/GEMINI_04_fix_graphical_abstract_layout.md` in Gemini
+   (Antigravity, inside the repo) and paste its report back.
+2. MANAGER, on the report: re-read both scripts (do not trust the report). Check the Step 0 clash output on the OLD
+   scripts really flagged the hour-label overlap (else the check is blind); the new output ends 0 problems for both.
+   Re-confirm GEMINI_03 items still hold: canvases 7.5 x 4.5 / 5.12 x 2.05 in, fonts >= 10 pt / >= 7 pt, GA PNG
+   >= 1328 px, parallel arrows with none between the boxes, IT + UK reweighted at 21 (ES 19), solid line, 9 dot
+   ratios unchanged (1.15 ... 3.91), marker hours per GEMINI_04 item C. New: no line under the UK tile. View both PNGs.
+   Any failure -> GEMINI_05 with only the failed items.
+3. MANAGER, when both pass: rebuild docx (`bash tools/4thJ_build_submission_docx.sh`), confirm both PATCH lines print
+   and Figure 1 in the docx is the new picture; copy Figure 1 (PNG + PDF) and the graphical abstract PNG to
+   `EB_upload/`. Update board db (board/progress) and AUTHOR_TODO items 5 and 7b.
+4-7. Unchanged: items 5-8 of the last+300 list below (second-model outside review with citations; author jobs;
+   optional UK Low Carbon London job; final read and submit).
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+300) — SUPERSEDED by last+301 above
+
+State (read the docs, not this summary, before acting):
+- GEMINI PROMPTS (paste-ready, prompt text only) in `writing/submission/Gemini_prompts/`: `GEMINI_01_figure1_workflow.md`,
+  `GEMINI_02_outside_review.md`, and NEW `GEMINI_03_fix_figure1_and_graphical_abstract.md` (fix round, author runs it).
+- AUTHOR RAN GEMINI (Antigravity, inside the repo). It drew BOTH pictures with matplotlib scripts it wrote:
+  Figure 1 = `figures/scripts/generate_fig01_workflow.py` -> `figures/HETUS_LLM_Workflow_Figure1.png/.pdf` (also copies in
+  `figures/Prompts_Images/` and `Gemini_prompts/`, plus raw Gemini render `..._gemini_raw.jpg`); graphical abstract =
+  `tools/generate_4J_graphical_abstract_eb.py` -> `Gemini_prompts/GEMINI_02_graphical_abstract.png/.pdf` + `figures/4J_graphical_abstract.png`.
+- MANAGER CHECK of the pictures: Figure 1 labels, numbers and arrows all correct. Graphical abstract: all 9 dot positions and the
+  real/generated peak hours correct. NOT SUBMITTABLE YET, both: text far too small at print size (20-inch canvases, 8.5-14 pt ->
+  about 2.5-4.5 pt printed; rule is >= 7 pt). Graphical abstract also: left panel runs model -> reweighting in SERIES (must be
+  parallel); Italy/UK reweighted peaks nudged to 20.85/21.15 (must both be 21:00); reference line dashed (brief: solid).
+  All four fixes are in GEMINI_03. Figure 1 NOT installed in the manuscript yet (line 47 still the old picture) -- install after the fix.
+- OUTSIDE REVIEW round 1 (Gemini only, report `Gemini_prompts/GEMINI_02_outside_review_report.md`) VETTED: items 1, 2, 4, 7 true
+  but already known (cover-letter date + reviewers, Figure 1 swap, Acknowledgements placeholder, caption AI sentence). Item 3 true,
+  but the wording must say what happened: Gemini WROTE THE PLOTTING CODE for Figure 1 and the graphical abstract (not an image
+  generator). Item 5 FALSE: Platzer and Reutterer (2021) is cited at manuscript line 643 (Appendix B). Item 6 FALSE basis: 12,436
+  words counts Nomenclature + Appendices; main text (Intro to Conclusion, tables excluded) = 7,603 words. It checked NO citations
+  ("UNVERIFIED: none" with no evidence), so the citation audit is still undone -> second model still needed.
+Next: author runs GEMINI_03 -> manager re-checks both pictures (font check printout, parallel arrows, 21:00 markers) -> install
+Figure 1 (line 47), caption sentence + AI-declaration line (code drafted by Gemini, checked by the author), rebuild docx, copy
+Figure 1 + graphical abstract to EB_upload -> outside review with a second model -> then the last+299 list below.
+
+FULL ORDERED TO-DO (2026-09-24, so a new session needs nothing below this line to start):
+1. WAITING ON AUTHOR: run `writing/submission/Gemini_prompts/GEMINI_03_fix_figure1_and_graphical_abstract.md` in Gemini
+   (Antigravity, inside the repo) and paste its report back. Nothing for the manager to do until then.
+2. MANAGER, on the pasted report: re-read both scripts (do not trust the report): canvas 7.5 x 4.5 in / 5.12 x 2.05 in,
+   smallest font scaled to print >= 7 pt, graphical-abstract PNG >= 1328 px wide, model box and real-diaries box each with
+   their OWN arrow to "Scored" and no arrow between them, IT and UK reweighted markers both x = 21 (Spain 19), reference
+   line solid, the 9 dots unchanged. Look at the PNGs. If any fails, write GEMINI_04 with only the failed items.
+3. MANAGER, when both pass: in `writing/submission/4J_manuscript_submission.md` swap line 47 to
+   `figures/HETUS_LLM_Workflow_Figure1.png`; add to the Figure 1 caption one plain sentence (plotting code drafted with Gemini
+   (Google), checked and edited by the author); add the same fact to the AI declaration (Gemini also drafted the plotting code
+   for Figure 1 and the graphical abstract). Backup to `previous/` first. No meta notes in prose.
+4. MANAGER: rebuild docx (`bash tools/4thJ_build_submission_docx.sh`), confirm both PATCH lines print, copy Figure 1
+   (PNG + PDF) and the graphical abstract PNG to `EB_upload/`. Update board db (board/progress) and AUTHOR_TODO items 5 and 7b.
+5. AUTHOR: outside review with a SECOND model (prompt `Gemini_prompts/GEMINI_02_outside_review.md`); ask it to check every
+   citation. Manager vets it like round 1 (re-derive every claim from the files before accepting).
+6. AUTHOR jobs still open (details `writing/submission/IMP/impl/AUTHOR_TODO_4J.md`): competitor paper 4 questions
+   (Jutras-Dube 2024, Qian 2026, Jung 2026), Richardson 2010 Section 2.7 + other [AUTHOR TO OPEN] equation sources, OSF/Zenodo
+   deposit link for the pre-registration, suggested reviewers + submission date in the cover letter, Acknowledgements text or
+   delete the section (line 757 placeholder), the two measured-profile PDFs (Spain SPAHOUSEC, Italy Besagni 2020).
+7. MANAGER, optional: write the UK Low Carbon London Speed job (1 CPU, sbatch only, 7-day walltime) per
+   `IMP/impl/P17_measured_peak_check.md`; the author must first say yes to downloading the data.
+8. AUTHOR: read the final draft; submit to Energy and Buildings.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+299) — SUPERSEDED by last+300 above
+
+State (read the docs, not this summary, before acting):
+- P5 DONE: job 1342918 exit 0:0, JSON local `Step6_docs/outputs_step6/P5_table3_bootstrap.json` (md5 3e23ec74...),
+  controls all pass, 0 non-converged. Table 2 filled, §2.6 marker removed, §3.1 says UK 65+ interval (-6.2 to 0.4)
+  includes zero ("cannot be separated"); abstract/conclusion "all nine" kept (registered verdict = point estimate).
+  Record: `writing/submission/IMP/impl/P5_intervals_table3.md`. Backup `previous/4J_manuscript_submission.md.pre_P5fill_20260923`.
+- AUTHOR ANSWERS (2026-09-23): sole author, independent, NO grant (E&B no-grant sentence; NSERC removed; Acknowledgements
+  placeholder); AI declaration = Claude (code + grammar), Gemini (research prompts). Backup `.pre_declarations_20260923`.
+- MADRID FIX: SI S9/S12 now "170 cells in 17 buildings" (final run tree: 11,340 ok + 170 failed = 11,510; the 840/84
+  log was an earlier run). `IMP/impl/P16_madrid_incomplete_cells.md` (manager correction at top). SI backup `.pre_madrid170_20260923`.
+- FIGURE 1: Gemini prompt ready `writing/submission/figures/Prompts_Images/4thJ_figure01_workflow_three_rows.md` (manager
+  fixed Row 3 arrows). E&B allows AI flow charts WITH a caption sentence + a line in the AI declaration (add both when installed).
+- MEASURED PEAK CHECK (author said yes): rule fixed in `IMP/impl/P17_measured_peak_check.md`; waits on author PDFs (Spain
+  SPAHOUSEC, Italy Besagni 2020) in `writing/resources/measured_profiles/`; UK Low Carbon London Speed job NOT written yet.
+- BUILT: manuscript docx (both PATCH lines present) + SI docx (by hand, same pandoc flags + layout script; the build
+  script's D1 author-line check is manuscript-only) -> copied to `EB_upload/`. Figure 1 there is still the OLD picture.
+- Board db v18 (P5 row done; 3 log lines added).
+Next: author jobs in `IMP/impl/AUTHOR_TODO_4J.md` (competitor paper 4 questions, Richardson 2.7, OSF deposit link, graphical
+abstract, Figure 1 via Gemini, two PDFs) -> write UK Low Carbon London Speed job (1 CPU, sbatch) -> on Figure 1 install:
+caption + AI-declaration line, rebuild docx.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-23, last+298) — SUPERSEDED by last+299 above
 
 State (read the docs, not this summary, before acting):
 - REWRITE DONE and vetted: `writing/submission/4J_manuscript_submission.md` (~7,200 prose words, abstract 248; log in
@@ -12,12 +170,12 @@ State (read the docs, not this summary, before acting):
   (Figure_1.png, Figure_2.pdf, Figure_3.pdf, highlights and cover letter .docx).
 - P9 SECOND PASS DONE: all 116 numbers match; one "British" fixed in SI; log in the rewrite brief. Figure S3 now cited in 3.5.
   Test docx build passes (100 display equations as Word math, no raw LaTeX); SI docx built (`writing/submission/4J_supplementary_material.docx`; the build script is manuscript-only, so SI used the same pandoc flags + layout script by hand).
-- P5 RUNNING on Speed (job 1342918, 1 CPU, started ~09:10, ~5-6 h). Then: scp
+- P5 STILL RUNNING on Speed (job 1342918, 1 CPU, started ~09:10; polled 2026-09-23 with sacct: RUNNING, exit 0:0, elapsed 5:48:28 on magic-node-03, expected 5-6 h; NOT finished when the author left, so the result file may not exist yet -- check `sacct -j 1342918 -X` for an explicit COMPLETED before scp; empty output is not a state). Then: scp
   `/speed-scratch/o_iseri/4J_P5_docs_occ/Step6_docs/outputs_step6/P5_table3_bootstrap.json` to local
   `Step6_docs/outputs_step6/`, record in `IMP/impl/P5_intervals_table3.md`, fill the `[P5]` markers (Table 2 rows +
   Section 2.6 sentence; watch UK 65+, margin -2.70).
 - Figure S3 citation in 3.5: DONE.
-- Board db v16. Author list: `writing/submission/IMP/impl/AUTHOR_TODO_4J.md` (cover-letter date + reviewers too).
+- Board db v17 (log line "Cluster check ..." added 2026-09-23; sims row for error ranges says running ~5 h 50 min; when P5 ends, set that row to done and add a log line). Speed queue at the poll: 1J/3J/OpenUBEM jobs also busy (CPU total not summed). Author list: `writing/submission/IMP/impl/AUTHOR_TODO_4J.md` (cover-letter date + reviewers too).
 Next: [P5] fill (job 1342918 on Speed, 1 CPU, started ~2026-09-23 midday, ~5-6 h; if this session is gone: `squeue -j 1342918`, then scp `/speed-scratch/o_iseri/4J_P5_docs_occ/Step6_docs/outputs_step6/P5_table3_bootstrap.json` to local `Step6_docs/outputs_step6/`, fill Table 2 rows + the §2.6 "[P5]" sentence, archive first) -> final manuscript docx build (`bash tools/4thJ_build_submission_docx.sh`, check both PATCH lines) + copy to EB_upload -> board db + RESUME + memory.
 
 ---

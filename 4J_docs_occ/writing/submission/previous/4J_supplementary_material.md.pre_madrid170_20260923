@@ -463,7 +463,7 @@ construction years and dwelling counts come from national open registries, and e
 archetype identifier emitted by the stock pipeline. Its checks were scored after the results of this paper
 were fixed. That scoring found that, in a small number of cells, dwellings holding different diaries
 produced byte-identical internal-gain series. No scored result from this campaign is used in the paper. In
-Madrid, 170 cells in 17 buildings did not complete and were not repaired. Three courtyard buildings in
+Madrid, 840 cells in 84 buildings did not complete and were not repaired. Three courtyard buildings in
 Bologna are outside what this subdivision method can simulate. A Lyon district was kept in the wider project
 as a physical baseline only and is never a denominator for any result.
 
@@ -617,7 +617,7 @@ correction file sits beside it, and the numbers in this paper come from the corr
 the wrong backbone family. The manifest and the run configuration identify it correctly.
 
 **Observed-stock campaign.** The larger observed-stock campaign ran to completion, but no scored result from
-it is used (S9). In Madrid, 170 cells in 17 buildings did not complete, and three courtyard buildings in
+it is used (S9). In Madrid, 840 cells in 84 buildings did not complete, and three courtyard buildings in
 Bologna are outside the subdivision method.
 
 ## References cited only in the supplementary material

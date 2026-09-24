@@ -3,10 +3,48 @@
 First written 2026-09-19 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6,
 §7 and §8 change only when a rule or a design changes.
-Last updated: **2026-09-22 ~20:30 EDT (status check, see first bullet); last plan log entry (ay), next (az). Gate 4 PASS (all six baselines equal April,
+Last updated: **2026-09-24 ~07:10 EDT (status check only: 6/36 draws done, 55/56 CPUs in use, nothing else moved; see first bullet). Before that 2026-09-23 ~19:15 (CPU budget raised to 56, throttles changed); last plan log entry (az), next (ba). Gate 4 PASS (all six baselines equal April,
 diff 0), workers check PASS (5 workers = 1 worker, 3.3x faster), swap+probe PASS. Step 4d draws SUBMITTED and
-RUNNING.**
-- **Status check 2026-09-22 ~20:30 EDT (no new plan-log entry; nothing finished yet): WAITING FOR BLOCK 1.**
+RUNNING. Session closed after this; nobody is polling — the next session starts from the "first action" list below.**
+- **Status check 2026-09-24 06:52 EDT (no new plan-log entry): 6 of 36 draw tasks DONE, exit 0:0; 11 RUNNING = 55 CPUs (cap 56, full).**
+  Done: LIGHT `_0`,`_1`,`_2`,`_4`; HEAVY `_1`,`_3`. Running: LIGHT `_3`,`_5`-`_8` (throttle 5 full), HEAVY `_0`,`_2`,`_4`-`_7`
+  (throttle 6 full). HEAVY `_8`-`_11` still PENDING, so no throttle shift yet (step 0). Block 1 waits on LIGHT `_3`
+  (RC4 b1, 19:15 h) and HEAVY `_0` (RC5 b1, 36:57 h); all scorers PENDING (Dependency). `histnu` = 4 x 1 CPU; account
+  59/64. Newly done logs LIGHT `_2`,`_4`, HEAVY `_1`,`_3` grepped: all `WP11 EXTRACT VERDICT: VERIFIED` and E5 PASS
+  (DRAW START 1/6/1/6). Progress page db **53 -> 54** (sim 6/36 + log line 2026-09-24).
+- **CPU budget change 2026-09-23 ~19:00 EDT (author, plan log (az)): 1J now gets 56 CPUs on Speed; `histnu` cut to 8 (its 4 arrays `%2`).**
+  Progress at ~19:00: 3 of 36 draw tasks done and VERIFIED (LIGHT `_0`, `_1`; `_2` = RC3 block 1 log shows VERIFIED,
+  was still finishing in `squeue`); LIGHT `_3` (RC4 b1) and HEAVY `_0`-`_3` RUNNING. Block 1 expected ~2026-09-24 midday.
+  Done by `scontrol update`: LIGHT 1342400 `ArrayTaskThrottle=5` (was 2), HEAVY 1342401 `ArrayTaskThrottle=6` (was 4)
+  = 11 tasks x 5 CPUs = 55 CPUs; read back with `scontrol show job`. New tasks start only as the 32 running `histnu`
+  tasks finish (account cap `cpu=64`), not instantly.
+  - Measured round length (one simulated year, 5 draws in parallel, minutes, from the logs): RC1 ~45, RC2 ~146,
+    RC3 ~171, RC4 ~167, RC6 ~308, RC5 ~368. Parallel costs little (single default run: RC1 40, RC5 331). A task =
+    1 default run + 5 years: RC1 ~6 h, RC2 ~18 h, RC3/RC4 ~19 h, RC6 ~32 h, RC5 ~38 h. ~640 task-hours left at 19:00.
+  - Estimate (not a result): all 30 draws done about **2026-09-26** (vs ~09-30 at the old `%2`/`%4` split). When HEAVY
+    has no pending tasks left, raise LIGHT's throttle so freed HEAVY slots go to LIGHT (1J total stays <= 11 tasks).
+  - Offered, NOT taken: skipping each task's default re-run (the E4 check; author's call); local CPUs (Windows vs
+    Linux numbers; RC5/RC6 need 90G).
+- *(Older; its "cap stays 32" line is superseded by the 56-CPU bullet above)* **Status check 2026-09-23 ~14:45 EDT (no new plan-log entry): 2 of 36 draw tasks DONE and VERIFIED; STILL WAITING FOR BLOCK 1.**
+  Read by `sacct` (about 21 h after submission at ~18:00 on 09-22) and by grepping the logs:
+  - LIGHT 1342400: `_0` (RC1 block 1) COMPLETED 05:57:55, exit 0:0; `_1` (RC2 block 1) COMPLETED 17:42:15, exit 0:0.
+    Both logs show `WP11 EXTRACT VERDICT: VERIFIED`; `_0` also shows `WP11 DRAW START` (E5 PRESENT).
+    `_2` (RC3 block 1) RUNNING 14:49 h, `_3` (RC4 block 1) RUNNING 3:05 h (started when `_0`/`_1` finished, `%2`).
+  - HEAVY 1342401 `_0`..`_3` RUNNING 20:47 h each. **E5 now PASS on all four:** `WP11 DRAW START: 1` in `_0`/`_1`,
+    `WP11 DRAW START: 6` in `_2`/`_3` (RC5/RC6 blocks 1 and 2). Each is inside a repeated `[SIM] Running... [0/5 complete]`
+    round of about 2.5 h or more (RC5/RC6 sims are slow); a task ends only after all its draws.
+  - Draw tasks 4+ of each array PENDING (JobArrayTaskLimit); scorers 1342408-1342413 all PENDING (Dependency).
+    Nothing FAILED or CANCELLED. Block 1 completes only when LIGHT `_2`/`_3` and HEAVY `_0`/`_1` all finish.
+  - **Not slower than planned:** plan said ~1.5 days for block 1 and ~4.5 days for all 30 draws. Do not read the
+    wait as a fault; the 32-CPU cap (6 tasks at once) is the limit. **More CPUs would cut total time (~2x for 64)
+    but NOT block 1 (all its tasks already run), and later blocks may be cancelled by a STOP.** The author was
+    told this and did not raise the cap; it stays 32 (author's rule, `histnu` shares the rest).
+  - One `ssh` call dropped ("Connection closed by 132.205.2.12 port 22", empty output); a retry worked. An empty result
+    is a failed query, never "no jobs" (see cluster memory §14).
+  - **Progress page updated: db version 51 -> 52** (sim tracker now 2 of 36, new log line dated 2026-09-23; backup of
+    v51 was in the session scratchpad only). Plan log and REVISION_STEPS.txt were NOT touched this check.
+  - **Author is away; next session: run the "first action" sacct below (not before ~30 min after 14:45), then follow steps 1-3.**
+- *(Older, superseded by the bullet above)* **Status check 2026-09-22 ~20:30 EDT (no new plan-log entry; nothing finished yet): WAITING FOR BLOCK 1.**
   Six tasks RUNNING 2:32 h, 30 CPUs (read from each log's first line): LIGHT _0 = RC1 block 1, _1 = RC2 block 1;
   HEAVY _0 = RC5 block 1, _1 = RC6 block 1, _2 = RC5 block 2 (draws 6-10), _3 = RC6 block 2. Block 1 is complete
   only after LIGHT _2/_3 (RC3/RC4 block 1) also run; they start when LIGHT _0/_1 finish (`%2`). Rest PENDING
@@ -25,19 +63,26 @@ RUNNING.**
 - **G2.0: kept and disclosed (an).** Stays a recorded FAIL, no longer blocks anything.
 - **Live now (submitted 2026-09-22 ~18:00 EDT, plan log (ay)):**
   - LIGHT array **1342400** (RC1-RC4, 24 tasks, `%2`, `-c 5`, 56G) and HEAVY array **1342401** (RC5-RC6, 12 tasks,
-    `%4`, `-c 5`, 90G): 6 tasks RUNNING at submission = 30 CPUs (cap 32).
+    `%4`, `-c 5`, 90G): 6 tasks RUNNING at submission = 30 CPUs (cap 32). **Since 2026-09-23 ~19:00 (az): LIGHT
+    `%5`, HEAVY `%6` = 11 tasks = 55 CPUs, cap 56.**
   - Scorers **1342408-1342413** = blocks 1-6, each `afterany` on all tasks of blocks 1..b. On STOP a scorer
     `scancel`s later tasks and scorers itself (IDs from `stage4/draws/job_ids.txt`).
-  - Rough time (estimate, not a result): block 1 ~1.5 days (RC5/RC6 bound); all 30 draws ~4.5 days.
-- (Unrelated `histnu` arrays under `/nfs/speed-scratch/rhlab/hist_nu_z7a` are not 1J; ignore them.)
-- Progress page db version **51** (log lines for (ay): baselines match, draws started; `sim` tracker now counts draw tasks, 0/36).
+  - Rough time (estimate, not a result): block 1 ~2026-09-24 midday; all 30 draws ~2026-09-26 at 11 tasks (az).
+- (Unrelated `histnu` arrays under `/nfs/speed-scratch/rhlab/hist_nu_z7a` are not 1J — they belong to the
+  author's idf_reader project, now held to 8 CPUs; never scancel or change them.)
+- Progress page db version **54** (2026-09-24 ~07:00: `sim` tracker 6/36; v53 = 3/36 + CPU-change line; v52 = 2/36).
 - **Author instruction in force:** "continue until the end" — carry Stage 4 through on your own (score blocks),
   closure ritual after every step; ask the author only if a fix is itself a design choice.
 
 **A fresh session's first action:** `sacct -j 1342400,1342401,1342408,1342409,1342410,1342411,1342412,1342413 -X
 --format=JobID,JobName%24,State,Elapsed,ExitCode` on Speed (no more than once every 30 min). A draw task's exit
 code IS its verdict (0 = VERIFIED, 1 = not, 3 = disk/md5 pre-flight stop); the runner inside it still hits the
-harmless plotting crash, printed as `RUNNER EXIT: 1`. Then, as each lands:
+harmless plotting crash, printed as `RUNNER EXIT: 1`. Also run `squeue -u o_iseri -h -n wp11_draw_task -t R` and
+count: it should have risen from 6 toward 11 as `histnu`'s old tasks ended (if still 6 after ~12 h, check
+`scontrol show job 1342400` / `1342401` still read `ArrayTaskThrottle=5` / `=6`). Then, as each lands:
+  0. **Throttle shift (az):** once `squeue` shows HEAVY 1342401 with no PENDING tasks left, raise LIGHT with
+     `scontrol update JobId=1342400 ArrayTaskThrottle=<11 - running HEAVY tasks>` so 1J keeps 11 tasks (55 CPUs);
+     never above 11. Log it in the plan.
   1. **First draw task done** -> `grep` its log (`logs/wp11_draw_<array>_<i>.out`) for `WP11 DRAW START: <D>` (must be
      PRESENT, E5) and `WP11 EXTRACT VERDICT: VERIFIED`; any task not VERIFIED -> read why, rerun that one task only.
   2. **Scorer b done** (`logs/wp11_scorer_<id>.out`) -> read `STOPRULE SUMMARY: block=b ... VERDICT=...` and
@@ -52,9 +97,9 @@ harmless plotting crash, printed as `RUNNER EXIT: 1`. Then, as each lands:
 
 1. Read the **last three entries of §7 (Progress log)** in `1J_docs_occ/IMP/00_REVISION_PLAN.md`
    (`tail -60 00_REVISION_PLAN.md`). **The log is the state. This file is only a pointer; where the two
-   disagree, the plan wins.** The last entry written is **(ay)**; the next letter you write is **(az)**.
+   disagree, the plan wins.** The last entry written is **(az)**; the next letter you write is **(ba)**.
 2. Read the progress page's database (`ArtifactData` `get`, url `https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn`,
-   collection `revision`, doc `progress`) and note its `version`. It was **51** when this file was written
+   collection `revision`, doc `progress`) and note its `version`. It was **53** when this file was last updated (2026-09-23 ~19:00, CPU-budget log line + sim 3/36; 51 at first writing)
    (the document now also carries a `sim` field: `{done, total, label, note, updated}`, read by the page's
    new tracker box — keep it when you next write the whole document, or update `done`/`total`/`note` if a
    different job's simulation count becomes the one worth showing).
@@ -283,7 +328,7 @@ except have the actual Section 4.1 prose rewritten at Step 7, using the shares (
    **4c DONE (ay): Gate 4 `G4.0-G4.3` all PASS**, all 12 Default numbers equal April (diff 0). Workers check
    PASS (5 workers = 1 worker). Swap+probe PASS.
    d. **4d RUNNING (ay).** LIGHT 1342400, HEAVY 1342401, scorers 1342408-1342413; `--mem` 56G/90G derived in plan
-      log (ay). Design: plan log (aw), binding notes (ax), task doc `impl/2026-09-22_WP11_stage4d_draws.md`.
+      log (ay). Throttles raised to `%5`/`%6` (55 CPUs, cap 56) in (az). Design: plan log (aw), binding notes (ax), task doc `impl/2026-09-22_WP11_stage4d_draws.md`.
       Read each scorer's `STOPRULE SUMMARY` as it lands (see the "first action" list at the top). Draws after
       the stopping block never enter any reported number. When a STOP (or CAP) verdict is read, Stage 4 is
       done: go to 5.6.

@@ -1,14 +1,8 @@
 # RESUME - THE 3J director prompt. Start every session here.
 
-**Last updated: 2026-09-23 (late evening), "P10R jobs CANCELLED by the author; restart when Speed CPUs are free" round.**
-Predecessor: `archive/RESUME.2026-09-23_pre_cancel.md` (older: `archive/RESUME.2026-09-23_pre_hold_return.md`, `archive/RESUME.2026-09-23_pre_speed_wait.md`).
+**Last updated: 2026-09-23 ~01:30 UTC, "rebuilt arm on Speed, parallel writing work" round.**
+Predecessor: `archive/RESUME.2026-09-23_pre_speed_wait.md`.
 
-> 🔴 **CANCELLED 2026-09-23 (evening), by the author: P10R test 1346544 and array 1346545 are CANCELLED** (verified with `sacct`; nothing of
-> ours left in the queue under `3J_P10R`). The author will return when Speed CPUs are free. To restart: run `p10r_submit.sh`
-> (`/speed-scratch/o_iseri/3J_P10R/`), hold or wait so the non-histnu total never passes 32 CPUs (sum `squeue -u o_iseri -t R`), then
-> follow step 0 below with the NEW job IDs. The mirror on Speed is intact and `mirror_md5.txt` is current (64 lines). The 1J draws
-> (1342400/1342401) were NOT touched.
->
 > 🔴 **RESUME HERE - 2026-09-23. The critical path is the 56 rebuilt-arm (P10R) runs on Speed.**
 > Everything that needs the new numbers waits for them; work that does not need them was started in
 > parallel (see "Parallel work" below). Live state = bottom of the progress log in
@@ -22,17 +16,6 @@ Predecessor: `archive/RESUME.2026-09-23_pre_cancel.md` (older: `archive/RESUME.2
 > `Leg3_4-split/Step8_docs/campaign_local_P10R/` (8 ok cells, killed mid-run) is kept only as a
 > Speed-vs-local cross-check (`IMP/scripts/p10r_speed_vs_local.py`, tolerances from V3b).
 >
-> 🔴 **UPDATE 2026-09-23 (later): 1342535 FAILED at exit 1 after 15 s** - `sched_NECB2011.json` was missing from the
-> P10R mirror (it was only in the V3 mirror). Fixed: uploaded to `3J_P10R/repo/3J_docs_occ_nTemp/improvements/v2/f8_necb_schedule_evidence/`
-> (md5 e5386a1f, identical to local), added to both `mirror_md5.txt` (now 64 lines), old array 1342536 cancelled.
-> 🔴 **HELD 2026-09-23 (author: never pass 32 CPUs):** 1346544 is on `scontrol hold` (verified JobHeldUser); other jobs use exactly 32. Release with `scontrol release 1346544` only when the sum of non-histnu CPUs in `squeue -u o_iseri -t R` is 31 or less.
-> **RESUBMITTED: test cell 0 = 1346544, cells 1-55 = array 1346545** (`%26`, afterok on 1346544). At submit time the
-> test was PENDING (AssocGrpCpuLimit; non-histnu CPUs were exactly 32). If the test fails again, read
-> `3J_P10R/logs/p10r_1346544_0.out`; the code may need more files than the mirror holds. V3b (1342426) and V3c
-> (1342434) are all COMPLETED; V3b checker 1342427 = overall NOT_EVALUABLE (noise floor) - SuperTall_MTL noise
-> above TOL/10, other 3 towers PASS, control FIRED on all 4; next = write the tolerance into `IMP/V3_design_and_runs.md`
-> and post-process V3c. Ignore the 1342535/1342536 IDs below.
->
 > **3J jobs on Speed** (user `o_iseri`, cap cpu=64, histnu owns its half - never touch it):
 > - P10R test cell 0 = **1342535**; cells 1-55 = array **1342536** (`%26`, `afterok:1342535`,
 >   `--nice=10000` so histnu/1J win freed CPUs). Script `Step8_docs/3rdJ_08D_campaign_P10R_speed.sh`
@@ -43,24 +26,8 @@ Predecessor: `archive/RESUME.2026-09-23_pre_cancel.md` (older: `archive/RESUME.2
 > - V3b plumbing check **1342426** (20 tasks, 9 done at 01:10) + checker **1342427** (afterany).
 > - V3c fair code control **1342434** (4 tasks, 1 done). Details: `IMP/V3_design_and_runs.md`, `IMP/V3c_fair_control.md`.
 >
-> **First actions on return, in order (rewritten 2026-09-23, author away):**
-> 0. **NO P10R JOBS ARE LIVE (1346544 and 1346545 were CANCELLED, see the box above).** First action on return: sum the CPUS of
->    `squeue -u o_iseri -t R` excluding `histnu`; if it is 31 or less, resubmit with `p10r_submit.sh` (test cell first), else wait.
->    The text below about 1346544/1346545 is the history of the held state; use the new job IDs after resubmitting.
->    (old) test cell 1346544 (HELD) + array 1346545 (waits on it). Old IDs 1342535/1342536 are dead.
->    `sacct -j 1346544,1346545 -X`, then sum the CPUS of `squeue -u o_iseri -t R` EXCLUDING `histnu`.
->    If that sum is <= 31: `scontrol release 1346544` (ssh, no python on login). If 32, leave it held and
->    re-check later; never pass 32 (author, 2026-09-23). When the test finishes, `sacct` it; ok cell = manifest
->    `P10R_STATUS=ok` + slimmed sql. If it FAILED, read `3J_P10R/logs/p10r_1346544_0.out`, fix (any new mirrored
->    file also goes into BOTH `mirror_md5.txt`), `scancel 1346545`, resubmit with `p10r_submit.sh`, hold again if at cap.
->    Board (db `board/progress`) was last updated at version 9 with the hold; update it after each step.
->    Done and NOT to redo: V3b (20/20) and V3c (4/4) finished; V3b checker overall NOT_EVALUABLE (SuperTall_MTL
->    noise floor above TOL/10; Tall_MTL, Tall_CLG, SuperTall_CLG PASS; control fired on all 4). Next for those
->    two, needing no CPUs: write the tolerance into `IMP/V3_design_and_runs.md`, then `IMP/V4_design.md`, and
->    post-process V3c per `IMP/V3c_fair_control.md` (any Python there = sbatch, not login node).
->    Lesson: a shell command with backticks in a double-quoted string ran locally and garbled a line of this file
->    (fixed); use the Edit tool for this file.
-> 1. (old, kept for the history) `sacct -j 1342535,1342536,1342426,1342427,1342434 -X` (never infer "finished" from empty output).
+> **First actions on return, in order:**
+> 1. `sacct -j 1342535,1342536,1342426,1342427,1342434 -X` (never infer "finished" from empty output).
 >    If 1342535 FAILED: read its log, fix, `scancel 1342536`, re-upload, re-run `p10r_submit.sh`.
 >    History: 1342523 and 1342533 FAILED in 7 s at the mirror check (exit 3) because the edited speed
 >    script's md5 was stale in `repo/mirror_md5.txt` (the file the checker reads; a copy also sits at

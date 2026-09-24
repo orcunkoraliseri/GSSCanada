@@ -25,8 +25,28 @@ One list, in order of what unblocks the most. Details live in the files named; n
    without "Discovery Grant". Add it only if the same grant funds 4J.
 7b. **Figure 1** is still the old pipeline picture ("Steps 0 to 11"); only its caption changed. Replace it
    with your own diagram, or keep it as is.
+   **2026-09-23 author answers:** 7 DONE (Claude = coding help + grammar; Gemini = deep-research prompts; text
+   updated). 7a DONE (sole author, no grant: E&B "did not receive any specific grant" sentence; NSERC
+   acknowledgement removed, placeholder left in Acknowledgements). 7b: replace, via a Gemini image prompt the
+   author runs (`figures/Prompts_Images/4thJ_figure01_workflow_three_rows.md`). SI Madrid count: DONE, 840 was from an earlier
+   run; the final run has 170 cells in 17 buildings, SI S9/S12 corrected (`IMP/impl/P16_madrid_incomplete_cells.md`).
+   Figure 1 prompt: READY, one arrow fixed by manager (heating from gains only; stock loads from appliances + hot water). Part B: YES, rule fixed in `IMP/impl/P17_measured_peak_check.md`.
+   Backup: `previous/4J_manuscript_submission.md.pre_declarations_20260923`.
+   **2026-09-23 later:** Gemini drew Figure 1 and the graphical abstract with plotting code. Content correct; text too small
+   for print, and the graphical abstract has three layout errors. Run `writing/submission/Gemini_prompts/GEMINI_03_fix_figure1_and_graphical_abstract.md`
+   in Gemini, then hand back for the manager's check. Details: `4J_docs_occ/Prompts/RESUME.md` last+300.
+   **2026-09-24:** GEMINI_03 checked: all four fixes right. The smaller graphical abstract now has text running into
+   text; Figure 1 row-3 boxes need more padding. Run `writing/submission/Gemini_prompts/GEMINI_04_fix_graphical_abstract_layout.md`
+   in Gemini and paste its report back. Figure 1 is now in the manuscript (caption + AI declaration name Gemini for
+   the plotting code); Word rebuild and upload copy wait for GEMINI_04. Details: RESUME.md last+301.
+   **2026-09-24 later:** GEMINI_04 checked. Figure 1 is DONE: it is in the rebuilt Word file and in the upload folder.
+   The graphical abstract has three small problems left (a number sits on a line, titles touch the top edge, the
+   right title and subtitle run together). Run `writing/submission/Gemini_prompts/GEMINI_05_graphical_abstract_last_touches.md`
+   in Gemini and paste its report back. Details: RESUME.md last+302.
 8. **Run the outside audit** (`writing/submission/IMP/prep/external_audit_prompt.md`) in Gemini and a second
    model on the final draft; paste the answers back for vetting.
+   **Round 1 (Gemini, 2026-09-23) vetted:** 2 of 7 items were wrong (Platzer is cited; the 12,436 word count included the
+   appendices, main text is 7,603), and it checked no citations. Still needed: a second model, citations checked.
 9. **Read the final draft; submit.**
 
 ## B. Optional (would strengthen the appliance-timing result; not blocking)

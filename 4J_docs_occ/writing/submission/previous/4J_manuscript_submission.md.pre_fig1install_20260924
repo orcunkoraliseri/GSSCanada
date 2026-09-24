@@ -44,9 +44,9 @@ This study asks whether a fine-tuned language model can generate a country's tim
 
 Figure 1 summarises the workflow in three parts: data and harmonisation, diary generation and comparison, and building loads. Figure 2 shows the leave-one-country-out design. Every tolerance was registered before use, with its provenance marked as published, project-chosen or heuristic (Supplementary material, S1). No tolerance was moved after a result was seen.
 
-![Figure 1](figures/HETUS_LLM_Workflow_Figure1.png)
+![Figure 1](figures/HETUS_LLM_Pipeline_Steps.png)
 
-**Figure 1.** - Workflow of the study, from survey harmonisation to building loads. Plotting code drafted with Gemini (Google), checked and edited by the author.
+**Figure 1.** - Workflow of the study, from survey harmonisation to building loads.
 
 ## 2.1 Data
 
@@ -750,7 +750,7 @@ The three time-use surveys are available from their publishers under their own t
 
 # Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
 
-During the preparation of this work the author used Claude (Anthropic) in order to assist with writing analysis code and to improve the grammar and readability of the text, and Gemini (Google) in order to run literature searches from research prompts written by the author and to draft the plotting code for Figure 1 and the graphical abstract. Every source named in those searches was checked against the publisher or registry record before use. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
+During the preparation of this work the author used Claude (Anthropic) in order to assist with writing analysis code and to improve the grammar and readability of the text, and Gemini (Google) in order to run literature searches from research prompts written by the author. Every source named in those searches was checked against the publisher or registry record before use. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
 
 # Acknowledgements
 

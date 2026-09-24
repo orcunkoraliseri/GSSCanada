@@ -44,9 +44,9 @@ This study asks whether a fine-tuned language model can generate a country's tim
 
 Figure 1 summarises the workflow in three parts: data and harmonisation, diary generation and comparison, and building loads. Figure 2 shows the leave-one-country-out design. Every tolerance was registered before use, with its provenance marked as published, project-chosen or heuristic (Supplementary material, S1). No tolerance was moved after a result was seen.
 
-![Figure 1](figures/HETUS_LLM_Workflow_Figure1.png)
+![Figure 1](figures/HETUS_LLM_Pipeline_Steps.png)
 
-**Figure 1.** - Workflow of the study, from survey harmonisation to building loads. Plotting code drafted with Gemini (Google), checked and edited by the author.
+**Figure 1.** - Workflow of the study, from survey harmonisation to building loads.
 
 ## 2.1 Data
 
@@ -146,7 +146,7 @@ Direction passes if, for the study group that the tilt targets, $\beta > 0$ with
 
 Privacy is scored by a loss-based membership-inference attack (Shokri et al., 2017), summarised by the area under the receiver operating characteristic curve (AUC; Appendix B, Eqs. (B.25)-(B.27)). The check is not met if the AUC exceeds 0.65, or if the true-positive rate at a false-positive rate of 0.1 per cent exceeds 5 per cent (Eq. (B.28)). Privacy is also scored by the distance from each synthetic diary to its closest training diary (Eqs. (B.30)-(B.31)), as used by Platzer and Reutterer (2021).
 
-Each margin carries a 95 % percentile interval from a nonparametric bootstrap with 2,000 replicates (Appendix B, Eqs. (B.8)-(B.9)). It resamples generated diaries within each age band and donor diaries within each donor country, re-rakes each donor replicate, and treats the published tables as fixed. The re-raking converged in every replicate. Each model was trained with one seed, so the seed-to-seed spread measured on frozen weights covers generation noise only, not training noise. The pre-registered verdict uses the point estimate.
+[P5] Each margin carries a 95 % percentile interval from a nonparametric bootstrap. It resamples generated diaries within each age band and donor diaries within each donor country, re-rakes each donor replicate, and treats the published tables as fixed. Each model was trained with one seed, so the seed-to-seed spread measured on frozen weights covers generation noise only, not training noise. The pre-registered verdict uses the point estimate.
 
 Two kinds of comparison are kept apart. Some quantities were fitted to a source and cannot validate the model. These are the synthetic populations (census margins), the appliance start probability (published cycles per year) and the hot-water volume (200 litres per dwelling-day). Independent checks use quantities the model never saw: the published time budgets, the real diaries of the held-out country and a published reference load shape.
 
@@ -154,21 +154,21 @@ Two kinds of comparison are kept apart. Some quantities were fitted to a source 
 
 ## 3.1 Transfer against raking
 
-Table 2 gives the primary comparison. Every margin is negative, so on the point estimates the raked donor pool beats the model in every age band of every country. The model's error is 2.3 to 3.9 times the baseline's in eight cells. In the ninth, the UK aged 65 and over, it is 1.15 times, and the model falls short by 2.70 minutes per day. The 95 % intervals of the eight larger margins lie wholly below zero. The interval of the ninth, -6.2 to 0.4 minutes per day, includes zero, so in that band the model and the raked donor pool cannot be separated. Supplementary Figure S1 plots the nine cells.
+Table 2 gives the primary comparison. Every margin is negative, so the raked donor pool beats the model in every age band of every country. The model's error is 2.3 to 3.9 times the baseline's in eight cells. In the ninth, the UK aged 65 and over, it is 1.15 times, and the model falls short by 2.70 minutes per day. Supplementary Figure S1 plots the nine cells.
 
 **Table 2.** - Time-budget mean absolute error (minutes per day), model against raked donor pool.
 
 | Held-out country | Age band | Model | Raked donor pool | Margin | 95 % interval of the margin |
 |---|---|---:|---:|---:|---:|
-| Spain | 25-44 | 36.81 | 9.94 | -26.9 | -30.0 to -23.8 |
-| Spain | 45-64 | 34.52 | 8.82 | -25.7 | -29.7 to -21.8 |
-| Spain | 65 and over | 44.32 | 11.81 | -32.5 | -37.8 to -27.0 |
-| United Kingdom | 25-44 | 58.91 | 21.79 | -37.1 | -40.8 to -33.4 |
-| United Kingdom | 45-64 | 60.44 | 19.21 | -41.2 | -44.4 to -38.0 |
-| United Kingdom | 65 and over | 21.24 | 18.54 | -2.70 | -6.2 to 0.4 |
-| Italy | 25-44 | 62.24 | 19.51 | -42.7 | -46.9 to -39.2 |
-| Italy | 45-64 | 33.95 | 13.85 | -20.1 | -23.2 to -17.6 |
-| Italy | 65 and over | 35.84 | 15.51 | -20.3 | -24.2 to -16.4 |
+| Spain | 25-44 | 36.81 | 9.94 | -26.9 | [P5] |
+| Spain | 45-64 | 34.52 | 8.82 | -25.7 | [P5] |
+| Spain | 65 and over | 44.32 | 11.81 | -32.5 | [P5] |
+| United Kingdom | 25-44 | 58.91 | 21.79 | -37.1 | [P5] |
+| United Kingdom | 45-64 | 60.44 | 19.21 | -41.2 | [P5] |
+| United Kingdom | 65 and over | 21.24 | 18.54 | -2.70 | [P5] |
+| Italy | 25-44 | 62.24 | 19.51 | -42.7 | [P5] |
+| Italy | 45-64 | 33.95 | 13.85 | -20.1 | [P5] |
+| Italy | 65 and over | 35.84 | 15.51 | -20.3 | [P5] |
 
 The scale of these errors is clearer with a reference point. Scored on the same published tables, Spain's own real diaries err by 1.86 to 2.00 minutes per day. The raked donor pool, at 8.82 to 11.81, is four to six times worse than having the country's own diaries. The model is worse again, by 1.1 to 3.9 times. The pre-registration named the raked donor pool as the strongest of the three registered baselines. Measured, it is the weakest of the three in six of nine cells, so the model lost to its weakest registered baseline.
 
@@ -742,7 +742,7 @@ The author declares no known competing financial interests or personal relations
 
 # Funding
 
-This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors.
+This work was supported by the Natural Sciences and Engineering Research Council of Canada (NSERC) and by the Volt-Age Seed Fund, Concordia University. The funders had no role in the study design, in the collection, analysis and interpretation of data, in the writing of the article, or in the decision to submit it for publication.
 
 # Data availability
 
@@ -750,11 +750,11 @@ The three time-use surveys are available from their publishers under their own t
 
 # Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
 
-During the preparation of this work the author used Claude (Anthropic) in order to assist with writing analysis code and to improve the grammar and readability of the text, and Gemini (Google) in order to run literature searches from research prompts written by the author and to draft the plotting code for Figure 1 and the graphical abstract. Every source named in those searches was checked against the publisher or registry record before use. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
+During the preparation of this work the author used Claude (Anthropic) in order to improve the grammar and readability of the text, and Gemini (Google) in order to prepare literature research reports. Every source named in those reports was checked against the publisher or registry record before use. After using these tools, the author reviewed and edited the content as needed and takes full responsibility for the content of the published article.
 
 # Acknowledgements
 
-[AUTHOR: add acknowledgements here if wanted (for example data providers INE, ISTAT and the UK Data Service, or the Speed computing cluster at Concordia University); otherwise delete this section.]
+The author gratefully acknowledges the financial support for this postdoctoral research provided by NSERC and the Volt-Age Seed Fund.
 
 # References
 
