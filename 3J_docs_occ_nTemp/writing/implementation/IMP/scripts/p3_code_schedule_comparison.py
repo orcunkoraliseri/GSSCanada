@@ -22,7 +22,12 @@ Definitions are the SAME as the Step-9 script (3rdJ_09_activityDrivenLoads_4spli
   * EUI = step9_eui_by_channel.csv eui_CFA_kWh_m2 and eui_GFAshare_kWh_m2.
 
 Controls first, then negative controls, then the comparison.
-Run: PYTHONIOENCODING=utf-8 py -3 p3_code_schedule_comparison.py
+Run: PYTHONIOENCODING=utf-8 py -3 p3_code_schedule_comparison.py [--arm P10R]
+  --arm P10R (added 2026-09-25): reads agg_P10R / outputs_step9_P10R / campaign_local_P10R, writes to
+  IMP/data/P10R/ and writing/figures/_P10R_figdata/ (never the frozen-arm outputs). Control 2 then
+  compares the NEW arm with the PUBLISHED numbers, so it is reported as bucket "published_vs_new"
+  (INFO: a difference is the P10R effect, not a reader defect). Negative controls N1-N4 compare with
+  the new arm's own correct values, and N4 reads the frozen agg_deliverable as the wrong input.
 """
 from __future__ import annotations
 
@@ -36,13 +41,26 @@ import pandas as pd
 HERE = os.path.dirname(os.path.abspath(__file__))
 J3 = os.path.abspath(os.path.join(HERE, "..", "..", "..", ".."))          # 3J_docs_occ_nTemp
 LEG3 = os.path.join(J3, "Leg3_4-split")
-AGG = os.path.join(LEG3, "Step8_docs", "outputs_step8", "agg_deliverable")
-AGG_SUPERSEDED = os.path.join(LEG3, "Step8_docs", "outputs_step8", "agg")    # negative control only
-S9 = os.path.join(LEG3, "Step9_docs", "outputs_step9_deliverable")
-CELLS = os.path.join(LEG3, "Step8_docs", "campaign_local_deliverable")
-OUT = os.path.join(J3, "writing", "implementation", "IMP", "data")
-FIGDATA = os.path.join(J3, "writing", "figures")
+ARM = "P10R" if "--arm" in sys.argv and sys.argv[sys.argv.index("--arm") + 1] == "P10R" else "deliverable"
+if ARM == "P10R":
+    AGG = os.path.join(LEG3, "Step8_docs", "outputs_step8", "agg_P10R")
+    AGG_SUPERSEDED = os.path.join(LEG3, "Step8_docs", "outputs_step8", "agg_deliverable")  # N4: frozen arm = wrong input
+    S9 = os.path.join(LEG3, "Step9_docs", "outputs_step9_P10R")
+    CELLS = os.path.join(LEG3, "Step8_docs", "campaign_local_P10R")
+    OUT = os.path.join(J3, "writing", "implementation", "IMP", "data", "P10R")
+    FIGDATA = os.path.join(J3, "writing", "figures", "_P10R_figdata")
+    PUB_BUCKET = "published_vs_new"
+else:
+    AGG = os.path.join(LEG3, "Step8_docs", "outputs_step8", "agg_deliverable")
+    AGG_SUPERSEDED = os.path.join(LEG3, "Step8_docs", "outputs_step8", "agg")    # negative control only
+    S9 = os.path.join(LEG3, "Step9_docs", "outputs_step9_deliverable")
+    CELLS = os.path.join(LEG3, "Step8_docs", "campaign_local_deliverable")
+    OUT = os.path.join(J3, "writing", "implementation", "IMP", "data")
+    FIGDATA = os.path.join(J3, "writing", "figures")
+    PUB_BUCKET = "controls"
 os.makedirs(OUT, exist_ok=True)
+os.makedirs(FIGDATA, exist_ok=True)
+print(f"[arm] {ARM}: AGG={AGG} | S9={S9} | CELLS={CELLS} | OUT={OUT} | FIGDATA={FIGDATA}")
 
 TENANT = ["office", "retail", "hotel", "residential"]
 CH6 = ["office", "retail", "hotel", "residential", "residential_common", "service_MEP"]
@@ -51,7 +69,7 @@ BLD_CITY = [("SuperTall", "MTL"), ("SuperTall", "CLG"), ("Tall", "MTL"), ("Tall"
 DAY_H = list(range(8, 18))                       # 08:00-18:00
 NIGHT_H = [h for h in range(24) if h not in DAY_H]
 
-RESULTS = {"controls": [], "negative_controls": []}
+RESULTS = {"controls": [], "negative_controls": [], "published_vs_new": []}
 
 
 def circ(profile) -> float:
@@ -176,21 +194,21 @@ def main():
                  "retail": (12.37, 12.11, 12.62), "hotel": (18.91, 18.84, 18.94)}
     for ch, (med, lo, hi) in pub_hours.items():
         v = np.array([circ(wd_profile(diur, c, ch)) for c in bc[bc.channel == ch]["cell_tag"]])
-        check("controls", f"B_central {ch} WD peak hour median", np.median(v), med, 0.005)
-        check("controls", f"B_central {ch} WD peak hour min", v.min(), lo, 0.005)
-        check("controls", f"B_central {ch} WD peak hour max", v.max(), hi, 0.005)
+        check(PUB_BUCKET, f"B_central {ch} WD peak hour median", np.median(v), med, 0.005)
+        check(PUB_BUCKET, f"B_central {ch} WD peak hour min", v.min(), lo, 0.005)
+        check(PUB_BUCKET, f"B_central {ch} WD peak hour max", v.max(), hi, 0.005)
     b = peak[(peak.channel == "_BUILDING") & peak.cell_tag.str.startswith("B_central__")]
-    check("controls", "B_central building peak hour median", b.peak_hour_circular.median(), 14.95, 0.005)
-    check("controls", "B_central building peak hour min", b.peak_hour_circular.min(), 14.11, 0.005)
-    check("controls", "B_central building peak hour max", b.peak_hour_circular.max(), 15.70, 0.005)
+    check(PUB_BUCKET, "B_central building peak hour median", b.peak_hour_circular.median(), 14.95, 0.005)
+    check(PUB_BUCKET, "B_central building peak hour min", b.peak_hour_circular.min(), 14.11, 0.005)
+    check(PUB_BUCKET, "B_central building peak hour max", b.peak_hour_circular.max(), 15.70, 0.005)
     pub_mn = {"retail": (72.03, 2.11), "office": (569.33, 48.10),
               "residential": (347.82, 89.53), "hotel": (335.93, 434.47)}
     for ch, (mid, nig) in pub_mn.items():
         pr = [wd_profile(diur, c, ch) for c in bc[bc.channel == ch]["cell_tag"]]
         mids = [p[11:15].mean() / 1000 for p in pr]
         nigs = [np.concatenate([p[0:5], p[22:24]]).mean() / 1000 for p in pr]
-        check("controls", f"B_central {ch} WD midday kW median", np.median(mids), mid, 0.005)
-        check("controls", f"B_central {ch} WD night kW median", np.median(nigs), nig, 0.005)
+        check(PUB_BUCKET, f"B_central {ch} WD midday kW median", np.median(mids), mid, 0.005)
+        check(PUB_BUCKET, f"B_central {ch} WD night kW median", np.median(nigs), nig, 0.005)
     # coincidence factor: which scope reproduces 0.941 / 0.851?
     cfb = peak[peak.channel == "_BUILDING"].set_index("cell_tag")["coincidence_factor"]
     cf_bc = cfb[cfb.index.str.startswith("B_central__")]
@@ -199,33 +217,33 @@ def main():
     RESULTS["cf_scope_probe"] = dict(bcentral_median=cf_bc.median(), bcentral_min=cf_bc.min(),
                                      bcentral_argmin=cf_bc.idxmin(), all56_median=cfb.median(),
                                      all56_min=cfb.min(), all56_argmin=cfb.idxmin())
-    check("controls", "CF median (B_central, 4 cells -- the scope of manuscript 5.3)", cf_bc.median(), 0.941, 0.0005)
-    check("controls", "CF min (B_central, Tall CLG)", cf_bc.min(), 0.851, 0.0005)
+    check(PUB_BUCKET, "CF median (B_central, 4 cells -- the scope of manuscript 5.3)", cf_bc.median(), 0.941, 0.0005)
+    check(PUB_BUCKET, "CF min (B_central, Tall CLG)", cf_bc.min(), 0.851, 0.0005)
     # Published ranges that fail at +-0.005: test the double-rounding explanation (value first
     # rounded to 3 dp in an intermediate table, then to 2 dp in the prose).
     dr = lambda x: round(round(float(x), 3), 2)
     for name, x, want in (("building peak hour min", b.peak_hour_circular.min(), 14.11),
                           ("building peak hour max", b.peak_hour_circular.max(), 15.70)):
-        check("controls", f"B_central {name}, double-rounded 3dp->2dp", dr(x), want, 1e-9)
+        check(PUB_BUCKET, f"B_central {name}, double-rounded 3dp->2dp", dr(x), want, 1e-9)
     rn = [np.concatenate([p[0:5], p[22:24]]).mean() / 1000 for p in
           [wd_profile(diur, c, "retail") for c in bc[bc.channel == "retail"]["cell_tag"]]]
-    check("controls", "B_central retail WD night kW median, double-rounded", dr(np.median(rn)), 2.11, 1e-9)
+    check(PUB_BUCKET, "B_central retail WD night kW median, double-rounded", dr(np.median(rn)), 2.11, 1e-9)
     # Office range low end 11.82: the all-days column (agg_peak peak_hour_circular), not weekday
     ao = peak[(peak.channel == "office") & (peak.daytype == "all") & (peak.metric == "energy_W")
               & peak.cell_tag.str.startswith("B_central__")]["peak_hour_circular"]
-    check("controls", "B_central office ALL-DAYS peak hour min (explains published 11.82)", ao.min(), 11.82, 0.005)
+    check(PUB_BUCKET, "B_central office ALL-DAYS peak hour min (explains published 11.82)", ao.min(), 11.82, 0.005)
     # EUI Table 5 (56 cells)
     pub_eui = {"office": (61.72, 90.21, 71.02), "retail": (63.63, 96.84, 75.63),
                "hotel": (203.33, 318.42, 260.54), "residential": (111.57, 128.77, 119.10)}
     for ch, (lo, hi, med) in pub_eui.items():
         v = eui[eui.channel == ch]["eui_CFA_kWh_m2"]
-        check("controls", f"Table 5 {ch} CFA median (56 cells)", v.median(), med, 0.005)
-        check("controls", f"Table 5 {ch} CFA min", v.min(), lo, 0.005)
-        check("controls", f"Table 5 {ch} CFA max", v.max(), hi, 0.005)
+        check(PUB_BUCKET, f"Table 5 {ch} CFA median (56 cells)", v.median(), med, 0.005)
+        check(PUB_BUCKET, f"Table 5 {ch} CFA min", v.min(), lo, 0.005)
+        check(PUB_BUCKET, f"Table 5 {ch} CFA max", v.max(), hi, 0.005)
     # Section 5.2 office uninjected control 85.45
     necb_off = eui[(eui.scenario == "Default_NECB") & (eui.channel == "office")]["eui_CFA_kWh_m2"]
     print(f"    Default_NECB office CFA per cell: {necb_off.round(2).tolist()}")
-    check("controls", "Default_NECB office CFA median (published 85.45)", necb_off.median(), 85.45, 0.005)
+    check(PUB_BUCKET, "Default_NECB office CFA median (published 85.45)", necb_off.median(), 85.45, 0.005)
     # Reconstruct hourly channel energy from cell files; must reproduce agg_peak CF exactly.
     print("\nCONTROL 3 -- hourly reconstruction from cell files reproduces agg_peak CF + building peak")
     Wcache, worst_cf, worst_pk = {}, 0.0, 0.0
@@ -243,6 +261,13 @@ def main():
 
     # ---------------- NEGATIVE CONTROLS: the reader must FAIL on wrong input -------------
     print("\nNEGATIVE CONTROLS -- each MUST print FAIL")
+    if ARM == "P10R":   # the arm's own correct values (the published ones belong to the frozen arm)
+        _m = lambda ch: float(np.median([circ(wd_profile(diur, c, ch)) for c in bc[bc.channel == ch]["cell_tag"]]))
+        TRUTH = dict(office_h=_m("office"), hotel_h=_m("hotel"), retail_h=_m("retail"), cf=float(cf_bc.median()))
+    else:
+        TRUTH = dict(office_h=11.90, hotel_h=18.91, retail_h=12.37, cf=0.941)
+    RESULTS["negative_control_truth"] = TRUTH
+    print(f"    truth used: {TRUTH}")
     # N1: drop the metric filter (people rows come first? take whichever 24 rows sort first)
     v = []
     for c in bc[bc.channel == "office"]["cell_tag"]:
@@ -250,25 +275,25 @@ def main():
                  & (diur.daytype == "WD")]
         v.append(circ(d[d.metric == "people"].sort_values("hour")["W"].to_numpy()))
     check("negative_controls", "N1 office peak hour read from metric=='people' (filter wrong)",
-          np.median(v), 11.90, 0.005)
+          np.median(v), TRUTH["office_h"], 0.005)
     # N2: wrong scenario (Y2022 read as if it were B_central)
     y = ls[(ls.scenario == "Y2022") & (ls.channel == "hotel")]
     v = [circ(wd_profile(diur, c, "hotel")) for c in y["cell_tag"]]
     check("negative_controls", "N2 hotel peak hour from Y2022 rows instead of B_central",
-          np.median(v), 18.91, 0.005)
+          np.median(v), TRUTH["hotel_h"], 0.005)
     # N3: profile rotated by 3 h
     v = [circ(np.roll(wd_profile(diur, c, "retail"), 3)) for c in bc[bc.channel == "retail"]["cell_tag"]]
-    check("negative_controls", "N3 retail profile rotated +3 h", np.median(v), 12.37, 0.005)
+    check("negative_controls", "N3 retail profile rotated +3 h", np.median(v), TRUTH["retail_h"], 0.005)
     # N4: superseded aggregate directory
     if os.path.isdir(AGG_SUPERSEDED):
         P = pd.read_csv(os.path.join(AGG_SUPERSEDED, "agg_peak.csv"))
         cfo = P[P.channel == "_BUILDING"]["coincidence_factor"]
-        check("negative_controls", "N4 CF median from superseded outputs_step8/agg/",
-              cfo.median(), 0.941, 0.0005)
+        check("negative_controls", f"N4 CF median from wrong aggregate {os.path.basename(AGG_SUPERSEDED)}",
+              cfo.median(), TRUTH["cf"], 0.0005)
         Do = pd.read_csv(os.path.join(AGG_SUPERSEDED, "agg_diurnal.csv"))
         v = [circ(wd_profile(Do, c, "retail")) for c in bc[bc.channel == "retail"]["cell_tag"]]
-        check("negative_controls", "N4b retail B_central WD peak hour from superseded agg",
-              np.median(v), 12.37, 0.005)
+        check("negative_controls", f"N4b retail B_central WD peak hour from wrong aggregate {os.path.basename(AGG_SUPERSEDED)}",
+              np.median(v), TRUTH["retail_h"], 0.005)
     # N5: hourly reconstruction with cooling allocated on HEATING shares must NOT reproduce CF
     cell = "Default_NECB__Tall__CLG"
     cfw, _, _ = cf_from_hourly(hourly_channels(cell, meta, swap_basis=True), list(range(6)))
@@ -417,6 +442,10 @@ def main():
         json.dump(RESULTS, f, indent=1, default=float)
     nc = RESULTS["controls"]
     nn = RESULTS["negative_controls"]
+    pv = RESULTS["published_vs_new"]
+    if pv:
+        print(f"PUBLISHED vs NEW ARM (info, not a control): {sum(r['verdict'] == 'PASS' for r in pv)}/{len(pv)} "
+              f"published numbers still reproduced within their tolerance")
     print(f"\nCONTROLS PASS {sum(r['verdict'] == 'PASS' for r in nc)}/{len(nc)}; "
           f"NEGATIVE CONTROLS FAILING AS REQUIRED {sum(r['verdict'] == 'FAIL' for r in nn)}/{len(nn)}")
 

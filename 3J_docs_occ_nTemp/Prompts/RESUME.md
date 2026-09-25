@@ -1,7 +1,178 @@
 # RESUME - THE 3J director prompt. Start every session here.
 
-**Last updated: 2026-09-23 (late evening), "P10R jobs CANCELLED by the author; restart when Speed CPUs are free" round.**
-Predecessor: `archive/RESUME.2026-09-23_pre_cancel.md` (older: `archive/RESUME.2026-09-23_pre_hold_return.md`, `archive/RESUME.2026-09-23_pre_speed_wait.md`).
+**Last updated: 2026-09-25 ~20:30 UTC (16:30 EDT), "author's Word comments fixed" round.**
+Predecessor: `archive/RESUME.2026-09-25_pre_1630edt_author_comments.md` (then `archive/RESUME.2026-09-25_pre_1515edt_BE_format.md`, then `archive/RESUME.2026-09-25_pre_1445edt_v3a_hotel_obs.md`, then `archive/RESUME.2026-09-25_pre_1110edt_hotel_obs.md`, then `archive/RESUME.2026-09-25_pre_0400utc_build.md` (older: `archive/RESUME.2026-09-25_pre_0300utc_stage2c.md`, `archive/RESUME.2026-09-25_pre_0108utc_status.md`).
+
+> 🟢 **UPDATE 2026-09-25 ~20:30 UTC (16:30 EDT) - READ THIS BOX FIRST. NO MACHINE WORK LEFT.** The author put 8
+> comments in the Word file (copy: `writing/implementation/IMP/author_checks_2026-09-25/3J_manuscript_submission_AUTHOR_COMMENTS.docx`).
+> All fixed: title 16 pt; new 2J-style highlights; no Gemini/LLM name anywhere except the AI statement (captions + cover letter);
+> table column widths from content and centred captions, both done in `writing/submission/extra/build_scripts/post.py` so every
+> rebuild keeps them; Appendix A text shortened. Detail: `IMP/rewrite_log.md` last section. Board v44, all tasks ticked but submit.
+> - **Author items left:** cover-letter date; final read; submit. Smart Grids (MDPI) is closed: never raise it.
+
+> 🟢 **UPDATE 2026-09-25 ~19:15 UTC (15:15 EDT) - HISTORY (the 20:30 box above replaces it).** Author asked for the
+> missing citations, the paywalled list, the cover letter (not the date) and a B&E format pass modelled on the 2J AE files.
+> - Done: 0 [REF NEEDED] left; captions short (Gemini note on Figures 1-4); Table 3 note below the table; Table A.1 rules;
+>   reference punctuation + accessed dates; cover letter to B&E musts, .docx rebuilt; `writing/submission/BE_upload/` =
+>   Figure_1..9.pdf + `3J_highlights_BE.docx`. Build: only CHECK 4 (ASHRAE 2014, SI-only) remains. Detail: `IMP/rewrite_log.md`
+>   "B&E format pass and the last citations"; sources `IMP/author_checks_2026-09-25/refs_found.md`.
+> - Tall/SuperTall models are LBNL prototypes in NREL OpenStudio-Standards (2020), NOT a DOE/PNNL release; text + reference fixed.
+> - **~19:45 UTC:** Table 4 context-range edges removed (no source; survey values 231/281/356 shown), Box 2015 -> Hyndman &
+>   Athanasopoulos 2021 (open), Guan 2016 dropped, gem version unknown (reference has none). Rewrite_log last section.
+> - **Author items left:** cover-letter date; final read; submit.
+>   Yamaguchi and Shimoda (2017) does not exist; nothing to download. Smart Grids (MDPI) is closed: never raise it.
+
+> 🟢 **UPDATE 2026-09-25 ~18:45 UTC (14:45 EDT) - HISTORY (the 19:15 box above replaces it).** Author: "ok, keep going
+> until the end" / "update the artifact". Board v40 (all bars done). The 15:10 UTC box below is history.
+> - Hotel 2030 levels switched to observed (AB 0.597, QC 0.610): 36 P10R cells re-run (56/56 ok), Results + Table 7 numbers,
+>   hotel source sentence, figures (`IMP/scripts/p9_figures_hotel_obs.py`, controls 27/27) all updated. The additivity
+>   sentence was re-worded to its measured size ("within 6 % ... at most 0.12 percentage points"); author should see it.
+> - V3a repeat-seed: the 20 B_central runs re-run with the new hotel CSV (20/20 ok; md5 control 20 of 20 B_central, 0 of Y2022);
+>   aggregate `Step8_docs/outputs_step8/agg_V3a_P10R_hotel_obs`, report `IMP/data/V3/v3a_P10R/full_hotel_obs/`. Seed 42 = published
+>   exactly (8/8 cells, worst 0.0). Spread unchanged (CV 0.542 %, peak SD 0.117 h). Office/retail/hotel ratio now 5.4-311
+>   (was 7.1-282): `05_Limitations.md` line 3 "7 to 280" -> "5 to 310" (backup in `chapters_v2/_archive_pre_hotel_obs_2026-09-25/`).
+>   Residential verdict unchanged. Write-up: `IMP/V3_design_and_runs.md` sections 11.8-11.9.
+> - Build rebuilt (exit 3 = expected: CHECK 4 one uncited reference ASHRAE 2014, CHECK 5 six [REF NEEDED] placeholders).
+> - **Author items left:** open the 5 paywalled references; check Yamaguchi and Shimoda (2017); final read (incl. the 6
+>   [REF NEEDED] and the uncited ASHRAE Guideline 14 entry); cover-letter date; submit. Smart Grids (MDPI) is closed: never raise it.
+
+> 🟢 **UPDATE 2026-09-25 ~15:10 UTC (11:10 EDT) - READ THIS BOX FIRST. Author: "yes to both, go ahead and update the
+> artifact and manager prompt".** Previous state: `archive/RESUME.2026-09-25_pre_1110edt_hotel_obs.md`. Board v26.
+> - **Figures DONE:** Gemini's v5 redraws (`Figure_05_hotel_sidetrack.png`, `Figure_04_exclusivity_projection.png` = SI S5,
+>   `graphicalAbstract.png`) checked against the v5 check lists and ACCEPTED; old ones in
+>   `writing/submission/figures/_archive_v4_before_v5_redraw_2026-09-25/`. Gemini drew them with Python and deleted its
+>   scripts (not reproducible from our side). Figures 2, 3 (three-head), 6, S2, S3, S4 accepted earlier. No figure work left.
+> - **Author checks done** (`writing/implementation/IMP/author_checks_2026-09-25/`): item 2 hotel levels UNSOURCED -> replaced
+>   (below); item 3 references 8 verified / 5 author-must-open (paywall) / 6 fix / 3 reject; item 4 s(t) = DOE/PNNL
+>   prototype HotelLarge guest-room schedule / 0.65 (cite the prototype reference already in the list, NOT Deru 2011).
+> - **Author ruling 1 (APPLYING): references.** A background agent applies the 8 verified + 6 fixed references into
+>   `writing/chapters_v2`, logs in `IMP/rewrite_log.md` section "Reference fixes 2026-09-25 (author approved)", rebuilds.
+>   It must not touch numbers or the hotel recovery-level sentence. If you resume and that section is missing, redo it.
+> - **Author ruling 2 (RUNNING): hotel 2030 recovery levels = observed 2023-2025 means, AB 0.597 (Gov. of Alberta CBRE series,
+>   "Alberta (excluding resorts)") and QC 0.610 (ISQ province total)**, replacing unsourced 0.615/0.635. Done so far:
+>   - everything before the switch archived: `Leg3_4-split/_archive_pre_hotel_obs_2026-09-25/` (forecast, lookup, s(t),
+>     P10R hotel CSVs, agg_P10R, outputs_step9_P10R, IMP/data/P10R, old 3rdJ_06 script + gate scorecard);
+>   - `Step6_docs/3rdJ_06_hotel_sarima_4split.py:117` anchors changed (+ source comment) and re-run: lookup and s(t) md5
+>     unchanged, gate scorecard identical (the 2 QC FAIL rows are old); new forecast md5 e78debce;
+>   - `IMP/scripts/hotel_obs_rebuild.py`: `--control` reproduced the 3 frozen 2030 hotel md5s BEFORE the switch (PASS)
+>     and FAILS after it (seen both ways); `--write` put the new 2030 cons/central/opt hotel CSVs into
+>     `Step7_docs/outputs_step7_P10R/` (md5 497ee98c / 30071672 / a0b17abe; mean rates AB 0.537/0.597/0.627,
+>     QC 0.561/0.610/0.653). `3rdJ_07_aug_to_bem_4split_P10R.py` now BUILDS the 2030 hotel products instead of byte-copying
+>     the frozen ones (2022 still copied), so a Step-7 re-run cannot silently restore the old values;
+>   - 🔴 trap found: the local driver's `cell_ok()` ignores INPUTS_HASH, so it would have skipped every changed cell.
+>     `IMP/scripts/hotel_obs_stale_cells.py` compares stored vs current INPUTS_HASH: 36 stale (all B_* and sens_*),
+>     20 unchanged (Y2005/2010/2015/2022, Default_NECB). The 36 were MOVED to
+>     `Leg3_4-split/Step8_docs/_archive_pre_hotel_obs_2026-09-25_cells/` (list `stale_list.txt`, old driver.log copy);
+>   - relaunched 15:06 UTC: `PYTHONIOENCODING=utf-8 py -3 p10r_local_campaign.py --workers 10` from `IMP/scripts/`,
+>     stdout `campaign_local_P10R/_logs/driver_stdout_hotel_obs.txt`, RAM guard `p10r_mem_watchdog.ps1 -Threshold 80`.
+>     Count rule: `[ok]` lines in `driver.log` with timestamp after 2026-09-25T15:06. Relaunch after a stop = same command.
+> - **After `DRIVER DONE ok=56` (aggregate agg_P10R re-written by the driver):** Step-9 scorer -> gates (d)+(e) -> P10 section 6
+>   old-vs-new table -> P3 `--arm P10R` -> V3a (repeat only the V3a cells that read the 2030 hotel products, or state why
+>   not) -> update every hotel-dependent number in `writing/chapters_v2` + tables (old values in the archive; compare) ->
+>   Framework hotel sentence: replace [REF NEEDED: source of the 2023 to 2025 hotel recovery levels] with the Alberta
+>   dashboard + ISQ citations and the new values -> rebuild (expect exit 3) -> board, this box, memory.
+>   Exact downstream commands: see the progress log entries 01:08-04:30 UTC 2026-09-25 in
+>   `writing/implementation/3J_IMP_execution_2026-09-22.md`.
+> - **Left for the author after that:** open the 5 paywalled references (list in item3 file), Yamaguchi and Shimoda (2017)
+>   for Table A.1, final read, cover-letter date, submit.
+>
+> 🟢 **UPDATE 2026-09-25 ~04:00 UTC - superseded by the box above.** Author asleep ("continue until the end, and
+> update the manager prompt and artifact"). Board v25. Previous box: `archive/RESUME.2026-09-25_pre_0400utc_build.md`.
+> - **Paper state: built.** `writing/fullSet/assemble_3J_v2.py` builds from `writing/chapters_v2` + `writing/tables`
+>   into `writing/submission/3J_manuscript_submission.md/.docx` and `3J_supplementary_material.md` / `Supplementary
+>   material.docx` (build note `writing/implementation/IMP/build_v2_2026-09-25.md`). Re-run after ANY chapter edit:
+>   `py -3 writing/fullSet/assemble_3J_v2.py` -> expect exit 3 (only check 4: ASHRAE Guideline 14 cited in SI only).
+>   Self-test `--selftest` exit 0 (21/21 probes caught). Images in both .docx = source PNG md5. Body 6,251 words.
+>   Old outputs: `writing/submission/archive/pre_v2_build_2026-09-25/`.
+> - **Title page + cover letter rebuilt** in 2J AE form: `writing/submission/Title_Page_and_Cover_Letter.md/.docx`
+>   (old one archived in `submission/archive/pre_v2_title_page_2026-09-25/`; it had "under review", CBRE, old claims).
+>   Date reads 25 September 2026: change at submission.
+> - **Done this round** (all in `writing/implementation/IMP/rewrite_log.md`, sections "Stage 2d", "Stage 2d hotel fix",
+>   "P9 second pass", "Figure titles removed", "Figure S1 cleaned", "SI jargon pass", "Figure labels made plain"):
+>   P9 second numbers pass + its 5 meaning fixes; 2.5 control sentence; 9 TRUSTED-2J references applied from
+>   `deepResearch_Resources/VETTING_RV11_RV14_2026-09-25.md` (REF NEEDED 17 -> 15 after hotel additions);
+>   **hotel channel corrected to what the code did** (`IMP/hotel_channel_fact_trace_2026-09-25.md`: Alberta = Government of
+>   Alberta monitor 2011-2022, Quebec 2019-2022, NOT CBRE/2005-2022; 2022 = observed rate, 2030 = 2019 shape x recovery
+>   level; SARIMA(1,1,0)(0,1,0,12) only checks, forecast unused); new Limitations paragraph (Quebec short series);
+>   SI tables in journal words; data figures without titles/code labels; S1 cleaned; declarations now name SI S2-S5.
+> - **V3a DONE 2026-09-25 04:30 UTC: 40/40 ok after a resume at 04:02; full result in `IMP/V3_design_and_runs.md` 11.6 and in `05_Limitations.md` (both towers); build re-run. History:** 25/40 done, then STOPPED by the RAM guard 03:26 UTC (another session's OpenUBEM job
+>   `fleet06c_harvest` took ~11 GB; not ours, untouched). Seed 42 reproduces P10R exactly (6/8 cells). Partial result is
+>   written into `05_Limitations.md` (4 further draws; EUI spread <= 0.5 %; SuperTall 2030-vs-2022 office/retail/hotel
+>   changes 10-250x the spread; residential change not, sign flips; "not completed for the Tall tower").
+>   State + resume command: `IMP/V3_design_and_runs.md` section 11. A waiter
+>   (`writing/implementation/IMP/scripts/V3/v3a_resume_when_free.ps1`, running from a session scratchpad copy, log `Leg3_4-split/Step8_docs/campaign_local_P10R_V3a/_logs/resume_waiter.log`)
+>   restarts the 15 unfinished tasks + guard when (fleet job gone AND RAM < 60 %) or RAM < 50 %, gives up after 8 h.
+>   **When all 40 are done:** run `v3a_local_aggregate.py` full mode + `v3a_report_P10R.py`, then rewrite the Limitations
+>   V3a sentences for both towers (drop "not completed for the Tall tower"), rebuild.
+> - **AUTHOR TODO (in this order):**
+>   1. Draw with Gemini (prompts only, in `writing/submission/figures/Prompts_Images_v4/`): `Figure_03_hotel_channel.md`
+>      (main Figure 3 is WRONG now: CBRE, old model), `Figure_02_and_04_redraw.md`, `SI_schematics_redraw.md` (S2-S5),
+>      `graphicalAbstract.md` (stray line + office top chart). Save under the same file names; then re-run the build.
+>   2. Source of the 2030 hotel recovery levels 0.615 (AB) / 0.635 (QC): they came from a deep-research report given to the
+>      Step 6 builder ("CBRE/STR 2023-2025"), never vetted. Cite a real source or say they are assumed.
+>   3. Open the 19 CANDIDATE sources in the vetting file (M4-M34 list): fills most of the 15 [REF NEEDED] (PCGrad, Box-Jenkins,
+>      coincidence factor, ATUS, Guideline 14 edition, NECB ISBN 978-0-660-24321-4, SCIEU year, PNNL release, access dates).
+>   4. Is the guest-room shape s(t) the DOE Large Hotel schedule? If yes, cite Deru et al. (2011) (vetting M40).
+>   5. Open Yamaguchi and Shimoda (2017) for Table A.1 (vetting M24).
+>   6. Final read, cover-letter date, submit. Research brief `deepResearch_Resources/00_MASTER_BRIEF_V2.md` still carries
+>      OLD numbers: update before any new Gemini research round.
+> - **Status words:** both companion papers "in revision" (P12). Never "under review" unless true at submission.
+>
+> 🔴 **AUTHOR RULING 2026-09-25 ~02:15 UTC: write the 3J paper like the 2J AE revision, "including AI,
+> funding, etc."** Model = `2J_docs_occ_nTemp/writing/submission/rejection revision/manuscript/2J_manuscript_AE_revised.md`
+> (+ SI, title page/cover letter). Details and what to copy: `writing/implementation/IMP/P14_package.md` §6 (top).
+> Applies to Stage 2 rewrite, P9 and P14. Funding + AI placeholders are now RESOLVED (2J wording).
+>
+> 🟢 **UPDATE 2026-09-25 02:10 UTC: P10R DONE.** 56/56 ok, aggregate 56/56 (`agg_P10R`), scored into
+> `Leg3_4-split/Step9_docs/outputs_step9_P10R/` (18P/2F/10I; retail EUI now PASS). Gates (d)+(e) FAIL as run
+> only on out-of-scope cells (12 cycle cells reuse unchanged products; 4 Default_NECB inject nothing); detail in
+> the progress log entry 02:10. P3 `--arm P10R` run done: `IMP/data/P10R/`. Next: P10 §6 old-vs-new table.
+> The box below is the earlier state, kept for history.
+>
+> 🟢 **STATUS 2026-09-25 01:08 UTC - READ THIS BOX FIRST.** Author instruction: "keep going until the end, and when
+> completion of simulations update the artifact and continue rest of it" - run the whole remaining pipeline without asking.
+> - **P10R campaign (LOCAL, driver task b3vr4knyg, guard task bw2m7odg0): 38 of 56 ok** (9 from 09-23 + 29 since the
+>   00:03 UTC relaunch), 0 failed, 10 EnergyPlus running, RAM 61.5% (guard limit 80%). Expect done ~01:40 UTC.
+>   🔴 **Count rule:** `grep "\[ok\]" driver.log | awk '$1>"2026-09-25"' | wc -l` then add 9. A whole-log grep also
+>   counts 8 old ok lines from the killed 09-23 run; that overstated the count once (board said 27 at 20:20 local, true 19;
+>   corrected openly on board v16 and in the progress log).
+> - **Known gap `B_central__Tall__MTL`:** manifest says ok but there is no `run/eplusout.sql`; the driver skips it every
+>   time. Fix after `DRIVER DONE`: MOVE (do not delete) that folder out of `campaign_local_P10R/` to an archive folder, then
+>   rerun `py -3 p10r_local_campaign.py --workers 1` (keeps the 55 ok, runs this one, slims, re-aggregates). Alternative:
+>   `3rdJ_08D_campaign_cell_P10R.py --tag B_central__Tall__MTL --outroot <OUTROOT>`, then the slimmer and
+>   `3rdJ_08E_aggregate_4split.py --campaign-dir campaign_local_P10R --outdir outputs_step8/agg_P10R --idf-name injected_resized.idf`
+>   (PYTHONPATH=`<repo>/eSim`). Aggregate must count 56 before anything below.
+> - **Then, in order (all local, <= 10 workers, guard on):** Step-9 scorer on agg_P10R -> gates (d)+(e) with
+>   `IMP/scripts/p10r_gates.py` -> old-vs-new table in `IMP/P10_2030_level_check.md` §6 -> P3 re-run -> V3a seed repeats ->
+>   Stage 2 rewrite (143 ⟦P10R⟧ markers in `writing/chapters_v2/`, plus the V3c limitation sentence in the P3 text) ->
+>   P9 second pass -> rebuild both Word files (check media md5s) -> P14 cover letter placeholders -> closure (progress log,
+>   this file, board, memory + MEMORY.md line).
+> - **Done this round, do not redo:** V3c post-processed (`IMP/V3c_results.md`, `IMP/scripts/v3c_compare.py`): the P3
+>   night-presence contrast comes mostly from the NECB-A control schedule (hotel weekday night people F 479.1 vs U 3.15;
+>   write it as a limitation). V3b tolerance written in `IMP/V3_design_and_runs.md` §10: Tall_MTL, Tall_CLG, SuperTall_CLG
+>   PASS; SuperTall_MTL NOT_EVALUABLE (twin runs differ, open item V3-O1). V4 design note `IMP/V4_design.md`: no second
+>   mixed-use tower model exists; 3 options + 3 author questions in §7; parked on the author, blocks nothing.
+> - 🔴 **Open item V3-O2 (sign):** U sits ABOVE R in every lighting/equipment column (office equipment +65.56% in all 4
+>   towers), opposite to prediction P-b4. The formula in `v3_check.py:107/152` is right, so the cause is unknown. Keep it out
+>   of the prose until explained; cross-check against the P10R numbers.
+> - Process slip logged in `V3_design_and_runs.md` §10.6: one `python3 -c` ran on the Speed login node. Never again.
+> - Board: db doc `board/progress` at version 17 (write with `set` + `if_version` from a full local JSON after reading live).
+
+> 🟢 **NEW 2026-09-24 ~20:03 local (00:03 UTC 09-25), AUTHOR RULING: Speed was full, so the P10R campaign runs
+> LOCALLY on half the CPUs ("lets go").** This REPLACES the 2026-09-23 "Speed only" ruling below for P10R.
+> The whole arm (56 cells) is now LOCAL: 9 cells already ok from 09-23 + 47 running now, one platform, so
+> nothing is mixed with Speed. Command (background, from `writing/implementation/IMP/scripts/`):
+> `PYTHONIOENCODING=utf-8 py -3 p10r_local_campaign.py --workers 10`; stdout
+> `Leg3_4-split/Step8_docs/campaign_local_P10R/_logs/driver_stdout_relaunch2.txt`, per-cell log `driver.log`.
+> RAM guard `IMP/scripts/p10r_mem_watchdog.ps1 -Threshold 80` (seen firing at threshold 1 in dry and real
+> mode on a dummy process, quiet at 99; kills ONLY processes whose command line has `campaign_local_P10R`
+> or `p10r_local_campaign`, driver first; log `_logs/watchdog.log`, exit 2 = fired). At launch: C: 599 GB free,
+> RAM 49.6% used with 10 EnergyPlus running. Expect about 1 h. Relaunch after any stop = same command (ok
+> cells are skipped). On return: tail `driver.log` / `driver_stdout_relaunch2.txt` for `DRIVER DONE ok=<n>
+> failed=<m>`, then read `watchdog.log`. The driver aggregates into `outputs_step8/agg_P10R/` at the end; the
+> known gap (`B_central__Tall__MTL` has no `run/eplusout.sql`) still needs its one-cell re-run before the
+> aggregate counts 56. Then step 4 below (scorer, gates, P3) - locally is fine for those now too, same guard idea.
+> Nothing was submitted on Speed; `/speed-scratch/o_iseri/3J_P10R/` stays as it was.
 
 > 🔴 **CANCELLED 2026-09-23 (evening), by the author: P10R test 1346544 and array 1346545 are CANCELLED** (verified with `sacct`; nothing of
 > ours left in the queue under `3J_P10R`). The author will return when Speed CPUs are free. To restart: run `p10r_submit.sh`

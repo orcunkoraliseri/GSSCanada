@@ -1,0 +1,169 @@
+{
+  "TOL_ANN": 1e-06,
+  "TOL_HOURLY": 0.0001,
+  "NOISE_FRACTION": 0.1,
+  "overall": "NOT_EVALUABLE (noise floor)",
+  "exit_code": 2,
+  "cells": {
+    "Tall_MTL": {
+      "verdict": "PASS",
+      "control": "FIRED",
+      "noise_U2_vs_U": {
+        "status": "PASS",
+        "worst_ann": 0.0,
+        "worst_hourly": 0.0,
+        "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+        "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+        "n_cols": 51,
+        "n_cols_fail": 0
+      },
+      "control_X_vs_R": {
+        "status": "FAIL",
+        "worst_ann": 0.0805403253916013,
+        "worst_hourly": 1.0,
+        "worst_ann_col": "channel_hourly.csv:office_lights",
+        "worst_hourly_col": "channel_hourly.csv:office_people",
+        "n_cols": 51,
+        "n_cols_fail": 28
+      },
+      "gate_N_vs_R": {
+        "status": "PASS",
+        "worst_ann": 0.0,
+        "worst_hourly": 0.0,
+        "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+        "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+        "n_cols": 51,
+        "n_cols_fail": 0
+      },
+      "xplatform_U_vs_frozen": {
+        "status": "FAIL",
+        "worst_ann": 0.0008449283725542878,
+        "worst_hourly": 0.7118442338100451,
+        "worst_ann_col": "channel_hourly.csv:retail_sysheat",
+        "worst_hourly_col": "hourly_meters.csv:Pumps:Electricity",
+        "n_cols": 51,
+        "n_cols_fail": 23
+      }
+    },
+    "Tall_CLG": {
+      "verdict": "PASS",
+      "control": "FIRED",
+      "noise_U2_vs_U": {
+        "status": "PASS",
+        "worst_ann": 0.0,
+        "worst_hourly": 0.0,
+        "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+        "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+        "n_cols": 51,
+        "n_cols_fail": 0
+      },
+      "control_X_vs_R": {
+        "status": "FAIL",
+        "worst_ann": 0.07196392420218749,
+        "worst_hourly": 1.0,
+        "worst_ann_col": "channel_hourly.csv:office_lights",
+        "worst_hourly_col": "channel_hourly.csv:office_people",
+        "n_cols": 51,
+        "n_cols_fail": 28
+      },
+      "gate_N_vs_R": {
+        "status": "PASS",
+        "worst_ann": 0.0,
+        "worst_hourly": 0.0,
+        "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+        "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+        "n_cols": 51,
+        "n_cols_fail": 0
+      },
+      "xplatform_U_vs_frozen": {
+        "status": "FAIL",
+        "worst_ann": 8.394002687283745e-05,
+        "worst_hourly": 0.16833646554437107,
+        "worst_ann_col": "hourly_meters.csv:Heating:NaturalGas",
+        "worst_hourly_col": "hourly_meters.csv:HeatRecovery:Electricity",
+        "n_cols": 51,
+        "n_cols_fail": 23
+      }
+    },
+    "SuperTall_MTL": {
+      "verdict": "NOT_EVALUABLE (noise floor above TOL/10)",
+      "control": "FIRED",
+      "noise_U2_vs_U": {
+        "status": "FAIL",
+        "worst_ann": 0.00021257285008320086,
+        "worst_hourly": 0.5376358749799818,
+        "worst_ann_col": "hourly_meters.csv:Pumps:Electricity",
+        "worst_hourly_col": "hourly_meters.csv:Pumps:Electricity",
+        "n_cols": 51,
+        "n_cols_fail": 23
+      },
+      "control_X_vs_R": {
+        "status": "FAIL",
+        "worst_ann": 0.10499217543755775,
+        "worst_hourly": 1.0,
+        "worst_ann_col": "channel_hourly.csv:office_lights",
+        "worst_hourly_col": "channel_hourly.csv:office_people",
+        "n_cols": 51,
+        "n_cols_fail": 28
+      },
+      "gate_N_vs_R": {
+        "status": "PASS",
+        "worst_ann": 0.0,
+        "worst_hourly": 0.0,
+        "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+        "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+        "n_cols": 51,
+        "n_cols_fail": 0
+      },
+      "xplatform_U_vs_frozen": {
+        "status": "FAIL",
+        "worst_ann": 0.0008715535714177777,
+        "worst_hourly": 0.5376351505435902,
+        "worst_ann_col": "channel_hourly.csv:retail_sysheat",
+        "worst_hourly_col": "hourly_meters.csv:Pumps:Electricity",
+        "n_cols": 51,
+        "n_cols_fail": 23
+      }
+    },
+    "SuperTall_CLG": {
+      "verdict": "PASS",
+      "control": "FIRED",
+      "noise_U2_vs_U": {
+        "status": "PASS",
+        "worst_ann": 0.0,
+        "worst_hourly": 0.0,
+        "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+        "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+        "n_cols": 51,
+        "n_cols_fail": 0
+      },
+      "control_X_vs_R": {
+        "status": "FAIL",
+        "worst_ann": 0.0933160107071694,
+        "worst_hourly": 1.0,
+        "worst_ann_col": "channel_hourly.csv:office_lights",
+        "worst_hourly_col": "channel_hourly.csv:office_people",
+        "n_cols": 51,
+        "n_cols_fail": 28
+      },
+      "gate_N_vs_R": {
+        "status": "PASS",
+        "worst_ann": 0.0,
+        "worst_hourly": 0.0,
+        "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+        "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+        "n_cols": 51,
+        "n_cols_fail": 0
+      },
+      "xplatform_U_vs_frozen": {
+        "status": "FAIL",
+        "worst_ann": 0.0002002721724490575,
+        "worst_hourly": 0.5886049509360524,
+        "worst_ann_col": "hourly_meters.csv:HeatRejection:Electricity",
+        "worst_hourly_col": "hourly_meters.csv:Pumps:Electricity",
+        "n_cols": 51,
+        "n_cols_fail": 22
+      }
+    }
+  }
+}

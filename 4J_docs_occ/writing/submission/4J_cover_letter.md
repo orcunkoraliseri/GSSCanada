@@ -34,14 +34,12 @@ real diaries from comparable countries are the stronger starting point, and any 
 be checked against them before use.
 
 The comparison, its metrics, tolerances and baseline were registered internally before training
-(hash-locked, 2026-08-18) and are deposited at submission. The result is reported against that
+(hash-locked, 2026-08-18); the frozen file is available on request. The result is reported against that
 unchanged bar.
 
 The manuscript is original, has not been published previously, and is not under consideration
 elsewhere. I have no competing interests to declare. The use of generative AI tools is declared at the
 end of the manuscript.
-
-**Suggested reviewers.** [author to add]
 
 Thank you for considering this work.
 

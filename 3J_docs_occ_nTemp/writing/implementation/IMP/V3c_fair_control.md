@@ -187,3 +187,22 @@ Outputs to compare (F vs U, both 2022 code-schedule arms, no scenario claim beyo
   frozen); not asked for, and Speed already matches V3b's own platform choice.
 - Did not check whether `agg_annual_by_channel.csv`'s EUI is on CFA or requires the Step-9 scorer for
   the GFA-share basis; noted as a fallback path in section 6 rather than assumed.
+
+## 10. Post-processing done, results (2026-09-24, append)
+
+Array 1342434 verified COMPLETED 4/4 (0:0), all 4 manifests `status: ok`,
+`build_F: objects_changed=4, objects_added=1`. Cluster was full, so the author ruled (2026-09-24)
+to aggregate locally instead of by sbatch: cells copied `scp -r` to
+`C:/Users/o_iseri/Desktop/GSSCanada/_local_runs/3J_V3c/runs/V3c/`, Step-8E aggregator run locally
+(one process, RAM checked at 49.9% before running), output `IMP/data/V3c/agg_V3c_F/agg_*.csv`,
+attribution residual 0.0% on all 4 cells. Comparison script `IMP/scripts/v3c_compare.py` (imports
+`p3_code_schedule_comparison.py`'s functions) compares F against U (frozen `agg_deliverable`,
+read-only, not re-aggregated). Both required gates run and recorded: U-vs-U shows exactly zero
+difference; a deliberately altered copy shows a nonzero difference localized to the altered rows
+only. Full numbers, tables, and the one-sentence verdict are in the sibling doc
+`writing/implementation/IMP/V3c_results.md` (do not duplicate here -- that file is the source of
+record for V3c's result). Headline: F's hotel/residential weekday night presence jumps from
+near-zero (U) to a night-peaked pattern as large as, or larger than, the survey-driven arms'
+(Y2022/B_central) -- the P3 presence-reversal contrast against the code control shrinks sharply
+once the control itself is residential-shaped, confirming it was largely a limitation of the
+unfair NECB-A control rather than a property of the survey data.

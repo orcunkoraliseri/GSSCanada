@@ -3,10 +3,23 @@
 First written 2026-09-19 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6,
 §7 and §8 change only when a rule or a design changes.
-Last updated: **2026-09-24 ~07:10 EDT (status check only: 6/36 draws done, 55/56 CPUs in use, nothing else moved; see first bullet). Before that 2026-09-23 ~19:15 (CPU budget raised to 56, throttles changed); last plan log entry (az), next (ba). Gate 4 PASS (all six baselines equal April,
+Last updated: **2026-09-24 evening (block 1 scored: CONTINUE, 29/60 cells met, C1 OK; 13/36 draw tasks done; 12 running = 60 CPUs; plan log (bb), progress page db 56; session closed, nobody polling; see first bullet). Before that 2026-09-24 ~13:45 EDT (CPU budget raised to 64 — `histnu` done; LIGHT throttle 6; 9/36 draws done). Before that 2026-09-24 ~07:10 (status check) and 2026-09-23 ~19:15 (CPU budget 56); last plan log entry (ba), next (bb). Gate 4 PASS (all six baselines equal April,
 diff 0), workers check PASS (5 workers = 1 worker, 3.3x faster), swap+probe PASS. Step 4d draws SUBMITTED and
 RUNNING. Session closed after this; nobody is polling — the next session starts from the "first action" list below.**
-- **Status check 2026-09-24 06:52 EDT (no new plan-log entry): 6 of 36 draw tasks DONE, exit 0:0; 11 RUNNING = 55 CPUs (cap 56, full).**
+- **Status check 2026-09-24 evening (plan log (bb)): BLOCK 1 SCORED, `block=1 n=5 cells_met=29/60 VERDICT=CONTINUE`, C1 control OK.**
+  13 of 36 draw tasks DONE exit 0:0 (new: LIGHT `_5`,`_12`, HEAVY `_0`,`_2`, all VERIFIED + E5 PASS); 12 tasks RUNNING = 60 CPUs,
+  throttles `%6`/`%6`. Scorer 1342408 done; 1342409-13 PENDING. Progress page db **56**. Last plan entry now **(bb)**, next **(bc)**.
+  Next session: `sacct` first-action list; read scorer 1342409 (block 2) when it lands; nothing else owed.
+- **CPU budget 64, 2026-09-24 13:37 EDT (author, plan log (ba)): `histnu` finished; 1J may use all 64 CPUs.** Manager set
+  LIGHT 1342400 `ArrayTaskThrottle=6` (was 5), HEAVY stays 6 -> **12 tasks x 5 = 60 CPUs**, 4 spare for scorers; read back,
+  LIGHT `_12` started at once. **Cap is now 12 tasks, not 11** (supersedes the "never above 11" lines below).
+  9 of 36 DONE exit 0:0 (LIGHT `_0`-`_4`,`_6`,`_8`; HEAVY `_1`,`_3`); new logs LIGHT `_3`,`_6`,`_8` all VERIFIED + E5 PASS.
+  Block 1's last tasks HEAVY `_0`/`_2` already print `WP11 EXTRACT VERDICT: VERIFIED`, still closing (RUNNING 1-19:43 h);
+  scorer 1342408 PENDING. Progress page db **54 -> 55**. Re-read 13:40: unchanged (HEAVY `_0`/`_2` still closing,
+  12 tasks running); session closed by the author at ~13:45, nobody polling. **Next session:** run the "first action"
+  sacct; if HEAVY `_0`/`_2` are still RUNNING hours after their VERIFIED line, check their log tail (gzip step) before
+  anything else; then read `logs/wp11_scorer_1342408.out` (step 2).
+- *(Older)* **Status check 2026-09-24 06:52 EDT (no new plan-log entry): 6 of 36 draw tasks DONE, exit 0:0; 11 RUNNING = 55 CPUs (cap 56, full).**
   Done: LIGHT `_0`,`_1`,`_2`,`_4`; HEAVY `_1`,`_3`. Running: LIGHT `_3`,`_5`-`_8` (throttle 5 full), HEAVY `_0`,`_2`,`_4`-`_7`
   (throttle 6 full). HEAVY `_8`-`_11` still PENDING, so no throttle shift yet (step 0). Block 1 waits on LIGHT `_3`
   (RC4 b1, 19:15 h) and HEAVY `_0` (RC5 b1, 36:57 h); all scorers PENDING (Dependency). `histnu` = 4 x 1 CPU; account
@@ -70,7 +83,7 @@ RUNNING. Session closed after this; nobody is polling — the next session start
   - Rough time (estimate, not a result): block 1 ~2026-09-24 midday; all 30 draws ~2026-09-26 at 11 tasks (az).
 - (Unrelated `histnu` arrays under `/nfs/speed-scratch/rhlab/hist_nu_z7a` are not 1J — they belong to the
   author's idf_reader project, now held to 8 CPUs; never scancel or change them.)
-- Progress page db version **54** (2026-09-24 ~07:00: `sim` tracker 6/36; v53 = 3/36 + CPU-change line; v52 = 2/36).
+- Progress page db version **56** (2026-09-24 evening: `sim` tracker 13/36 + block-1 line; v55 = 9/36; v54 = 6/36).
 - **Author instruction in force:** "continue until the end" — carry Stage 4 through on your own (score blocks),
   closure ritual after every step; ask the author only if a fix is itself a design choice.
 
@@ -81,8 +94,8 @@ harmless plotting crash, printed as `RUNNER EXIT: 1`. Also run `squeue -u o_iser
 count: it should have risen from 6 toward 11 as `histnu`'s old tasks ended (if still 6 after ~12 h, check
 `scontrol show job 1342400` / `1342401` still read `ArrayTaskThrottle=5` / `=6`). Then, as each lands:
   0. **Throttle shift (az):** once `squeue` shows HEAVY 1342401 with no PENDING tasks left, raise LIGHT with
-     `scontrol update JobId=1342400 ArrayTaskThrottle=<11 - running HEAVY tasks>` so 1J keeps 11 tasks (55 CPUs);
-     never above 11. Log it in the plan.
+     `scontrol update JobId=1342400 ArrayTaskThrottle=<12 - running HEAVY tasks>` so 1J keeps 12 tasks (60 CPUs);
+     never above 12 (64-CPU budget since (ba)). Log it in the plan.
   1. **First draw task done** -> `grep` its log (`logs/wp11_draw_<array>_<i>.out`) for `WP11 DRAW START: <D>` (must be
      PRESENT, E5) and `WP11 EXTRACT VERDICT: VERIFIED`; any task not VERIFIED -> read why, rerun that one task only.
   2. **Scorer b done** (`logs/wp11_scorer_<id>.out`) -> read `STOPRULE SUMMARY: block=b ... VERDICT=...` and
@@ -97,9 +110,9 @@ count: it should have risen from 6 toward 11 as `histnu`'s old tasks ended (if s
 
 1. Read the **last three entries of §7 (Progress log)** in `1J_docs_occ/IMP/00_REVISION_PLAN.md`
    (`tail -60 00_REVISION_PLAN.md`). **The log is the state. This file is only a pointer; where the two
-   disagree, the plan wins.** The last entry written is **(az)**; the next letter you write is **(ba)**.
+   disagree, the plan wins.** The last entry written is **(bb)**; the next letter you write is **(bc)**.
 2. Read the progress page's database (`ArtifactData` `get`, url `https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn`,
-   collection `revision`, doc `progress`) and note its `version`. It was **53** when this file was last updated (2026-09-23 ~19:00, CPU-budget log line + sim 3/36; 51 at first writing)
+   collection `revision`, doc `progress`) and note its `version`. It was **56** when this file was last updated (2026-09-24 evening, block-1 log line + sim 13/36; 51 at first writing)
    (the document now also carries a `sim` field: `{done, total, label, note, updated}`, read by the page's
    new tracker box — keep it when you next write the whole document, or update `done`/`total`/`note` if a
    different job's simulation count becomes the one worth showing).

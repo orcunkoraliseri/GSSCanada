@@ -47,17 +47,18 @@ not publish a single handling editor for unsolicited papers - kept from the old 
 > survey years and nine scenarios to 2030.
 >
 > Running both schedule sets through the same pipeline separates what survey-based occupancy changes
-> from what it does not. It changes who is in the tower and when: hotel guests and residents are
-> present at night, while code schedules keep both on office hours. That reaches energy only where
-> lighting and equipment follow occupancy, moving office and retail intensity by ⟦P10R:-16 to -20⟧%
-> and ⟦P10R:-12 to -15⟧% against the code-schedule tower. Whole-building timing barely moves: the load
-> centroid shifts by under ⟦P10R:0.3⟧ hour, and the peak stays a winter-morning plant start-up either
-> way. Single-use reference intensity ranges judge the tower poorly: the office floor is missed even
+> from what it does not. It changes who is in the tower and when: daytime office presence falls well
+> below the code schedule. That reaches energy only where lighting and equipment follow occupancy,
+> moving office and retail intensity by -7 to -10 % and about -9 % against the code-schedule tower.
+> Whole-building timing barely moves: the load centroid shifts by under 0.5 hour, and the peak stays a
+> winter-morning plant start-up either way. Single-use reference intensity ranges judge the tower poorly: the office floor is missed even
 > by the code-schedule tower, which the occupancy model cannot be responsible for.
 >
 > We report this honestly, including one place it narrowed our earlier reading: an early draft
 > credited the survey model with lowering peak coincidence, but the code-schedule control already
-> staggers its four uses, so that claim was withdrawn.
+> staggers its four uses, so that claim was withdrawn. A second, fairer code control, with apartments
+> and guest rooms on a dwelling-unit schedule, also showed that the night-time presence of residents
+> and hotel guests is not unique to the survey data, so the paper no longer claims it as a finding.
 >
 > Two related manuscripts from this project are in revision, not under review: one declined by the
 > Journal of Building Performance Simulation (2026-09-19, invited to resubmit) and one declined by
@@ -82,7 +83,7 @@ Building and Environment requires 3-5 bullets, each at most 85 characters includ
 (`RV10_building_and_environment_author_requirements.md` item 2, `STATED`). All five below meet it.
 
 1. Four occupancy schedules drive one mixed-use tower, 2005 to 2030 scenarios. (75)
-2. Survey-based schedules put hotel guests and residents in the tower at night. (76)
+2. Survey-based schedules cut daytime office presence well below the code schedule. (80)
 3. Office and retail energy follow survey occupancy; building peak timing does not. (80)
 4. A winter-morning plant start-up sets the building peak under both schedule sets. (80)
 5. Single-use intensity ranges cannot judge tenant uses inside a stacked tower. (76)
@@ -227,10 +228,22 @@ writing; `IMP/rewrite_log.md` open item 1 lists the same markers):
   step, but should be re-read against `chapters_v2/00_FrontMatter.md` and `10_Declarations.md` once
   those files are updated, in case wording (not just numbers) changes.
 
-**Waits on the author, independent of P10R:**
-- Funding wording: NSERC "Discovery Grant" or a different award type (`rewrite_log.md` open item 8).
-- Generative-AI declaration: which tools were used and for what (chapters_v2 template and this file
-  both carry the placeholder; `RV10` item 18 gives the exact sentence form to fill in).
+**AUTHOR RULING 2026-09-25 ~02:15 UTC: write the 3J paper like the 2J AE revision, including AI,
+funding, etc.** Model files (read-only): `2J_docs_occ_nTemp/writing/submission/rejection revision/manuscript/`
+`2J_manuscript_AE_revised.md/.docx`, `2J_SI_AE_revised.md/.docx`, `2J_title_page_and_cover_letter_AE.md/.docx`.
+Take from 2J: back-matter order (CRediT -> competing interest -> Funding -> Data availability -> generative-AI
+declaration -> Acknowledgements -> References); Funding = "NSERC through a Discovery Grant, and by the Volt-Age
+Seed Fund, Concordia University" + the funders-had-no-role sentence; AI declaration = 2J form (Claude for
+grammar and readability; Gemini for literature research reports and for the schematic diagrams in Figures X
+to Y "from the authors' specifications"; sources checked against the publisher record); Acknowledgements =
+2J wording (NSERC Discovery Grant and Volt-Age Seed Fund). Also the 2J layout: Abstract, Highlights,
+Keywords, numbered sections with a separate Limitations section before the Conclusion, Nomenclature,
+Appendices, separate SI file with S-numbered sections, separate title page + cover letter file. For 3J,
+check which figures are schematic drawings made with Gemini before naming them (only those go in the AI
+sentence); keep B&E's "Declarations of interest: none." line and the Ethical approval line.
+- ~~Funding wording~~: RESOLVED by the ruling above (Discovery Grant, as 2J).
+- ~~Generative-AI declaration~~: RESOLVED by the ruling above (2J form); only the 3J figure numbers are
+  left to check.
 - Suggested reviewers: names and institutional emails (Section 4 above).
 - Cover letter date, and confirmation that "Dear Editor" (no named handling editor) is acceptable.
 - Confirm the two companion-paper sentences in the cover letter and, separately, the self-citations
@@ -249,3 +262,15 @@ writing; `IMP/rewrite_log.md` open item 1 lists the same markers):
 - 2026-09-23: P14 draft written (`IMP/P14_package.md`); cover letter, highlights, declarations,
   reviewers placeholder and audit prompt done; reused `Title_Page_and_Cover_Letter.md` and
   `chapters_v2/00_FrontMatter.md` + `10_Declarations.md`; open items listed in Section 6.
+
+### Author rulings 2026-09-25 (~02:40 UTC, asked in session)
+- AI declaration: Gemini drew the schematic diagrams in **Figures 1 to 4** (pipeline, model, hotel side-track,
+  dispatch) from the authors' specifications; use the 2J sentence with "Figures 1 to 4".
+- Table A.1: **split the prior-work row the 2J way** (1J + eSim 2026 scored as in 2J Appendix A; 2J separately).
+- Authors: Orcun Koral Iseri + **Caroline Hachem-Vermette as co-author**, as in 1J and 2J (confirmed).
+- Suggested reviewers: 2J suggested none; follow 2J (leave the optional field empty). If B&E's submission
+  form makes it mandatory, ask the author then.
+- V4: use **Tall vs SuperTall** as the two models (no new runs); one limitation sentence (see `V4_design.md` §7).
+
+### 2026-09-25 ~03:10 UTC - cover letter filled (manager)
+- Cover-letter markers filled from the chapters (office -7 to -10 %, retail about -9 %, centroid under 0.5 h); night-presence claim removed after V3c and one sentence added to the honesty paragraph; Highlight 2 copied from 00_FrontMatter (80 characters, limit 85). Declarations section 3 above is superseded by `chapters_v2/10_Declarations.md` (2J form). Backup: `archive_P14_package.pre_fill_2026-09-25.md`.

@@ -18,7 +18,9 @@ four building-city cells (line) with the four-cell range (band, survey 2022 only
 the top edge is the load-weighted circular mean hour (Step-9 definition), median across cells.
 Panel (f): coincidence factor per building-city cell.
 
-Run:  py -3 writing/figures/fig_codeschedule_vs_survey.py
+Run:  py -3 writing/figures/fig_codeschedule_vs_survey.py [--arm P10R|deliverable]
+      --arm P10R (default since the P9 second pass, 2026-09-25) reads _P10R_figdata/ (written by
+      p3_code_schedule_comparison.py --arm P10R); --arm deliverable reads the frozen-arm CSVs in this folder.
 Output: writing/figures/fig_codeschedule_vs_survey.pdf / .png (600 dpi)
 """
 import os
@@ -33,8 +35,11 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "fig_codeschedule_vs_survey")
-PROF = os.path.join(HERE, "fig_codeschedule_vs_survey_profiles.csv")
-MET = os.path.join(HERE, "fig_codeschedule_vs_survey_metrics.csv")
+ARM = sys.argv[sys.argv.index("--arm") + 1] if "--arm" in sys.argv else "P10R"
+assert ARM in ("P10R", "deliverable"), ARM
+_D = os.path.join(HERE, "_P10R_figdata") if ARM == "P10R" else HERE
+PROF = os.path.join(_D, "fig_codeschedule_vs_survey_profiles.csv")
+MET = os.path.join(_D, "fig_codeschedule_vs_survey_metrics.csv")
 
 SCEN = [("Default_NECB", "Code schedules", GREY, (0, (4, 2))),
         ("Y2022", "Survey-driven, 2022", SLATE, "solid"),
@@ -53,6 +58,7 @@ def circ(profile):
 
 
 def main():
+    print(f"[arm] {ARM}: {PROF}")
     prof = pd.read_csv(PROF)
     met = pd.read_csv(MET)
     # integrity guard: 3 scenarios x 4 cells x 5 series x 24 h

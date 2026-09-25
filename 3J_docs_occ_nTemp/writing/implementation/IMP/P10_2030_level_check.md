@@ -262,6 +262,62 @@ occupancy will ask about it.
 **Not affected**: NECB control 85.45 (Default_NECB cells inject nothing); Y2005/10/15 products (real,
 cycle-pure, same stock); hotel 2030 products (`4b3d3a46`, `d6e834ba`, `e0ab6c86`).
 
+## 6.1 Old vs new, measured on the rebuilt arm (P10R, 2026-09-25)
+
+Script `scripts/p10r_old_vs_new.py` (one function, both arms); full table `data/P10R/P10R_old_vs_new.csv`,
+console `data/P10R/P10R_old_vs_new.out`. Old = `outputs_step9_deliverable` + `agg_deliverable` (frozen,
+read only); new = `outputs_step9_P10R` + `agg_P10R` (56/56 local cells, scorer cc2d1a9b, which re-scores
+the frozen aggregate to identical numbers and verdicts; only `band_src` text differs).
+**Control:** 55 printed numbers reproduced by the OLD column within print rounding; 3 do not, all known
+from the P3 controls (85.45 is a constant in the Step-9 band text, the median is 85.36; 2.11 and 14.11 are
+double-rounded prints). 35 rows have no printed value (ranges the prose does not print).
+
+| paper place | metric | printed | old | new |
+|---|---|---|---|---|
+| Table 5 / 5.2 | office EUI median (range), kWh/m2/yr | 71.02 (61.72-90.21) | 71.02 | **79.52** (70.91-90.21) |
+| Table 5 / 5.2 | office cells in band | 0/56 | 0 | 0 (still FAIL) |
+| Table 5 / 5.2 | retail EUI median (range) | 75.63 (63.63-96.84) | 75.63 | **84.85** (73.49-96.84) |
+| Table 5 / 5.2 | retail cells in band; gate | 12/56; FAIL | 12; FAIL | **37/56; PASS** |
+| Table 5 / 5.2 | hotel EUI median (range); in band | 260.54 (203.33-318.42); 28 | same | 263.14 (204.83-322.18); 28 |
+| Table 5 / 5.2 | residential EUI median (range) | 119.10 (111.57-128.77) | same | 119.23 (111.71-128.77) |
+| 5.2 | Default_NECB office control | 85.45 | 85.36 | 85.36 (no injection, unchanged) |
+| 5.1 | office 2022 EUI; change vs 2005 | 70.20; -0.67 % | same | 77.85; **-1.99 %** |
+| 5.1 | retail 2022 EUI; change vs 2005 (range) | 79.19; +2.36 % (+0.13 to +4.69) | same | 83.30; **-4.40 % (-4.52 to -4.29)** |
+| 5.1 | hotel 2022 change vs 2005 | +0.09 % | same | +1.54 % |
+| 5.1 | residential 2022 EUI; change vs 2005 | 118.68; -0.07 % | same | 118.83; -0.11 % |
+| 5.1 | energy / area share %, hotel | 44.47 / 20.25 | same | 43.51 / 20.25 |
+| 5.1 | energy / area share %, office | 21.42 / 35.14 | same | 23.24 / 35.14 |
+| 5.1 | energy / area share %, residential | 18.27 / 17.73 | same | 17.76 / 17.73 |
+| 5.1 | energy / area share %, retail | 2.56 / 3.92 | same | 2.76 / 3.92 |
+| 5.3 | WD peak hour office / residential / retail / hotel | 11.90 / 12.04 / 12.37 / 18.91 | same | 11.95 / 12.04 / 12.64 / 18.89 |
+| 5.3 | building peak hour median (range) | 14.95 (14.11-15.70) | same | 15.09 (14.24-15.82) |
+| 5.3 | coincidence factor median; min | 0.941; 0.851 | same | 0.937; 0.850 |
+| 5.3 | office WD midday / night kW | 569.33 / 48.10 | same | 607.92 / **111.05** |
+| 5.3 | retail WD midday / night kW | 72.03 / 2.11 | same | 64.24 / **8.80** |
+| 5.3 | residential WD midday / night kW | 347.82 / 89.53 | same | 349.65 / 90.17 |
+| 5.3 | hotel WD midday / night kW | 335.93 / 434.47 | same | 351.09 / 443.31 |
+| 5.4 | residential cons vs central; opt vs central | "+0.06 to +0.29 %" | +0.02 to +0.24; -0.04 to +0.12 | **-0.35 to -0.12; -0.52 to -0.41** |
+| 5.4 | office cons; opt vs central | "+1.67 to +2.45 / -2.19 to -1.46" | +1.47 to +2.20; -2.05 to -1.28 | +0.95 to +1.48; -2.07 to -1.31 |
+| 5.4 | retail cons; opt vs central | not checked | -2.42 to -1.76; +1.95 to +2.66 | -1.90 to -1.49; +1.90 to +2.30 |
+| scorecard | PASS / FAIL / INFO | 17 / 3 / 10 | same | **18 / 2 / 10** |
+
+What it means (for the stage 2 rewrite):
+- **Timing barely moves.** Every channel's weekday peak hour moves by 0.3 h or less (retail most, +0.27 h),
+  the building peak by +0.14 h, the coincidence factor by -0.004. P3's reading (timing is locked by plant and
+  lighting schedules) holds.
+- **Levels move.** Office and retail intensity rise by about 12 % (standby floor ON in P10R plus the re-raked
+  products); night loads rise most (office night kW x2.3, retail x4.2), so the midday/night contrast in 5.3
+  shrinks. Retail now meets its as-modelled band (37/56 cells, median rule PASS); office still misses its floor
+  (0/56, FAIL cannot flip); hotel unchanged at 28/56.
+- **Two sentences reverse sign.** Retail 2022 vs 2005 goes from +2.36 % to -4.40 % (all four cells negative), so
+  the "retail jumps past its own 2005 baseline by 2022" claim must go. The residential 2030 band response
+  becomes negative in both bands (was near zero, mixed sign).
+- **5.4 printed ranges are not reproduced by this script's definition** (`energy_pct_vs_Bcentral` range over
+  4 cells): old column +1.47 to +2.20 vs printed +1.67 to +2.45 for office cons. Check the definition the prose used
+  before substituting those markers (likely a different base or cell set); the timing and Table 5 rows are safe.
+- Table 6 "Step 6" gap (-10.51 pp) is a diary-level number, not a simulation output; its replacement comes from
+  `P10R_fix.md` gate (b), not from this table.
+
 ## 7. Re-rake and re-run design (for the manager; nothing done)
 
 **Option R - fix and re-run (removes the defect).**

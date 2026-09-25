@@ -9,9 +9,24 @@ One list, in order of what unblocks the most. Details live in the files named; n
    in training; is IPF a baseline; is that IPF seeded from the target region or another region; who wins.
    Until then the paper says only the one metadata sentence (`DeepResearchPrompts/VETTING_RL35.md` section 5).
    Same questions for Qian et al. (2026) (arXiv 2407.01643, open access) and Jung (2026, BuildOcc).
+   **2026-09-24 DONE for Jutras-Dubé** (author supplied the arXiv PDF): transfer yes, IPF yes, seeded from the
+   source region (= our donor pool), their copula model wins. Line 35 and Table A.1 rewritten; answers in
+   `VETTING_RL35.md` section 5. Qian and Jung: author says leave uncited (CLOSED).
+   **2026-09-24:** item 2 moved to the MANAGER at the author's request (background check writing
+   `DeepResearchPrompts/VETTING_RL36_equation_sources.md`). Part B measured profiles: SKIP for now.
+   Still open: cover-letter date on the day, final read.
+   **2026-09-24 length DONE (author said yes):** Appendix B moved to the SI as Section S13 (Eqs. (S1)-(S44));
+   five repetition cuts in Discussion/Limitations; main-text prose 7,485 words. Word files rebuilt, in EB_upload.
+   **2026-09-24 2J style DONE (author asked):** 4J rewritten in the style of the 2J Applied Energy paper: split
+   contributions, section roadmap, Figures 1-2 read in the text (Figure 2 caption corrected), Results reading guide,
+   eight bold-led limitations, Conclusion as six numbered findings + future work. Prose 7,489 words. Word file
+   rebuilt, in EB_upload. For the final read, look at the new Conclusion and the Limitations first.
+   **2026-09-24 also:** item 4 CLOSED (no public deposit; text says "available from the author"), item 6 CLOSED
+   (no suggested reviewers; placeholder removed), Acknowledgements DONE (data providers only).
 2. **Open the equation sources** marked `[AUTHOR TO OPEN]` in `writing/submission/IMP/prep/appendixB_equations_draft.md`
    (14 items; list and exact questions in `VETTING_RL34.md` section 4). Most important: Richardson et al. (2010)
    Section 2.7 (closed-form or iterative calibration).
+   **2026-09-24 DONE (manager):** `DeepResearchPrompts/VETTING_RL36_equation_sources.md`: 11 confirmed, 0 wrong, 5 not opened (none of the 5 cited). Only change: Pflugradt reference = TU Chemnitz dissertation; Word file rebuilt, in EB_upload.
 3. **Other literature marked "accept after open"** (`VETTING_RL35.md` section 4, items 4-8). Skip any you do
    not want cited; the rewrite cites none of them beyond what the vetting allows.
 4. **Deposit the frozen pre-registration and its hash** (D4) on a public registry (for example OSF or Zenodo);
@@ -43,6 +58,9 @@ One list, in order of what unblocks the most. Details live in the files named; n
    The graphical abstract has three small problems left (a number sits on a line, titles touch the top edge, the
    right title and subtitle run together). Run `writing/submission/Gemini_prompts/GEMINI_05_graphical_abstract_last_touches.md`
    in Gemini and paste its report back. Details: RESUME.md last+302.
+   **2026-09-24 final:** GEMINI_05 and GEMINI_06 run and checked. The graphical abstract is DONE: every label keeps
+   at least 1 pt clear of everything else, fonts 7.1 pt or larger, viewed. It is in the upload folder as
+   `EB_upload/Graphical_abstract.png` + `.pdf` (items 5 and 7b closed). Details: RESUME.md last+303.
 8. **Run the outside audit** (`writing/submission/IMP/prep/external_audit_prompt.md`) in Gemini and a second
    model on the final draft; paste the answers back for vetting.
    **Round 1 (Gemini, 2026-09-23) vetted:** 2 of 7 items were wrong (Platzer is cited; the 12,436 word count included the

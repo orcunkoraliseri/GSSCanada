@@ -8,6 +8,7 @@ Implements the exact specification in:
 """
 import os
 import shutil
+import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -72,7 +73,7 @@ ax.plot([DIV2, DIV2], [6.0, 39.0], color=GREY_RULE, lw=0.8, zorder=2)
 # ==============================================================================
 # PANEL A (Left, 0 to 31.8): "The test"
 # ==============================================================================
-ax.text(DIV1 / 2.0, 37.6, "The test", ha="center", va="center", fontsize=FS_TITLE, weight="bold", color=INK)
+ax.text(DIV1 / 2.0, 39.2, "The test", ha="center", va="top", fontsize=FS_TITLE, weight="bold", color=INK)
 
 # Fix F: Make UK tile big enough (12.6 x 5.6) with clear internal padding
 draw_box(1.6, 30.6, 7.2, 5.6, "Spain", fc=ROSE, tc=WHITE, fs=FS_BODY, weight="bold")
@@ -93,14 +94,14 @@ ax.add_patch(FancyArrowPatch((8.5, Y_BUS), (8.5, 27.8), **arrow_kwargs))
 ax.add_patch(FancyArrowPatch((16.8, Y_BUS), (16.8, 27.8), **arrow_kwargs))
 
 # Scoring box (height=7.2 to guarantee >2 pt vertical padding)
-draw_box(1.6, 9.4, 28.6, 7.2, "Scored against the\nheld-out country's\npublished tables",
+draw_box(1.6, 10.2, 28.6, 7.2, "Scored against the\nheld-out country's\npublished tables",
          fc=GREY_L, ec="#BCBCBC", tc=INK, fs=FS_BODY, weight="bold")
 
-ax.add_patch(FancyArrowPatch((8.5, 19.8), (8.5, 16.6), **arrow_kwargs))
-ax.add_patch(FancyArrowPatch((23.1, 19.8), (23.1, 16.6), **arrow_kwargs))
+ax.add_patch(FancyArrowPatch((8.5, 19.8), (8.5, 17.4), **arrow_kwargs))
+ax.add_patch(FancyArrowPatch((23.1, 19.8), (23.1, 17.4), **arrow_kwargs))
 
 # Footer line of panel A
-ax.text(DIV1 / 2.0, 7.3, "Each country held out in turn.\n73,254 diaries.", ha="center", va="center",
+ax.text(DIV1 / 2.0, 7.8, "Each country held out in turn.\n73,254 diaries.", ha="center", va="center",
         fontsize=FS_BODY, color="#444444", style="italic", linespacing=1.05)
 
 # ==============================================================================
@@ -108,14 +109,14 @@ ax.text(DIV1 / 2.0, 7.3, "Each country held out in turn.\n73,254 diaries.", ha="
 # ==============================================================================
 B_MID = (DIV1 + DIV2) / 2.0
 
-ax.text(B_MID, 37.6, "Result: the model does\nnot beat reweighting", ha="center", va="center",
+ax.text(B_MID, 39.2, "Result: the model does\nnot beat reweighting", ha="center", va="top",
         fontsize=FS_TITLE, weight="bold", color=INK, linespacing=1.05)
 
 ax.text(B_MID, 32.5, "Worse in 9 of 9 cells:\n1.1 to 3.9 times the error", ha="center", va="center",
         fontsize=FS_BODY, weight="bold", color="#A61C1C", linespacing=1.05)
 
 X_AXIS_START = 36.5
-X_AXIS_END = 61.5
+X_AXIS_END = 60.5
 def val_to_x(val):
     return X_AXIS_START + (val - 1.0) / (4.0 - 1.0) * (X_AXIS_END - X_AXIS_START)
 
@@ -124,11 +125,11 @@ ax.plot([X_AXIS_START, X_AXIS_END], [Y_AXIS, Y_AXIS], color="#444444", lw=0.9, z
 
 for tick in [1, 2, 3, 4]:
     tx = val_to_x(tick)
-    ax.plot([tx, tx], [Y_AXIS - 0.5, Y_AXIS + 0.5], color="#444444", lw=0.8, zorder=2)
+    ax.plot([tx, tx], [Y_AXIS, Y_AXIS + 0.5], color="#444444", lw=0.8, zorder=2)
     ax.text(tx, Y_AXIS - 1.5, str(tick), ha="center", va="center", fontsize=FS_BODY, color=INK)
 
 # Fix E: Axis title broken into two lines, lowered to avoid tick number overlap
-ax.text(B_MID, Y_AXIS - 4.4, "Model error /\nreweighted-diary error", ha="center", va="center",
+ax.text(B_MID, Y_AXIS - 4.7, "Model error /\nreweighted-diary error", ha="center", va="center",
         fontsize=FS_BODY, color=INK, linespacing=1.05)
 
 # Fix 4 & Fix D: Solid reference line at 1; move label so it touches no dot
@@ -156,13 +157,13 @@ for (ratio, col, lbl), dy in zip(dots, dot_y_offsets):
     sc = ax.scatter([px], [py], s=25, color=col, edgecolors=INK, linewidth=0.5, zorder=5)
     markers.append((sc, lbl))
 
-# 1.1 label placed above dot at 1.15
-ax.text(val_to_x(1.15), Y_AXIS + 2.7, "1.1", ha="center", va="bottom", fontsize=FS_BODY, weight="bold", color=INDIGO)
+# Fix A: 1.1 label placed to the right of dot at 1.15 (dy=2.0)
+ax.text(val_to_x(1.15) + 1.3, Y_AXIS + 2.0, "1.1", ha="left", va="center", fontsize=FS_BODY, weight="bold", color=INDIGO)
 # 3.9 label placed to the right of dot at 3.91 (dy=4.5) to avoid overlapping Spain 25-44 (dy=3.0)
 ax.text(val_to_x(3.91) + 1.5, Y_AXIS + 4.5, "3.9", ha="left", va="center", fontsize=FS_BODY, weight="bold", color=ROSE)
 
 # Text below axis
-ax.text(B_MID, 10.4,
+ax.text(B_MID, 10.0,
         "Also misses the 15 % bar\non its own training countries\n(33 to 158 %); real diaries\nmeet it (5 to 12 %)",
         ha="center", va="center", fontsize=FS_BODY, color="#333333", linespacing=1.05)
 
@@ -171,12 +172,12 @@ ax.text(B_MID, 10.4,
 # ==============================================================================
 C_MID = (DIV2 + 100.0) / 2.0
 
-ax.text(C_MID, 37.8, "For building energy models:\nappliance timing", ha="center", va="center",
+ax.text(C_MID, 39.2, "For building energy models:\nappliance timing", ha="center", va="top",
         fontsize=FS_TITLE, weight="bold", color=INK, linespacing=1.05)
 
-# Fix B: Subtitle moved up to 33.8 so it clears the UK/IT/ES markers and labels
-ax.text(C_MID, 33.8, "Evening appliance electricity\npeak, by diary source", ha="center", va="center",
-        fontsize=FS_BODY, weight="bold", color=INK, linespacing=1.05)
+# Fix C: Subtitle in normal weight (not bold), at least 3 pt below title
+ax.text(C_MID, 32.5, "Evening appliance electricity\npeak, by diary source", ha="center", va="center",
+        fontsize=FS_BODY, weight="normal", color=INK, linespacing=1.05)
 
 # Fix C & A: Start row lines and hour axis further right (79.0 to 97.2)
 X_H_START = 79.0
@@ -184,16 +185,16 @@ X_H_END = 97.2
 def hour_to_x(h):
     return X_H_START + (h - 12.0) / (22.0 - 12.0) * (X_H_END - X_H_START)
 
-RY_REAL = 28.5
-RY_GEN = 23.5
+RY_REAL = 27.3
+RY_GEN = 22.9
 RY_REW = 18.5
-Y_H_AXIS = 14.5
+Y_H_AXIS = 14.3
 
 # Fix A: Hour axis labels 12 to 22 (no ":00") and word "hour"
 ax.plot([X_H_START, X_H_END], [Y_H_AXIS, Y_H_AXIS], color="#444444", lw=0.9, zorder=2)
 for h in range(12, 24, 2):
     hx = hour_to_x(h)
-    ax.plot([hx, hx], [Y_H_AXIS - 0.4, Y_H_AXIS + 0.4], color="#444444", lw=0.8, zorder=2)
+    ax.plot([hx, hx], [Y_H_AXIS, Y_H_AXIS + 0.4], color="#444444", lw=0.8, zorder=2)
     ax.text(hx, Y_H_AXIS - 1.4, str(h), ha="center", va="center", fontsize=FS_BODY, color=INK)
 
 # Fix A: Word "hour" placed cleanly to the left of tick 12
@@ -231,12 +232,12 @@ ax.text(mx_es, RY_REW + 1.1, "ES", ha="center", va="bottom", fontsize=FS_BODY, w
 mx_21 = hour_to_x(21.0)
 sc = ax.scatter([mx_21], [RY_REW + 0.65], s=22, color=TEAL, edgecolors=INK, linewidth=0.5, zorder=4)
 markers.append((sc, "Rew IT"))
-ax.text(mx_21, RY_REW + 1.35, "IT", ha="center", va="bottom", fontsize=FS_BODY, weight="bold", color=TEAL)
+ax.text(mx_21, RY_REW + 1.6, "IT", ha="center", va="bottom", fontsize=FS_BODY, weight="bold", color=TEAL)
 
 # UK at 21:00, slightly below row line
 sc = ax.scatter([mx_21], [RY_REW - 0.65], s=22, color=INDIGO, edgecolors=INK, linewidth=0.5, zorder=4)
 markers.append((sc, "Rew UK"))
-ax.text(mx_21, RY_REW - 1.35, "UK", ha="center", va="top", fontsize=FS_BODY, weight="bold", color=INDIGO)
+ax.text(mx_21, RY_REW - 1.6, "UK", ha="center", va="top", fontsize=FS_BODY, weight="bold", color=INDIGO)
 
 # Neither synthetic source label
 ax.text(C_MID, 8.8, "Neither synthetic\nsource carries the\ncountry's timing", ha="center", va="center",
@@ -319,13 +320,118 @@ def run_clash_check(fig, ax, boxes, markers, box_of_text):
                 txt_str = t.get_text().replace('\n', ' ')
                 problems.append(f"Box label '{txt_str}' padding {min_pad:.2f} pt < 2 pt")
 
+    # 5. Text touching a drawn line or arrow
+    for t in all_texts:
+        txt_str = t.get_text().replace('\n', ' ')
+        t_bb = t.get_window_extent(renderer)
+        touches = False
+        for line in ax.lines:
+            xdata, ydata = line.get_data()
+            pts = np.column_stack([xdata, ydata])
+            disp_pts = ax.transData.transform(pts)
+            for k in range(len(disp_pts) - 1):
+                p0, p1 = disp_pts[k], disp_pts[k+1]
+                seg_len = np.hypot(*(p1 - p0))
+                num_pts = max(int(np.ceil(seg_len * 2)), 2)
+                sampled = np.linspace(p0, p1, num_pts)
+                if any(t_bb.x0 <= pt[0] <= t_bb.x1 and t_bb.y0 <= pt[1] <= t_bb.y1 for pt in sampled):
+                    touches = True
+                    break
+            if touches:
+                break
+        if not touches:
+            for patch in ax.patches:
+                if isinstance(patch, FancyArrowPatch):
+                    if t_bb.overlaps(patch.get_window_extent(renderer)):
+                        touches = True
+                        break
+        if touches:
+            problems.append(f"Text '{txt_str}' touches line")
+
+    # 6. Text too close to canvas edge (< 2 pt)
+    for t in all_texts:
+        txt_str = t.get_text().replace('\n', ' ')
+        t_bb = t.get_window_extent(renderer)
+        l_d = t_bb.x0 * 72.0 / dpi
+        b_d = t_bb.y0 * 72.0 / dpi
+        r_d = (canvas_w - t_bb.x1) * 72.0 / dpi
+        top_d = (canvas_h - t_bb.y1) * 72.0 / dpi
+        edges = [("left", l_d), ("bottom", b_d), ("right", r_d), ("top", top_d)]
+        min_e, min_d = min(edges, key=lambda x: x[1])
+        if min_d < 2.0:
+            problems.append(f"Text '{txt_str}' closer than 2 pt to canvas edge ({min_e} edge: {min_d:.2f} pt)")
+
     print("\n--- CLASH CHECK DETAILS ---")
     for p in problems:
         print(f"  * {p}")
     print(f"CLASH CHECK: {len(problems)} problems\n")
     return len(problems)
 
+
+def run_clearance_check(fig, ax, boxes, markers, box_of_text, min_gap=1.0, min_edge=2.0, min_pad=2.0):
+    """Every text keeps >= min_gap pt from every other text, line, arrow, box and marker;
+    >= min_edge pt from the canvas edge; >= min_pad pt inside its own box."""
+    fig.canvas.draw()
+    r = fig.canvas.get_renderer()
+    k = 72.0 / fig.dpi
+    cw, ch = fig.bbox.width, fig.bbox.height
+
+    def bb_gap(a, b):
+        dx = max(b.x0 - a.x1, a.x0 - b.x1, 0)
+        dy = max(b.y0 - a.y1, a.y0 - b.y1, 0)
+        return np.hypot(dx, dy) * k
+
+    def seg_gap(bb, p0, p1, lw):
+        ts = np.linspace(0, 1, 400)
+        pts = p0 + np.outer(ts, p1 - p0)
+        dx = np.maximum(np.maximum(bb.x0 - pts[:, 0], pts[:, 0] - bb.x1), 0)
+        dy = np.maximum(np.maximum(bb.y0 - pts[:, 1], pts[:, 1] - bb.y1), 0)
+        return max(np.hypot(dx, dy).min() * k - lw / 2.0, 0)
+
+    def name(t):
+        return t.get_text().replace("\n", " ")[:40]
+
+    problems, smallest = [], 1e9
+    T = ax.texts
+    for i, t in enumerate(T):
+        tb = t.get_window_extent(r)
+        gaps = []
+        for u in T[i + 1:]:
+            gaps.append((bb_gap(tb, u.get_window_extent(r)), f"text '{name(u)}'", min_gap))
+        for ln in ax.lines:
+            d = ax.transData.transform(np.column_stack(ln.get_data()))
+            g = min(seg_gap(tb, d[j], d[j + 1], ln.get_linewidth()) for j in range(len(d) - 1))
+            gaps.append((g, "a drawn line", min_gap))
+        for p in ax.patches:
+            if isinstance(p, FancyArrowPatch):
+                gaps.append((bb_gap(tb, p.get_window_extent(r)), "an arrow", min_gap))
+        for p, bname in boxes:
+            pb = p.get_window_extent(r)
+            if box_of_text.get(t) is p:
+                pad = min(tb.x0 - pb.x0, pb.x1 - tb.x1, tb.y0 - pb.y0, pb.y1 - tb.y1) * k
+                gaps.append((pad, "its own box edge", min_pad))
+            else:
+                gaps.append((bb_gap(tb, pb), f"box '{bname[:20]}'", min_gap))
+        for sc, mname in markers:
+            path = sc.get_paths()[0]
+            tr = Affine2D(sc.get_transforms()[0])
+            dp = ax.transData.transform(sc.get_offsets()[0])
+            gaps.append((bb_gap(tb, path.get_extents(tr).translated(*dp)), f"marker '{mname}'", min_gap))
+        gaps.append((min(tb.x0, tb.y0, cw - tb.x1, ch - tb.y1) * k, "the canvas edge", min_edge))
+        for g, what, need in gaps:
+            smallest = min(smallest, g)
+            if g < need:
+                problems.append(f"'{name(t)}' is {g:.2f} pt from {what} (needs {need} pt)")
+
+    print("\n--- CLEARANCE CHECK DETAILS ---")
+    for p in problems:
+        print(f"  * {p}")
+    print(f"CLEARANCE CHECK: {len(problems)} problems (smallest gap {smallest:.2f} pt)\n")
+    return len(problems)
+
+
 run_clash_check(fig, ax, boxes, markers, box_of_text)
+run_clearance_check(fig, ax, boxes, markers, box_of_text)
 
 # ==============================================================================
 # EXPORT

@@ -1,4 +1,152 @@
-# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+302) — SUPERSEDES last+301 BELOW
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+307) — SUPERSEDES last+306 BELOW
+
+State:
+- Author asked: learn the writing style of the 2J Applied Energy paper
+  (`2J_docs_occ_nTemp/writing/submission/rejection revision/manuscript/2J_manuscript_AE_revised.docx`) and apply it to 4J. DONE.
+- 2J style patterns applied to `writing/submission/4J_manuscript_submission.md` (scripts in the session scratchpad:
+  `style2j.py`, `style2j_trim.py`, `style2j_trim2.py`, `style2j_fix.py`, every edit assert-once):
+  - 1.3: contributions split "two scientific ... also two practical" (First/Second each); new roadmap paragraph
+    ("Section 2 sets out ... Sections 3 and 4 report and discuss ... Section 5 states the limitations in full").
+  - 2: Figure 1 read row by row. 2.4: Figure 2 read through the UK fold. **Figure 2 caption was wrong** ("and the three
+    baselines"; the figure shows only the model and the raked donor pool, UK fold) -> "Leave-one-country-out design,
+    shown for the UK fold: the model against the raked donor pool."
+  - 3: reading-guide paragraph (which subsection shows what). 4.1 opens by restating the question (2J "Section 1.4 asked").
+  - 5: opens "This work has eight limitations ..."; each of the 8 paragraphs starts with a bold one-sentence claim.
+  - 6: Conclusion rebuilt in 2J form: question, "The principal findings are as follows", 6 numbered findings, the
+    practical message, "Three items remain for future work" (amplification, institutional timing, more source countries).
+    Future-work sentences moved there from 4.5.
+  - Offsets (repeats only, the point still stands where noted in the scripts): 3.1 "finding is therefore narrower";
+    3.3 flat-line sentence (in 2.6); 4.1 "three measurements" (3.2 bounds it); 4.3 ratio-of-divergences aside;
+    4.4 stock-modeller advice (4.5, Conclusion); 4.5 "two results carry forward" (Conclusion 3-4); Limitations: sex
+    stratum (2.2), diary-day bases (2.1), timing-vs-measured (4.4); 3.4 worst-of-ten note (2.6, Table 4 label).
+  - Not changed: British spelling and "per cent" (2J uses US "percent"; kept 4J's own system), Nomenclature table,
+    Appendix A, declarations (already match 2J wording), highlights (already 2J-like, all under 85 characters).
+- Main-text prose now **7,489** (7,375 without captions), counter `wc_prose.py` (Introduction to Nomenclature, no table
+  rows, image lines, display equations); was 7,485.
+- Backup `writing/submission/previous/4J_manuscript_submission.md.pre_2Jstyle_20260924`.
+- Rebuilt manuscript docx via script (both PATCH lines printed; 3 captions; new strings present, "three baselines" 0);
+  copied to `EB_upload/` (md5 4a6ec4b2...). Old copy `previous/EB_upload_pre_20260924e/`. SI, cover letter unchanged.
+
+FULL ORDERED TO-DO (last+307):
+1. AUTHOR: `[date of submission]` in the cover letter on the day; final read (main text incl. new Conclusion list and
+   bold Limitations leads; SI S13); submit to Energy and Buildings.
+After every step: update board db (board/progress, artifact SJX4RXb7CneNRARitNnHez), AUTHOR_TODO, memory, and this file.
+
+---
+
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+306) — SUPERSEDED by last+307 above
+
+State:
+- Author said YES to the length fix ("move it to reach 7,500"). DONE:
+  - Appendix B (282 lines, 16 subsections, 44 equations) moved to the SI as **Section S13. Equations**; tags (B.n) -> (Sn)
+    in the SI (44 tags), in the main text (11 "Appendix B, " -> "Supplementary ", 40 "(B.n)" -> "(Sn)", Nomenclature
+    included). SI contents paragraph names S13. No reference moves: every work cited in S13 is also cited in the main text.
+  - Measured: the move did NOT change the main-text count (8,361 was Introduction to Conclusion incl. table cells;
+    Appendix B was never in it). Prose count (lines 21-308 without table rows, image lines, display equations) was 7,611.
+  - Five repetition cuts in Discussion/Limitations (script `trim.py`, each assert-once): 4.1 duplicate "result therefore
+    means" sentence; 4.1 four instrument details -> one example + pointer to SI S1.6; 4.3 Gulrajani sentence (same point
+    and citation as line 35, still cited there); 4.4 internal-comparison caveat shortened (kept in full in Limitations);
+    5 two transfer-bound sentences merged. No finding or limitation dropped. Prose now **7,485** (7,379 without captions).
+  - Backups: `writing/submission/previous/4J_manuscript_submission.md.pre_appB_move_20260924`,
+    `previous/4J_supplementary_material.md.pre_appB_move_20260924` (+ `.pre_appB_move_20260924.docx`).
+  - Rebuilt: manuscript via script (both PATCH lines printed; 6 display equations, 0 "Appendix B", 11 "Supplementary Eq");
+    SI via same pandoc flags + layout script (both PATCH lines; 44 display equations, 0 raw "$$", 4 images).
+    Both copied to `EB_upload/` 16:49 (md5 manuscript 06f90169..., SI d0bf1726...). Old copies `previous/EB_upload_pre_20260924d/`.
+- GEMINI_02 round 2: point 4 (length) now CLOSED. All 11 points closed.
+
+FULL ORDERED TO-DO (last+306):
+1. AUTHOR: `[date of submission]` in the cover letter on the day; final read (main text, SI S13 new); submit to Energy and Buildings.
+After every step: update board db (board/progress, artifact SJX4RXb7CneNRARitNnHez), AUTHOR_TODO, memory, and this file.
+
+---
+
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+305) — SUPERSEDED by last+306 above
+
+State:
+- Equation-source check DONE (manager, at the author's request): `DeepResearchPrompts/VETTING_RL36_equation_sources.md`.
+  16 sources: 11 CONFIRMED, 0 WRONG, 5 NOT OPENED (Jordan-Vajen 2001b, Widen-Wackelgard full text, Balinski-Young,
+  Montgomery, Villani). None of the 5 is cited in the live manuscript; keep them out. Richardson 2010 Sec 2.7 is a
+  closed-form worked example, no iterative scheme: never credit the six-pass rescaling to it (live text does not).
+  Park 2018: DCR only, never NNDR. Deming-Stephan: procedure only, not "depart as little as".
+- Only manuscript change: Pflugradt (2016) reference = "Doctoral dissertation (Dr.-Ing.), Technische Universitat
+  Chemnitz, Chemnitz. urn:nbn:de:bsz:ch1-qucosa-209036." (line 838; re-checked on the Qucosa record by the manager).
+  Backup `writing/submission/previous/4J_manuscript_submission.md.pre_rl36_20260924`.
+- Manuscript docx rebuilt 16:14 (both PATCH lines printed) and copied to `EB_upload/`; "qucosa-209036" present in the
+  uploaded XML. Old copy in `writing/submission/previous/EB_upload_pre_20260924c/`. SI and cover letter unchanged since 16:00.
+- GEMINI_02 round 2 point 6 now HOLDS (fixed). All 11 points closed except length (author).
+
+FULL ORDERED TO-DO (last+305):
+1. AUTHOR decides: length. Main text 8,361 words (`wc -w` lines 21-308) vs own target ~7,500; option = move Appendix B
+   (3,423 words) to the SI, leaving Eqs. (1)-(6) in Methods.
+2. AUTHOR: `[date of submission]` in the cover letter on the day; final read; submit to Energy and Buildings.
+After every step: update board db (board/progress, artifact SJX4RXb7CneNRARitNnHez), AUTHOR_TODO, memory, and this file.
+
+---
+
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+304) — SUPERSEDED by last+305 above
+
+State (author answered the open questions one by one today):
+- Acknowledgements: data providers only (INE, ISTAT, UK Data Service + UKDS disclaimer). DONE.
+- Suggested reviewers: none; line removed from cover letter. AUTHOR_TODO item 6 CLOSED.
+- Pre-registration: NOT deposited publicly (author declines; no cost wanted). Manuscript lines 41, 283, 749 and cover
+  letter line 37 now say the frozen file and hash are available from the author. AUTHOR_TODO item 4 CLOSED.
+- Competitor Jutras-Dube 2024 OPENED (author PDF, `writing/resources/[PDF] Copula-based ... Semantic Scholar.pdf`,
+  arXiv v3): transfer yes, IPF yes, IPF seeded from the SOURCE region (= our donor pool), their copula BN wins
+  (opposite to ours). Line 35 and Table A.1 (+ caption) rewritten. Detail: `DeepResearchPrompts/VETTING_RL35.md` sec 5.
+- Qian 2026 and Jung 2026: author says LEAVE UNCITED. Measured-profile check (Spain, Italy, UK LCL): SKIP for now.
+- GEMINI_02 round 2 (Gemini again, author's choice): 11 points vetted in
+  `writing/submission/Gemini_prompts/GEMINI_02_round2_vetting.md`: 8 fixed, 1 wrong (SI dates: none exist),
+  Pflugradt passed to the source check, length left for the author. Its "no unverified references" is not trusted.
+- Docx rebuilt 16:00 (manuscript via script, both PATCH lines; SI via same flags + layout script, both PATCH lines;
+  cover letter plain pandoc) and all three copied to `EB_upload/`. Old ones in `writing/submission/previous/EB_upload_pre_20260924b/`.
+- Equation sources: author asked the MANAGER to verify them. A background agent was launched 2026-09-24 ~16:00 to open
+  the 14 [AUTHOR TO OPEN] sources + Pflugradt 2016 and write `DeepResearchPrompts/VETTING_RL36_equation_sources.md`
+  (verdict per item: CONFIRMED / WRONG / NOT OPENED). If that file does not exist, the agent did not finish: re-run it.
+
+FULL ORDERED TO-DO (last+304):
+1. MANAGER: read `VETTING_RL36_equation_sources.md`; re-check any WRONG verdict against the quoted text; change only
+   citation wording in Appendix B (and Pflugradt reference if confirmed); backup, rebuild docx, copy to EB_upload.
+2. AUTHOR decides: length. Main text 8,361 words (`wc -w` lines 21-308) vs own target ~7,500; option = move Appendix B
+   (3,423 words) to the SI, leaving Eqs. (1)-(6) in Methods.
+3. AUTHOR: `[date of submission]` in the cover letter on the day; final read; submit to Energy and Buildings.
+After every step: update board db (board/progress, artifact SJX4RXb7CneNRARitNnHez), AUTHOR_TODO, memory, and this file.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+303) — SUPERSEDED by last+304 above
+
+State:
+- GEMINI_05 run by author (A-C applied), then GEMINI_06 (`writing/submission/Gemini_prompts/GEMINI_06_graphical_abstract_final.md`,
+  17 pre-tested edits + a 1 pt clearance check added to the script as `run_clearance_check`). Author pasted the report.
+- MANAGER RE-CHECK (own copy of the live script, output redirected to scratchpad, own `measure.py`):
+  - The clearance check was SEEN FAILING before the edits: 20 problems (3.9 on divider, footer on rule, subtitle on
+    UK/IT/ES, axis numbers on ticks, IT/UK on their dots). After: CLASH 0, CLEARANCE 0, smallest gap 1.04 pt
+    (UK vs IT, real-diaries row); font check PASS. Own measure agrees; all three title tops 2.95 pt from the top edge.
+  - All 17 edits present in `tools/generate_4J_graphical_abstract_eb.py`. Fresh render md5 54cbd922... =
+    `figures/4J_graphical_abstract.png` = `EB_upload/Graphical_abstract.png`. PDF copied too (36,883 bytes).
+  - PNG viewed: clean. Nine ratios and marker hours unchanged.
+- GRAPHICAL ABSTRACT DONE. AUTHOR_TODO items 5 and 7b closed. No docx rebuild needed (separate upload). Board db v22 (log line added).
+
+Upload folder `writing/submission/EB_upload/` now holds: manuscript docx, Figure_1.png/.pdf, Graphical_abstract.png/.pdf
+(plus the earlier files). Figures and GA need no more work unless the text changes a number they show.
+
+FULL ORDERED TO-DO (2026-09-24, last+303; complete, a new session needs nothing below this line to start):
+1. AUTHOR: outside review with a SECOND model (not Gemini), prompt `writing/submission/Gemini_prompts/GEMINI_02_outside_review.md`;
+   ask it to check every citation. Paste the answer back. Round 1 (Gemini) is vetted in last+300 below: 2 of 7 points
+   wrong, no citations checked.
+2. MANAGER, on the pasted answer: vet it like round 1, re-deriving every claim from the files before accepting any.
+   Fix only what survives; backup to `previous/` first; rebuild docx (`bash tools/4thJ_build_submission_docx.sh`, run
+   from `4J_docs_occ/`, both PATCH lines must print) and re-copy it to `EB_upload/`.
+3. AUTHOR jobs still open (details `writing/submission/IMP/impl/AUTHOR_TODO_4J.md`): competitor paper 4 questions
+   (Jutras-Dube 2024, Qian 2026, Jung 2026), Richardson 2010 Section 2.7 + other [AUTHOR TO OPEN] equation sources,
+   OSF/Zenodo deposit link for the pre-registration, suggested reviewers + submission date in the cover letter,
+   Acknowledgements text or delete the section (placeholder), the two measured-profile PDFs (Spain SPAHOUSEC, Italy Besagni 2020).
+4. MANAGER, optional: write the UK Low Carbon London Speed job (1 CPU, sbatch only, 7-day walltime) per
+   `IMP/impl/P17_measured_peak_check.md`; the author must first say yes to downloading the data.
+5. AUTHOR: read the final draft; submit to Energy and Buildings.
+After every step: update board db (board/progress, artifact SJX4RXb7CneNRARitNnHez), AUTHOR_TODO, memory, and this file.
+
+---
+# START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+302) — SUPERSEDED by last+303 above
 
 State:
 - AUTHOR RAN GEMINI_04 (report pasted 2026-09-24). MANAGER RE-CHECK with own harness

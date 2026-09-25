@@ -8,7 +8,8 @@ Arms (column `arm`):
   R   U edited by hand-rule to the injection contract (v3_build_R.py)    (V3b reference)
   N   NECB code schedules sent through the injector chain                (V3b test)
   X   N with the office weekday schedule rolled +3 h                     (V3b negative control)
-  S   frozen-arm products of `scenario`, residential draw seed=`seed`    (V3a seed replicate)
+  S   P10R-arm products of `scenario`, residential draw seed=`seed`, standby floor ON (V3a seed replicate;
+      switched from the frozen arm 2026-09-25, backup v3_task.py.pre_P10R_2026-09-25.bak)
 Column `smoke_days` > 0 truncates the RunPeriod (smoke only).
 
 Writes <runs_root>/<track>/<label>/ : manifest.json, hourly_meters.csv, channel_hourly.csv,
@@ -106,12 +107,18 @@ def main():
         elif arm == "S":
             chans = L.product_channels(scen, c, seed)
             man["channels"] = {k: dict(v, csv_md5=L.md5_file(v["csv"])) for k, v in chans.items()}
-            idf, info = L.build_injected(T, b, c, chans, L.cell_tag(scen, b, c), work, smoke)
+            # P10R patch (2026-09-25): P10R wiring (standby floor ON) and P10R cell as the static reference
+            print("[patch P10R] v3_task arm S: standby_floor=%s, reference=P10R" % L.P10R_STANDBY_FLOOR)
+            idf, info = L.build_injected(T, b, c, chans, L.cell_tag(scen, b, c), work, smoke,
+                                         standby_floor=L.P10R_STANDBY_FLOOR)
             man["build"] = info
-            fz = L.frozen_idf(scen, b, c)
+            man["P10R_PATCH"] = {"products_dir": L.S7O, "standby_floor": L.P10R_STANDBY_FLOOR,
+                                 "reference_campaign": L.P10R_CAMPAIGN}
+            fz = L.p10r_idf(scen, b, c)
+            man["reference_idf_md5"] = L.md5_file(fz)
             st = S.compare(idf, fz)
-            man["static_vs_frozen"] = {k: v for k, v in st.items() if k != "report"}
-            open(os.path.join(outdir, "static_vs_frozen.txt"), "w").write(st["report"])
+            man["static_vs_P10R"] = {k: v for k, v in st.items() if k != "report"}
+            open(os.path.join(outdir, "static_vs_P10R.txt"), "w").write(st["report"])
         else:
             raise SystemExit("REFUSING: unknown arm %r" % arm)
         man["final_idf_md5"] = L.md5_file(idf)

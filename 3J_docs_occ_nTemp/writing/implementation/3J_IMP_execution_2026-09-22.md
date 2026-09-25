@@ -304,3 +304,100 @@ Filled in by the manager when their inputs land.
 - 2026-09-23 01:15 UTC: NEW improvement board (author asked, modelled on the 1J board): https://claude.ai/artifact/Fr1S2GUncWa3bC5QptgoKN . Source IMP/board/3J_improvement_board.html; state lives in its db doc board/progress (checks, sims bars, log) - update bars/log with ArtifactData update, republish only for layout. Older paper-tracker board 0e491191 is a separate lineage, left as is.
 - 2026-09-23: P14 draft written (IMP/P14_package.md); waits on P10R numbers + author confirmations.
 - 2026-09-23 00:40 UTC: P10R test 1342523 (and resubmit 1342533) FAILED in 7 s at the mirror check: speed script md5 stale in repo/mirror_md5.txt (the list the checker reads). Fixed list (63 lines: script 556bebd8, + p10r_slim_sql.py 51d6487d), uploaded to repo/ and 3J_P10R/. Chains 1342524/1342534 cancelled. Resubmitted: test 1342535 (RUNNING on speed-30, [mirror] OK, standby floor True) + cells 1-55 array 1342536 (afterok). Author closing the session; handoff = Prompts/RESUME.md top block.
+- 2026-09-25 00:03 UTC (09-24 evening local): AUTHOR RULING, Speed full: run P10R LOCALLY on half the CPUs. Replaces the 09-23 "Speed only" ruling for P10R; whole arm now local (9 ok from 09-23 + 47). Launched `p10r_local_campaign.py --workers 10` (stdout `campaign_local_P10R/_logs/driver_stdout_relaunch2.txt`) + RAM guard `IMP/scripts/p10r_mem_watchdog.ps1 -Threshold 80` (kills only this campaign's processes; seen firing on a dummy at threshold 1, dry and real; quiet at 99). At launch: 10 EnergyPlus running, RAM 49.6% used, C: 599 GB free. Nothing submitted on Speed.
+- 2026-09-25 00:15 UTC (manager): CPU check on the local P10R run: EnergyPlus uses 9.4 of 20 cores (10 workers, half), other programs ~6 cores, RAM 54%. Author asked to run parallel work: two sonnet employees started (no EnergyPlus, one light process each, frozen arm and campaign_local_P10R untouched): (1) V3b result + cross-platform tolerance into `IMP/V3_design_and_runs.md` section 10, then `IMP/V4_design.md`; (2) V3c post-processing done LOCALLY (cluster full) into `IMP/V3c_results.md` + `IMP/data/V3c/`, cells copied to `_local_runs/3J_V3c/`. Board v13.
+
+### 2026-09-25 00:22 UTC - V3c post-processed (local), verified
+- Sonnet employee aece841612e789248 wrote `IMP/V3c_results.md` (170 lines), `IMP/scripts/v3c_compare.py`, `IMP/data/V3c/`.
+- Manager re-read `data/V3c/v3c_comparison_summary.csv`: _BUILDING peak hour F 14.648 vs U 14.621 (+0.03 h), CF 0.9294 vs 0.9301 (-0.0007); hotel weekday night people F 479.1 vs U 3.15; residential F 667.1 vs U 3.67. Survey arms (frozen deliverable, Y2022 / B_central) hotel 302.8 / 331.5, residential 408.6 / 390.6. Matches the report.
+- Gates: gate 1 (U vs U) ran, did not fire (0 diff); gate 2 (altered U) ran and fired (448.67, localized). Both as designed.
+- Verdict (limitation wording): the hotel/residential night-presence contrast in P3 is mostly a property of the NECB-A control schedule. Feeds REWRITE stage 2 (P3 paragraph) and the P10R P3 re-run.
+- P10R local: 27/56 ok at 00:19 UTC (18 new, 0 failed), RAM 51%. Board v14.
+
+### 2026-09-25 00:26 UTC - V3b write-up + V4 design note (sonnet a9f96c6e1d2846107), verified
+- `IMP/V3_design_and_runs.md` section 10 added (lines 262-415). Manager re-read the table against the doc's own sources: Tall_MTL / Tall_CLG / SuperTall_CLG PASS, SuperTall_MTL NOT_EVALUABLE (noise U2 vs U ann 2.126e-4, hr 0.5376); control fired 4/4 (ann 0.072-0.105). Overall exit 2 = NOT_EVALUABLE, as recorded 09-23.
+- New: SuperTall_MTL U and U2 ran on different nodes and differ by 293,961 EnergyPlus warnings; Tall_MTL also crossed nodes and matched exactly, so node alone does not explain it. Open item V3-O1 (repeat pinned to one node), not run.
+- Tolerance recorded (1e-6 ann / 1e-4 hr, noise <= TOL/10); same-platform basis; cross-platform rows stay "reported".
+- Sign check (class 60, method first): effect_table computes 100*(A-B)/|B| with A=U, B=R (`scripts/V3/v3_check.py:107,152`), so + means U above R. P-b4 predicted U below R (code floors). Measured U above R in every lights/equip column (office_equip +65.56% identical in 4 cells). Formula sign is right; the mechanism is not yet explained. Open item V3-O2; do NOT carry into prose until explained. Likely links to P10 (frozen arm's schedule base), check when P10R numbers land.
+- Process slip: the employee ran one `python3 -c` JSON read on the Speed login node (rule: never). Logged in section 10.6; no compute; repeat with grep. Recorded here as a rule breach.
+- `IMP/V4_design.md` (185 lines): no second mixed-use tower IDF in the repo; 3 options + 3 author questions (section 7). V4 parked on the author; it does not block P10R, stage 2 rewrite or submission.
+- 01:01 UTC: P10R 33/56 ok (9 kept + 24 new, counted with date filter), 10 running, 0 failed, RAM 58%. The 00:22 entry's '27/56 (18 new)' was wrong: whole-log grep counted 8 old ok lines; true was 19/56. Board v16 corrects it.
+
+- **2026-09-25 01:08 UTC:** 38/56 P10R ok (9 + 29 new, date-filtered count), 0 failed, RAM 61.5%. RESUME.md updated in place (archived first to `Prompts/archive/RESUME.2026-09-25_pre_0108utc_status.md`): new top STATUS box with live state, the B_central__Tall__MTL fix, the ordered pipeline, V3-O2. Board v17.
+
+### 2026-09-25 02:10 UTC - P10R campaign complete, aggregated, scored, gates (d)+(e)
+- Driver b3vr4knyg: `DRIVER DONE ok=56 failed=0` (47 new + 9 kept); guard never fired (peak logged 63.2%, exited 0 when idle). First aggregate exit=1: `B_central__Tall__MTL` had no `run/eplusout.sql` and `_run1_B_central__Tall__MTL` was counted as a 57th cell. Both MOVED (not deleted) to `Leg3_4-split/Step8_docs/_archive_P10R_local_2026-09-25/`; rerun `--workers 1` (guard on): `DRIVER DONE ok=56 failed=0`, aggregate `56 / 56`, attribution closes on every cell; `agg_meta` 56 rows, 56 closed.
+- Scorer drift check (class 58/59 spirit): current Step-9 scorer md5 cc2d1a9b != frozen registry e4283d83. Re-scored the FROZEN agg_deliverable into `Step9_docs/outputs_step9_P10R/_control_frozen_rescore_2026-09-25/`: loadshape + scenario tables byte-identical; eui/longitudinal/gates differ ONLY in the `band_src` text (V3-H3 note); every number and every verdict equal. So old-vs-new comparisons with the current scorer are fair.
+- Step-9 on agg_P10R -> `Step9_docs/outputs_step9_P10R/` (exit 0): scorecard 18 PASS / 0 WARN / 2 FAIL / 10 INFO (frozen: 17/3/10). S9-EUI-retail FAIL -> PASS. Office median 79.5 (frozen 71.0), range 70.9-90.2, still 0/56 in band. Hotel median 263.1 (260.5), 28/56 in band, range 204.8-322.2.
+- Gates (d)+(e) over all 56 (`IMP/scripts/p10r_gates_C_de_56.out/.json`): both FAIL as run, exit 1. Cause is scope, not defect: (d) BAD only on the 12 Y2005/Y2010/Y2015 cells (36 BAD lines = 12 x 3 channels), which by design read the unchanged cycle products (P10 §6 "Not affected"); independently their INPUTS_HASH_DETAIL equals the frozen arm's cell-for-cell (12 identical, 0 differ). All 44 rebuilt/other cells ok. (e) FAIL only on the 4 Default_NECB cells (0 office MXU objects: the code-schedule control injects nothing); 52/52 injected cells PASS (office Load floors lights 0.0453, equip 0.2). Gate code and bands NOT changed; the as-run verdict stays FAIL and is recorded with this scope reading.
+- P3 script: `--arm P10R` option added (backup `IMP/scripts/_archive_p3_code_schedule_comparison.pre_arm_2026-09-25.py`); default mode unchanged in intent, still to be regression-checked against its own frozen outputs.
+
+- **2026-09-25 ~03:00 UTC:** image prompts written for the author (no image made): `writing/submission/figures/Prompts_Images_v4/Figure_01_framework_simple.md` (10 boxes, 3 rows, 2J style; drop-in name Figure_01_pipeline_4split.png) and `.../Prompts_Images_v4/graphicalAbstract.md` (new lead, no numbers). Figures 2-4 (transformer, hotel side-track, dispatch) already exist at 5700-6000 px long edge, no regeneration needed.
+
+### 2026-09-25 ~03:00 UTC - Stage 2c done; images and research reports received; three helpers running
+- Stage 2b agent finished (139/143 swapped with the reproduce-old control; 12/12 negative controls did not reproduce). Manager fixed the 4 leftovers and the meaning-changed sentences, wrote V3c and V4 into the text, back matter in 2J form, Table A.1 split, self-citations as 2J, Widén reference. Detail: `IMP/rewrite_log.md` "Stage 2c". Checked: zero markers, zero en/em dashes.
+- Author images: Figure 1 checked by eye, OK and installed. Graphical abstract has a stray diagonal line and the old hotel top chart; prompt updated, author to regenerate.
+- Author reports RV11-RV14 received; vetting agent started (offline). P9 second-pass agent started. V3a: 10/40 done, 0 failed, 10 running (driver.log 02:50 UTC).
+- Board v21. RESUME top box updated (archive `Prompts/archive/RESUME.2026-09-25_pre_0300utc_stage2c.md`).
+
+### 2026-09-25 03:30 UTC - V3a (seed replicates) running LOCALLY on the P10R arm: interim state
+- V3 code switched to P10R (backups `*.pre_P10R_2026-09-25.bak` in `IMP/scripts/V3/`): products = `outputs_step7_P10R` (md5s = P10R manifests = registry, checked on disk), standby floor ON, static reference = `campaign_local_P10R/<cell>/injected_resized.idf`.
+- Static pre-check (no simulation), 4 cells: seed-42 rebuild of Y2022 and B_central = P10R IDF object for object (0/0, 8 of 8). Controls fired: seed 101 differs (27 or 41 PEOPLE objects), standby floor OFF differs (25 LIGHTS/EQUIPMENT objects). `IMP/data/V3/v3a_P10R/precheck/`.
+- Runs: driver `IMP/scripts/V3/v3a_local_driver.py`, 10 at once, root `Leg3_4-split/Step8_docs/campaign_local_P10R_V3a/`. 25/40 ok by 03:26 UTC. At 03:26 the RAM guard FIRED (84.2% on 2 samples) and killed the driver and the 10 live runs. Cause: another project's job (OpenUBEM `fleet06c_harvest_2026-09-24.py`, 12 python workers, started 03:21 UTC) took the RAM; RAM stayed 75% after V3a was gone. That job was not touched. The 15 unfinished tasks (10 killed, 5 never started) are rerun by the same driver command once RAM allows; ok tasks are skipped.
+
+### 2026-09-25 03:45 UTC - V3a stopped by the RAM guard at 25/40; partial result written
+- Guard FIRED 03:26:31 UTC (84.2% RAM on 2 samples), killed the V3a driver + 10 live runs. Cause: another session's OpenUBEM `fleet06c_harvest_2026-09-24.py` (12 workers, started 03:21 UTC), not V3a. Per manager: NOT relaunched.
+- Finished ok 25 (tasks 0-5, 10-19, 30-38); killed 10 (6-9, 20-24, 39); never started 5 (25-29). Resume command (only the 15) and the post-run steps: `IMP/V3_design_and_runs.md` section 11.3.
+- Seed 42 reproduces the published P10R cells exactly (0 difference, hourly and aggregate) in the 6 finished cells; B_central Tall MTL/CLG not run.
+- PARTIAL noise verdict (SuperTall only, 5 pairs MTL, 4 pairs CLG): office, retail, hotel, service_MEP 2030-vs-2022 EUI changes are far larger than draw noise; residential is NOT (sign flips across seeds, both cities); residential_common NOT in MTL, yes in CLG. Tall tower not yet measurable. Section 11.4; data `IMP/data/V3/v3a_P10R/partial_2026-09-25/`.
+
+### 2026-09-25 ~04:00 UTC - Word files built, hotel description corrected, V3a paused (manager)
+- P9 second pass merged (6 numbers, 5 meaning fixes); 2.5 control sentence added; 9 TRUSTED-2J references in; REF NEEDED now 15.
+- Hotel channel text corrected to the code (fact trace `IMP/hotel_channel_fact_trace_2026-09-25.md`): source Government of Alberta monitor, spans AB 2011-2022 / QC 2019-2022, 2022 observed rate, 2030 = 2019 shape x recovery level (source of 0.615/0.635 unvetted: author question), SARIMA(1,1,0)(0,1,0,12) as a check only; Limitations paragraph added.
+- New build script `fullSet/assemble_3J_v2.py` (exit 3 expected: Guideline 14 SI-only); both .docx built and checked on the installed files; title page + cover letter rebuilt in 2J AE form.
+- Figures: data figures without titles and code labels; S1 cleaned; main Figures 2-4 and SI S2-S5 are old drafts with internal notes -> Gemini prompts written in `submission/figures/Prompts_Images_v4/`.
+- V3a: 25/40 ok, stopped 03:26 UTC by the RAM guard (another session's OpenUBEM job). Partial spread written into Limitations. Waiter restarts the 15 unfinished tasks when memory is free (RESUME top box).
+
+### 2026-09-25 ~04:45 UTC - V3a FULL result, all 40 of 40 confirmed ok
+- Confirmed from every run's manifest (not just the driver log): all 40 tasks `status=ok`, `ep_return_code=0`. Full aggregation and checker rerun on all 5 seeds x 8 cells, both exit 0. Seed-42 now reproduces all 8 published P10R cells exactly (worst annual and hourly difference 0.0; 0 unmatched rows, 0 max difference in every aggregate table), including the two Tall B_central cells the partial result could not check. Largest seed-to-seed EUI spread 0.543% (B_central Tall MTL, residential); largest peak-hour spread 0.117 h (Y2022 Tall CLG, residential_common). In all four tower-city cells, the published 2022-to-2030 change in office/retail/hotel is 7.1x to 282x the draw noise (a real signal); the residential change is not (1.2x-1.7x, below the 2x bar, sign flips across seeds in every cell). Full detail `IMP/V3_design_and_runs.md` section 11.6. `--slim` SQL-shrink not run (not asked for this task; run folders and full SQLs left untouched).
+
+### 2026-09-25 15:10 UTC - author rulings: references in, hotel 2030 levels switched to observed (36 re-runs)
+- Author: "yes to both". (1) 8 verified + 6 fixed references applied by a background agent (log: `IMP/rewrite_log.md`
+  "Reference fixes 2026-09-25 (author approved)"). (2) Hotel 2030 recovery levels AB 0.615 -> 0.597, QC 0.635 -> 0.610
+  (observed 2023-2025 means; `IMP/author_checks_2026-09-25/item2_hotel_recovery_levels.md` section 8).
+- Archive before the switch: `Leg3_4-split/_archive_pre_hotel_obs_2026-09-25/` (55 files).
+- Control seen both ways: `IMP/scripts/hotel_obs_rebuild.py --control` = PASS on the old forecast (3/3 frozen md5s
+  reproduced), FAIL after the anchor edit. `--write` -> new 2030 hotel CSVs in outputs_step7_P10R. lookup + s(t) md5 unchanged;
+  3rdJ_06 gate scorecard identical to the archived one (2 old QC FAIL rows).
+- P10R Step-7 script patched: the 2030 hotel products are built from the forecast, no longer byte-copied (2022 still copied).
+- Trap: `p10r_local_campaign.py cell_ok()` ignores INPUTS_HASH. `IMP/scripts/hotel_obs_stale_cells.py`: 36 stale, 20 unchanged
+  (as designed: all B_* and sens_* read the 2030 hotel CSVs). 36 moved to `Step8_docs/_archive_pre_hotel_obs_2026-09-25_cells/`.
+- Driver relaunched 15:06 UTC, 10 workers, RAM guard 80 %. Dry-run plan: 20 kept, 36 to run.
+- Gemini v5 figures (Figure 5 hotel, S5, graphical abstract) checked and accepted; Word files rebuilt (exit 3).
+
+### 2026-09-25 ~17:55 UTC - hotel 2030 re-runs done (56/56 ok), numbers and figures updated, V3a 2030 re-runs started
+- 36 re-runs done 17:42 UTC, aggregate exit 0. Post chain `IMP/scripts/hotel_obs_post.sh` all as expected.
+- 28 of 143 printed numbers moved, all in Results + Table S2; one claim (additivity) re-worded to its measured bound
+  (5.6 %, 0.12 points). Detail: `IMP/rewrite_log.md` section "Hotel 2030 observed levels: numbers and figures updated".
+- Figures 5, 7, 8, 9, 10, 11 redrawn (checks 27/27); Word files rebuilt, exit 3 as expected.
+- V3a: the 20 B_central repeat-seed cells re-run (the old ones were moved to `campaign_local_P10R_V3a/../_archive_pre_hotel_obs_2026-09-25_V3a`
+  earlier; the pinned 2030 hotel md5 in `V3/v3_lib.py` is 30071672, matches disk). Launched 17:46 UTC, 8 at once,
+  RAM guard 88 % (same watchdog process). Then: `v3a_local_aggregate.py` -> `v3_check.py v3a` -> `v3a_report_P10R.py`
+  -> `05_Limitations.md:3` if its numbers move -> rebuild.
+- V3a re-run done: driver `done ok=20 failed=0` 18:37:20 UTC; 40/40 manifests ok; new hotel md5 in 20/20 B_central and 0/20 Y2022
+  manifests. Aggregate `outputs_step8/agg_V3a_P10R_hotel_obs` (5 seeds x 8/8 cells, residual 0), `v3_check.py v3a` exit 0,
+  report `IMP/data/V3/v3a_P10R/full_hotel_obs/`: seed 42 = agg_P10R exactly (8/8, worst 0.0). Ratio office/retail/hotel
+  5.4-311 (was 7.1-282), CV and peak SD unchanged, residential verdict unchanged. `05_Limitations.md:3` "7 to 280" ->
+  "5 to 310". Rebuilt, exit 3 as expected. Watchdog ended on its own. Board v40. Detail: `IMP/V3_design_and_runs.md` 11.8-11.9.
+  **No machine work left; author items only (see RESUME top box).**
+
+- 2026-09-25 ~19:15 UTC: B&E format pass + last citations done. 0 [REF NEEDED] left; Tall/SuperTall source corrected to NREL
+  OpenStudio-Standards (LBNL, 2020), not DOE/PNNL; SCIEU year = 2019; cover letter done except the date (.docx rebuilt);
+  `submission/BE_upload/` = Figure_1..9.pdf + 3J_highlights_BE.docx. Author items: download Guan 2016 and Box 2015; gem version;
+  source of the context-range edges. Detail: `IMP/rewrite_log.md` "B&E format pass and the last citations".
+- 2026-09-25 ~19:45 UTC: context-range edges had no source (deep-research buffers) -> removed from Table 4, SCIEU 2019 survey
+  values shown instead; Box 2015 -> Hyndman & Athanasopoulos 2021 (open); Guan 2016 dropped. No download left for the author.
+  Rebuilt, checks as expected. Author items: cover-letter date, final read, submit.
+- 2026-09-25 ~20:30 UTC: author's 8 Word comments fixed (smaller title, new highlights, Gemini notes out of captions,
+  content-based table widths, centred captions, shorter Appendix A). Rebuilt; checks as expected. Board v44 (tasks ticked).
+  Author items: cover-letter date, final read, submit.

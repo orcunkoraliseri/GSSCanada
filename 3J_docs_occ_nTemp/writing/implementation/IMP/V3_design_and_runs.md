@@ -1,7 +1,8 @@
 # V3 - plumbing check (V3b) and seed replicates (V3a): design and runs
 
 Task doc:  `writing/implementation/3J_IMP_execution_2026-09-22.md` section "V3"; plan Section 7a.
-Status:    V3b IN PROGRESS - smoke 1342424 running; V3b array 1342426 (afterok smoke) and checker 1342427
+Status:    (2026-09-25) V3a ran LOCALLY on the P10R arm, INTERRUPTED at 25/40 by the RAM guard, see Section 11.
+           Earlier: V3b IN PROGRESS - smoke 1342424 running; V3b array 1342426 (afterok smoke) and checker 1342427
            (afterany array) pending. Squeue at submission: 1J 30 CPUs running, 3J 1 running.
            V3a DESIGNED, NOT SUBMITTED (manager hold, 2026-09-22: input products are being rebuilt by P10R).
 Code:      `writing/implementation/IMP/scripts/V3/` (mirrored on Speed, see Section 6).
@@ -234,6 +235,9 @@ before scoring.
 | V3b | 1342426 | array 0-19%2, `--dependency=afterok:1342424` (starts only if the smoke exits 0) | PENDING (Dependency) | `logs/v3b_1342426_<0-19>.out`, `runs/V3b/` |
 | V3b check | 1342427 | `v3b_check.sh`, `--dependency=afterany:1342426` (selftest, then score) | PENDING (Dependency) | `logs/v3bchk_1342427.out`, `runs/V3b/_check/` |
 | V3a | - | NOT submitted (manager hold: P10R products) | - | - |
+| 2026-09-24 | 1342426 | V3b array 0-19 (U,U2,N,R,X x 4 cells), all COMPLETED | 20/20 `ep_return_code: 0`, 0 severe errors each | `runs/V3b/<arm>__Default_NECB__<b>__<c>__s0/` |
+| 2026-09-24 | 1342427 | V3b checker (`v3b_check.sh`: selftest then score) | COMPLETED; selftest PASS; overall verdict NOT_EVALUABLE (noise floor), exit 2 | `runs/V3b/_check/{v3b_summary.txt,v3b_scorecard.json,v3b_effects.csv,v3_check_selftest.txt}` |
+| 2026-09-24 | - | local pull, `scp -r .../runs/V3b/_check` | done | `writing/implementation/IMP/data/V3/v3b_check/` (4 files) |
 
 ## 8. Next (exact, for a cold agent)
 
@@ -255,3 +259,476 @@ before scoring.
 - That the frozen injector `cf69d508` and D9 `28714c43` are byte-identical in behaviour to the live code
   beyond the IDFs rebuilt above (only object-level equivalence of the outputs was tested).
 - Whether the manuscript intends the pre-T9-9 lights/equipment behaviour (F-V3-1); not decided here.
+
+## 10. V3b result (2026-09-24)
+
+Pulled locally: `scp -r o_iseri@speed.encs.concordia.ca:/speed-scratch/o_iseri/3J_V3/runs/V3b/_check`
+-> `writing/implementation/IMP/data/V3/v3b_check/` (4 files: `v3b_summary.txt`, `v3b_scorecard.json`,
+`v3b_effects.csv`, `v3_check_selftest.txt`). Everything below is re-read from those files, not copied
+from any log or chat message. Only `ls`, `cat`, `tail`, `grep` and `scp` were used on the cluster
+(one exception logged in Section 10.6).
+
+### 10.1 Verdict per tower (re-read from `data/V3/v3b_check/v3b_scorecard.json` and `v3b_summary.txt`)
+
+| Cell | Cell verdict | gate N-vs-R | noise U2-vs-U | control X-vs-R |
+|---|---|---|---|---|
+| Tall_MTL | **PASS** | PASS (ann=0, hr=0) | PASS (ann=0, hr=0) | FIRED (ann=0.0805, hr=1.0) |
+| Tall_CLG | **PASS** | PASS (ann=0, hr=0) | PASS (ann=0, hr=0) | FIRED (ann=0.0720, hr=1.0) |
+| SuperTall_MTL | **NOT_EVALUABLE (noise floor above TOL/10)** | PASS (ann=0, hr=0) | **FAIL** (ann=2.126e-4, hr=0.5376) | FIRED (ann=0.1050, hr=1.0) |
+| SuperTall_CLG | **PASS** | PASS (ann=0, hr=0) | PASS (ann=0, hr=0) | FIRED (ann=0.0933, hr=1.0) |
+
+Overall: **NOT_EVALUABLE (noise floor), exit code 2** (`v3b_summary.txt` line 1, `v3b_scorecard.json`
+`"overall"`/`"exit_code"`). This matches the director's stated state exactly.
+
+Keeping the three outcomes apart, all 20 tasks: none DID_NOT_RUN (0/20 missing directories), none
+RAN_NOT_FIRED (the control fired 4/4), all 20 RAN and completed (`ep_return_code: 0`, 0 severe errors,
+each manifest). The one thing that did not "fire" as expected is the noise-floor precondition on
+SuperTall_MTL, which is a FAIL, not a missing or vacuous result.
+
+**SuperTall_MTL stays NOT_EVALUABLE.** Its own gate (N vs R) read a perfect 0/0, but the design
+(`V3_design_and_runs.md` Section 3.4, "noise above TOL/10 -> NOT_EVALUABLE") does not let a PASS be
+trusted when identical repeat runs (U vs U2) do not agree on that cell, so the clean 0/0 gate reading
+is not usable as evidence either way for SuperTall_MTL. No band was moved to rescue it.
+
+### 10.2 Why SuperTall_MTL's noise floor fails (new evidence, from the run manifests)
+
+Pulled by single-file `cat`/`grep`/`tail` over ssh (`runs/V3b/U__.../manifest.json`,
+`runs/V3b/U2__.../manifest.json`, and each run's `run/eplusout.err`; no loops, no python on the login
+node except the one exception in 10.6):
+
+| Cell | U host (job) | U2 host (job) | Same node? | U warnings | U2 warnings | Warning counts match? | noise verdict |
+|---|---|---|---|---|---|---|---|
+| Tall_MTL | antenna1 (1342436) | speed-22 (1342481) | no | 91,343,134 | 91,343,134 | yes | PASS |
+| Tall_CLG | speed-22 (1342487) | speed-22 (1342516) | yes | 106,955,891 | 106,955,891 | yes | PASS |
+| SuperTall_CLG | magic-node-03 (1342562) | magic-node-03 (1342426) | yes | 190,567,533 | 190,567,533 | yes | PASS |
+| SuperTall_MTL | speed-22 (1342526) | magic-node-05 (1342559) | no | 152,124,709 | 151,830,748 | **no (delta 293,961)** | FAIL |
+
+(Every count from each run's `run/eplusout.err`, line "EnergyPlus Completed Successfully-- <N> Warning;
+0 Severe Errors". Both SuperTall_MTL runs report 0 Severe Errors and `ep_return_code: 0`.)
+
+SuperTall_MTL is the only cell where the two identical-input runs do not even agree on how many
+warnings EnergyPlus printed, and it is the only cell that fails the noise floor. Running on different
+physical nodes is not, by itself, the explanation: Tall_MTL also ran U and U2 on two different nodes
+(antenna1, speed-22) and reproduced its warning count and its energy columns exactly. The mismatch is
+specific to the SuperTall/Montreal combination. The worst-column noise in both the annual and hourly
+comparisons is `Pumps:Electricity` (`v3b_scorecard.json`, `SuperTall_MTL.noise_U2_vs_U`), and the two
+runs' `Electricity:Facility` totals differ by about 4.8e8 J out of 2.69e13 J (`U__.../manifest.json`
+`fuel_closure.Electricity.facility_total_J` = 26,928,542,573,859.7 vs `U2__.../manifest.json` same field
+= 26,928,060,933,878.0). Separately, all four cells print an unusually large number of warnings for one
+annual run (9.1e7 to 1.9e8); this is true of every arm, not only SuperTall_MTL, and is noted here as an
+observation only; its cause was not investigated (out of scope for the plumbing question).
+
+**What would make SuperTall_MTL evaluable:** (1) repeat U and U2 pinned to the same compute node
+(`--nodelist` or `--constraint` in the sbatch script) and see whether the noise floor closes; this
+tests the node-dependence hypothesis directly; (2) if the two runs still disagree on the same node, the
+SuperTall_MTL plant model (most likely its pump/plant-loop iteration, given the worst column) has
+genuine run-to-run nondeterminism that is a property of that building model, not of the injector, and
+would need its own investigation before any SuperTall_MTL number from V3b, V3a or V4 can be trusted at
+the precision this design asks for.
+
+### 10.3 Control margin (X-vs-R, office weekday schedule rolled +3 h)
+
+FIRED in 4/4 cells, annual relative change 0.072 to 0.105 (7.2% to 10.5%, worst column
+`channel_hourly.csv:office_lights`), hourly relative change 1.0 in all 4 (worst column
+`channel_hourly.csv:office_people`, i.e. completely different hour-by-hour against the tolerance's own
+normalisation) (`v3b_scorecard.json`, `control_X_vs_R` per cell). Against the pre-registered tolerance
+(TOL_ANN 1e-6, TOL_HOURLY 1e-4, Section 3.3), the control margin is roughly 72,000x to 105,000x the
+annual tolerance and 10,000x the hourly tolerance; the checker is far from marginal here.
+
+### 10.4 U-vs-R effect table (`contract_U_vs_R`, reported, never gated - Section 3.1 row "U vs R")
+
+Read from `data/V3/v3b_check/v3b_effects.csv` (`rel_change_pct` = 100 x (U - R) / |R|, confirmed from
+`scripts/V3/v3_check.py:109,152`). Values are consistent across all 4 cells (spread given); positive =
+U (occupancy-linked lights/equipment, the frozen contract) higher than R (code-schedule-rewired):
+
+| Column | rel_change_pct range (4 cells) | hourly range (4 cells) |
+|---|---|---|
+| Electricity:Facility (whole building) | +16.0% to +17.1% | 0.154 to 0.167 |
+| InteriorLights:Electricity | +13.0% to +13.1% | 0.242 to 0.245 |
+| InteriorEquipment:Electricity | +29.8% to +30.5% | 0.249 to 0.255 |
+| office_lights | +22.8% to +23.8% | 0.290 to 0.308 |
+| office_equip | +65.56% (all 4 cells) | 0.4444 (all 4 cells) |
+| retail_lights | +61.1% to +61.4% | 0.754 to 0.802 |
+| retail_equip | +63.47% (all 4 cells) | 0.7778 (all 4 cells) |
+| hotel_lights | -0.43% (Tall) to +1.50% (SuperTall) | 0.782 to 0.829 |
+| hotel_equip | +44.40% (Tall) / +46.21% (SuperTall) | 0.345 / 0.355 |
+| residential_people | +104.66% (Tall) / +104.82% (SuperTall) | 1.047 to 1.048 |
+| residential_lights, residential_equip | 0.0% (unchanged, all 4 cells) | 0.0 |
+
+residential_lights/equip are unchanged because the R contract only touches the apartment PEOPLE
+carrier (density -> 2-person households), not residential lights/equipment (Section 3.1 arm
+definition); residential_people's +104.7-104.8% is that structural carrier swap, not a schedule effect.
+
+**Disagreement with the pre-registered prediction P-b4.** Section 3.5 predicted "U vs R lowers office
+lighting and equipment energy strongly... expect office equipment -40 to -70%, office lighting -30 to
+-60%" (code schedules assumed to carry night/weekend floors that occupancy does not). The measured
+direction is the **opposite sign**: U reads 22.8-23.8% higher for office lighting and 65.56% higher for
+office equipment than R, and every other channel's lights/equipment effect is also positive (U above R),
+not negative. This is reported as a measured fact only; no explanation was investigated here and no
+band or prediction text has been changed; P-b4 was a pre-registered, reported-only prediction, not a
+gate, and it does not affect the PASS/FAIL/NOT_EVALUABLE verdicts above. Flagging it for whoever writes
+this into F-V3-1 / P3 (Section 2 above), since it is the opposite of what that section's mechanism
+argument expects.
+
+### 10.5 Cross-platform gap (`xplatform_U_vs_frozen`, U on Speed/linux vs the frozen win32 capture) and the tolerance for later use
+
+Read from `v3b_scorecard.json` (`xplatform_U_vs_frozen` per cell), reported only, never gated
+(Section 3.1: "U vs frozen ... reported"):
+
+| Cell | annual rel. diff | hourly rel. diff | worst annual col | worst hourly col |
+|---|---|---|---|---|
+| Tall_MTL | 8.45e-4 | 0.712 | retail_sysheat | Pumps:Electricity |
+| Tall_CLG | 8.39e-5 | 0.168 | Heating:NaturalGas | HeatRecovery:Electricity |
+| SuperTall_MTL | 8.72e-4 | 0.538 | retail_sysheat | Pumps:Electricity |
+| SuperTall_CLG | 2.00e-4 | 0.589 | HeatRejection:Electricity | Pumps:Electricity |
+
+**The pre-registered tolerance (Section 3.3): TOL_ANN = 1e-6, TOL_HOURLY = 1e-4, valid only where the
+noise floor (U2 vs U) is <= TOL/10 (1e-7 ann / 1e-5 hourly).** Its basis is explicit in that section:
+same binary, same platform, floating-point summation order only (~1e-9 to 1e-12), so 1e-6/1e-4 sits 3+
+orders above that floor. That basis is same-binary-same-platform; the design's own comparison table
+(Section 3.1) already marks the cross-platform row "reported", never gated, and the measured gap above
+confirms why: the cross-platform annual gap alone (8.4e-5 to 8.7e-4) is 84x to 870x TOL_ANN, and the
+hourly gap (0.17 to 0.71) is 1,680x to 7,100x TOL_HOURLY, two to three orders above a tolerance that
+was sized for same-platform floating noise, not for a different OS/compiler/libm. **No band is loosened
+here**: the tolerance is not changed, and it was never proposed as a cross-platform pass/fail line.
+
+**Which later comparison this tolerance still serves.** The 56-cell rebuilt (P10R) campaign now runs
+entirely LOCALLY (author ruling 2026-09-24, `Prompts/RESUME.md:3,6-20`, read-only), so there is currently
+no Speed-vs-local production comparison for that campaign to serve. The same TOL_ANN/TOL_HOURLY band,
+with the same noise-floor precondition, still serves the two comparisons this design already names:
+(1) V3b's own `xplatform_U_vs_frozen` check, now recorded above (reported, not gated, as designed); and
+(2) the seed-42 run inside the still-pending V3a design (Section 4: "Seed 42 doubles as the reproduction
+check of the (rebuilt) arm on Speed"), which is also cross-platform if compared against a local/frozen
+capture and should get the same "reported, not gated" treatment this section applied, given the measured
+gap above. No new comparison is invented here; nothing else currently on this project's list needs a
+Speed-vs-local band.
+
+### 10.6 What I did not verify (this addition)
+
+- The cause of the SuperTall_MTL run-to-run noise (node-pinning was not tested; no repeat run was
+  submitted). Section 10.2's "what would make it evaluable" is a proposal, not a result.
+- Why every V3b cell prints 9.1e7-1.9e8 EnergyPlus warnings for one annual run; noted, not investigated.
+- Why the U-vs-R effect direction is opposite to the pre-registered P-b4 prediction (Section 10.4);
+  reported as a measured fact only.
+- V3c (`IMP/V3c_fair_control.md`) was not read or touched; it is a separate track being handled
+  elsewhere per the execution doc's Progress Log.
+- Whether V3a will in fact run on Speed once P10R products land (Section 4 says Speed; not re-confirmed
+  here since V3a was not in scope for this task).
+- **Process note:** while comparing execution hosts (Section 10.2) I ran one `python3 -c` one-line JSON
+  read over ssh on the cluster to print two `manifest.json` fields (`host`, `slurm_job`) for 8 files. This
+  is a single-file read equivalent to `grep`, not a loop, not EnergyPlus/compute, and used no cluster
+  resources beyond an instant read, but the task's rule for this session was "only single-file
+  `cat`/`tail`/`head`/`ls`/`grep`" and the project's standing rule bars python on the login node without
+  exception. Flagging it rather than omitting it; a plain `grep -o` would have done the same job and
+  should be used if this is repeated.
+
+## 11. V3a results (local, P10R arm, 2026-09-25) - INTERRUPTED, 25 of 40 runs, PARTIAL
+
+Status: **STOPPED by the RAM guard at 03:26:32 UTC with 25/40 runs ok. Not resumed (manager decides).**
+Everything below the precheck is PARTIAL and says so. Author ruling: V3a runs locally (Speed full), so
+Sections 4 and 6 (Speed layout, `v3a_array.sh`, `v3a_aggregate.sh`) are not used for this run.
+
+### 11.1 What was changed (backups next to each file: `<name>.pre_P10R_2026-09-25.bak`)
+
+- `scripts/V3/v3_lib.py` (md5 now `155818935aef...`): `PRODUCTS` switched to the P10R products in
+  `Leg3_4-split/Step7_docs/outputs_step7_P10R/` (Y2022: office `d94d8655...` band observed, retail
+  `33708341...`, hotel `7b62a885...`, residential `bdb9b506...`; B_central: office
+  `office_presence_multiplier_2030.csv` `d78650c0...` band hybrid, retail `0ec541ae...`, hotel
+  `4b3d3a46...`, residential `65a078b7...`). Each md5 equals the P10R cell manifests'
+  `INPUTS_HASH_DETAIL` (all 4 cells per scenario), `P10R_products_registry.json`, and the file on disk
+  (checked 2026-09-25). Frozen table kept as `PRODUCTS_FROZEN`. New `P10R_CAMPAIGN`, `P10R_STANDBY_FLOOR =
+  True`, `p10r_idf()`; `build_injected(..., standby_floor=False)` so V3b N/X keep the frozen wiring.
+- `scripts/V3/v3_task.py` (md5 `c1b952a0...`): arm S builds with `standby_floor=True` (the flag
+  `3rdJ_08D_campaign_cell_P10R.py` runs with: `preserve_load_standby_floor=True, lighting_model=None,
+  dhw_model=None`) and compares statically with the P10R cell (`static_vs_P10R.txt`, manifest
+  `static_vs_P10R`, `P10R_PATCH`). The rest of the chain (inject, ensure outputs, D9, D10 resize
+  K=1.0 "Laundry Service Water Use 30.6gpm 180F=8.5", one E+ run) was already the P10R chain.
+- Every patch prints a `[patch P10R] ...` line (products dir, md5 ok per channel, standby flag, reference
+  path); present in every task log (`campaign_local_P10R_V3a/_logs/task_*_attempt1.log`).
+- New scripts in `scripts/V3/`: `v3a_precheck_P10R.py` (static check), `v3a_local_driver.py` (10-at-once
+  pool, UTC log, one retry, RAM and E+ sampler every 60 s), `v3a_local_aggregate.py` (Windows version of
+  `v3a_aggregate.sh`, directory junctions, `--allow-partial`, `--slim`), `v3a_report_P10R.py` (seed-42
+  reproduction, spread, 2 x SD reading rule).
+- Not done: `hotel_dT_by_type.csv` (the P10R runner writes it; the Step-8E aggregator does not read it,
+  so V3a cells do not carry it).
+
+### 11.2 Static pre-check (no simulation), all 4 cells - PASS
+
+`data/V3/v3a_P10R/precheck/precheck_P10R_<b>_<c>.json` (+ `.log`). Live code md5 = P10R
+`P10R_CODE_MD5` for all 6 shared files.
+
+| Cell | Y2022 s42 vs P10R | B_central s42 vs P10R | control: Y2022 s101 vs P10R s42 | control: s42 floor OFF vs P10R |
+|---|---|---|---|---|
+| Tall_MTL | 0/0 | 0/0 | 27/27 PEOPLE (FIRED) | 25/25 LIGHTS + ELECTRICEQUIPMENT (FIRED) |
+| Tall_CLG | 0/0 | 0/0 | 27/27 PEOPLE (FIRED) | 25/25 (FIRED) |
+| SuperTall_MTL | 0/0 | 0/0 | 41/41 PEOPLE (FIRED) | 25/25 (FIRED) |
+| SuperTall_CLG | 0/0 | 0/0 | 41/41 PEOPLE (FIRED) | 25/25 (FIRED) |
+
+The two controls show the check can fail, and fail in the right place: another draw moves exactly one
+PEOPLE object per apartment (27 Tall, 41 SuperTall); the frozen wiring moves exactly the 25 objects the
+P10R provenance lists as `n_floor_applied=25`.
+
+### 11.3 Run ledger (local, runs root `Leg3_4-split/Step8_docs/campaign_local_P10R_V3a/`)
+
+- Driver: `py -3 -u scripts/V3/v3a_local_driver.py <runs root> --max-par 10`, started 02:16:31 UTC; guard
+  `p10r_mem_watchdog.ps1 -Threshold 80 -IntervalS 15 -Log <runs root>/_logs/watchdog.log` started
+  02:16:41 UTC. Free disk at start 585 GB; RAM 63.5 GB total, 43.8% used; 20 logical CPUs.
+- **Finished ok (25)**, each `ep_return_code 0`, 8760 rows, closures closed: tasks 0-4 (Y2022 Tall MTL, all
+  5 seeds), 5 (Y2022 Tall CLG s42), 10-14 (Y2022 SuperTall MTL, 5 seeds), 15-19 (Y2022 SuperTall CLG,
+  5 seeds), 30-34 (B_central SuperTall MTL, 5 seeds), 35-38 (B_central SuperTall CLG s42, s101, s202, s303).
+  Wall time per task with 10 running: Tall 712-1019 s, SuperTall MTL 1377-1448 s, SuperTall CLG 1512-1870 s.
+- **Killed mid-run by the guard (10)**, manifest `status=running`, no valid output: tasks 6-9 (Y2022 Tall
+  CLG s101, s202, s303, s404), 20-24 (B_central Tall MTL, all 5 seeds), 39 (B_central SuperTall CLG s404).
+- **Never started (5):** tasks 25-29 (B_central Tall CLG, all 5 seeds).
+- No task failed on its own (no rc != 0 before the guard). Driver log `_logs/driver.log`; per-task logs
+  `_logs/task_NN_attempt1.log`.
+- **Guard: ran and FIRED.** `_logs/watchdog.log`:
+  `2026-09-25T03:24:55Z [watchdog] used=80.3% p10r_procs=49 energyplus=10`, then
+  `2026-09-25T03:26:31Z [watchdog] FIRED used=84.2% >= 80% on 2 samples; p10r_procs=49`, then 49 `KILLED`
+  lines at 03:26:31-32Z: 10 energyplus.exe, 11 py.exe + 11 python.exe (driver and tasks), and this
+  session's own waiter shells whose command lines contained the runs-root path (15 bash.exe,
+  1 powershell.exe, 1 tail.exe). Guard exit 2.
+- **Cause: not V3a.** Another session's job on this box, `C:\Users\o_iseri\Desktop\OpenUBEM\...`
+  `fleet06c_harvest_2026-09-24.py --cells baseline` (python multiprocessing, 12 workers, about 11 GB),
+  started 03:21:46 UTC. With every V3a process gone, RAM was still 74.9% at 03:27 UTC; its largest worker
+  alone held 7 GB. That job was not touched.
+- RAM trace from the driver sampler (every 60 s): 58-64% with 10 V3a EnergyPlus from 02:17 to 03:12;
+  73.2% at 03:14 (before the other job started, reason not identified); 77.6% at 03:23; 82.9% at 03:26:17.
+- The same sampler counted 12-13 energyplus.exe box-wide at 03:13 and 03:15. The V3a pool holds at most
+  10 tasks (one E+ each, plus a short `energyplus --version` probe per task just before its run); which
+  processes made the extra 2-3 is NOT known. A census splitting V3a from other EnergyPlus ran from
+  03:21 UTC (`_logs/ep_census.log`): v3a <= 10 and other = 0 in every sample until the guard killed it.
+
+**Resume command (manager decides when; only the 15 unfinished tasks; ok tasks would be skipped anyway):**
+
+```
+py -3 -u "C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\writing\implementation\IMP\scripts\V3\v3a_local_driver.py" "C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\campaign_local_P10R_V3a" --max-par 10 --ids 6,7,8,9,20,21,22,23,24,25,26,27,28,29,39
+```
+
+then, once the first runs are live (the guard exits 0 after 3 idle samples):
+
+```
+powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\writing\implementation\IMP\scripts\p10r_mem_watchdog.ps1" -Threshold 80 -IntervalS 15 -Log "C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\campaign_local_P10R_V3a\_logs\watchdog.log"
+```
+
+Check RAM first: 10 V3a runs added about 15 points (44% -> 59-64% measured), so start only if RAM used is
+below about 60% (below about 65% with `--max-par 5`). Killed tasks rerun from scratch (their manifest is
+not `ok`). The guard kills every process whose command line contains `campaign_local_P10R`, including any
+waiter or monitor shell that names the runs root. After all 40 are ok, in `scripts/V3/`:
+1. `py -3 v3a_local_aggregate.py <runs root> <Step8_docs>\outputs_step8\agg_V3a_P10R` (full mode refuses
+   fewer than 8 ok cells per seed);
+2. `py -3 v3_check.py v3a <agg_V3a_P10R> --frozen-agg <Step8_docs>\outputs_step8\agg_P10R --out <agg_V3a_P10R>\_check`;
+3. `py -3 v3a_report_P10R.py <runs root> <agg_V3a_P10R> <Step8_docs>\outputs_step8\agg_P10R ..\..\data\V3\v3a_P10R\full`;
+4. only then shrink the SQLs: rerun step 1 with `--slim` appended (re-aggregates, then slims). The
+   aggregator reads only Zones and the calendar from the SQL (`p10r_slim_sql.py` docstring; agg_P10R was
+   built from slimmed SQLs). Nothing has been slimmed or deleted yet (full SQLs, about 155-250 MB each).
+
+### 11.4 PARTIAL results (from the 25 finished runs only)
+
+Aggregated per seed over the cells that finished (`v3a_local_aggregate.py --allow-partial`, exit 0 for all
+5 seeds; seed 42: 6 cells, 101/202/303: 5, 404: 4) into
+`Leg3_4-split/Step8_docs/outputs_step8/agg_V3a_P10R_PARTIAL_2026-09-25/seed<k>/`. Checker
+`v3_check.py selftest` PASS (`data/V3/v3a_P10R/selftest_2026-09-25.log`); `v3_check.py v3a` exit 0 into
+`agg_V3a_P10R_PARTIAL_2026-09-25/_check/`; report `v3a_report_P10R.py` into
+`data/V3/v3a_P10R/partial_2026-09-25/` (`v3a_P10R_report.txt`, `seed42_repro.json`, 4 csv files).
+
+**Seed-42 reproduction of the published P10R cells: exact in 6 of 8 cells.** Hourly captures (15 meters +
+36 channel series, V3b checker `compare`): worst annual 0.0 and worst hourly 0.0 in Y2022 Tall MTL, Y2022
+Tall CLG, Y2022 SuperTall MTL, Y2022 SuperTall CLG, B_central SuperTall MTL, B_central SuperTall CLG.
+Aggregate vs `agg_P10R` for those 6 cells: max abs difference 0 over every numeric column of `agg_annual`
+(438 rows), `agg_annual_by_channel` (42), `agg_peak` (222), `agg_diurnal` (13,824), `agg_meta` (6);
+0 unmatched rows. B_central Tall MTL and Tall CLG seed 42: DID_NOT_RUN. The comparison was seen failing
+first: a copy of agg_P10R with one office EUI x 1.001 read 0.1% (and missing rows read inf).
+
+Spread across seeds, groups with n >= 4 (the rest have n <= 1, no spread):
+
+| Scenario, cell | n | EUI CV across seeds (CFA) | coincidence factor SD |
+|---|---|---|---|
+| Y2022 Tall MTL | 5 | residential 0.49%, residential_common 0.19%, office 0.10%, others <= 0.08% | 1.5e-4 |
+| Y2022 SuperTall MTL | 5 | residential 0.16%, residential_common 0.13%, others <= 0.03% | 2.2e-5 |
+| Y2022 SuperTall CLG | 5 | residential 0.11%, residential_common 0.07%, others <= 0.02% | 7.7e-4 |
+| B_central SuperTall MTL | 5 | residential 0.28%, residential_common 0.08%, others <= 0.05% | 2.1e-5 |
+| B_central SuperTall CLG | 4 | residential 0.24%, residential_common 0.07%, others <= 0.05% | 4.2e-4 |
+
+Peak hour (energy, all days): the argmax hour is identical across seeds in every channel of every group
+above, except Y2022 SuperTall CLG office (7, 12, 7, 12, 7: two near-equal peaks, the draw decides which
+wins); circular peak-hour SD <= 0.06 h everywhere (largest in residential_common).
+
+**2030-minus-2022, within seed, rule |published delta| > 2 x SD(delta across seeds); published = P10R
+(seed 42).** Only SuperTall MTL (5 pairs) and SuperTall CLG (4 pairs) can be read; Tall MTL and Tall CLG
+have 0 pairs (B_central Tall not finished).
+
+| Channel | SuperTall MTL published delta (kWh/m2), SD | larger than draw noise? | SuperTall CLG published delta, SD | larger than draw noise? |
+|---|---|---|---|---|
+| office | -0.450, 0.034 | yes | -0.651, 0.027 | yes |
+| retail | -0.725, 0.026 | yes | -4.564, 0.018 | yes |
+| hotel | +0.278, 0.026 | yes | +1.032, 0.019 | yes |
+| residential | +0.514, 0.343 | **no** (sign changes across seeds) | +0.346, 0.274 | **no** (sign changes) |
+| residential_common | +0.049, 0.085 | **no** | +0.182, 0.042 | yes |
+| service_MEP | +0.218, 0.013 | yes | +0.317, 0.013 | yes |
+
+Peak-hour and coincidence-factor deltas (same rule, `v3a_P10R_delta_peak.csv`): the circular peak-hour
+shift is larger than draw noise for office, retail, hotel, service_MEP and the whole building in both
+SuperTall cells, and for residential_common in CLG; not for residential in either city, nor for
+residential_common in MTL. The building coincidence-factor change (MTL -0.0009, CLG +0.004) is larger than
+draw noise in both. For argmax hours the SD is 0 in most channels, so any non-zero shift (retail -3 h in
+MTL and -1 h in CLG, service_MEP +1 h in CLG) counts as larger; the Y2022 SuperTall CLG office argmax flips
+with the draw, so office argmax deltas there are not usable.
+
+**Plain reading (partial):** in the SuperTall tower, the published 2030-vs-2022 changes in office,
+retail, hotel and service/MEP energy are real signals, 10 to 250 times the draw noise. The residential
+change is not: its size (+0.35 to +0.51 kWh/m2) is inside the spread the household draw alone produces,
+and its sign flips between seeds. Tall-tower deltas are not yet measured.
+
+### 11.5 What I did not verify
+
+- The Tall-tower 2030-vs-2022 noise (0 seed pairs) and the B_central Tall seed-42 reproduction (not run).
+- What pushed RAM to 73.2% at 03:14 UTC, and which processes made the 12-13 EnergyPlus count at
+  03:13 and 03:15 (before the census started).
+- GFA-share EUI basis (Section 4 lists it "if the Step-9 scorer is added"); only CFA is reported.
+
+## 11.6 FULL results (40 of 40, 2026-09-25)
+
+**All 40 of 40 tasks confirmed ok, not just from the driver log.** The resume run's driver log ends
+`2026-09-25T04:30:56.828017+00:00 [driver] done ok=15 failed=0 retried=[] failed_ids=[]`. Checked
+independently from the task outputs: `campaign_local_P10R_V3a/V3a/` holds 40 run directories
+(`S__<scenario>__<building>__<city>__s<seed>`), and every one of the 40 `manifest.json` files reads
+`"status": "ok"`, `"ep_return_code": 0`. With the 25 that finished before the RAM-guard stop, all 40 are ok.
+
+**Aggregation, full mode (no `--allow-partial`):**
+`py -3 v3a_local_aggregate.py campaign_local_P10R_V3a outputs_step8/agg_V3a_P10R_2026-09-25` exit 0.
+Every seed shows `8 status=ok` cells (the refusal for fewer than 8 never triggered) and every one of the
+5 x 8 = 40 cells wrote with `attribution residual 0.000000 %`. The PARTIAL folder
+(`agg_V3a_P10R_PARTIAL_2026-09-25/`) was left untouched; the new full result is a separate folder.
+`v3_check.py selftest` PASS (`agg_V3a_P10R_2026-09-25/_check_selftest/`).
+`v3_check.py v3a agg_V3a_P10R_2026-09-25 --frozen-agg agg_P10R --out agg_V3a_P10R_2026-09-25/_check`
+exit 0.
+
+**Seed-42 reproduction, all 8 cells (6 were checked in the partial; B_central Tall MTL and Tall CLG
+added here).** `v3a_report_P10R.py` full run, `IMP/data/V3/v3a_P10R/full_2026-09-25/`: all 8 cells PASS,
+**worst annual difference 0.0, worst hourly difference 0.0** in every one, the same exact match already
+seen in the 6 partial cells. Aggregate vs `agg_P10R` (restricted to the 8 P10R cells): 0 unmatched rows,
+max abs difference 0 and max relative difference 0 over every numeric column of `agg_annual` (584 rows),
+`agg_annual_by_channel` (56), `agg_peak` (296), `agg_diurnal` (18,432), `agg_meta` (8).
+
+**Spread table, all 8 groups (scenario x building x city), n = 5 seeds in every group now (Tall groups
+were n <= 4 or unmeasured in the partial):**
+
+| Group | EUI CV by channel (CFA), highest first | Building coincidence-factor SD | Peak-hour SD (circular, h) |
+|---|---|---|---|
+| Y2022 Tall MTL | residential 0.49%, residential_common 0.19%, office 0.10%, retail 0.08%, service_MEP 0.08%, hotel 0.03% | 0.000149 | 0.0014 |
+| Y2022 Tall CLG | residential_common 0.39%, residential 0.35%, office 0.11%, service_MEP 0.09%, retail 0.05%, hotel 0.02% | 0.001563 | 0.0020 |
+| Y2022 SuperTall MTL | residential 0.16%, residential_common 0.13%, office 0.03%, retail 0.02%, hotel 0.01%, service_MEP 0.01% | 0.000022 | 0.0018 |
+| Y2022 SuperTall CLG | residential 0.11%, residential_common 0.07%, office 0.02%, retail 0.01%, service_MEP 0.01%, hotel 0.01% | 0.000774 | 0.0018 |
+| B_central Tall MTL | residential 0.54%, residential_common 0.21%, office 0.10%, service_MEP 0.08%, retail 0.08%, hotel 0.02% | 0.000167 | 0.0019 |
+| B_central Tall CLG | residential 0.47%, residential_common 0.26%, office 0.10%, service_MEP 0.09%, retail 0.07%, hotel 0.02% | 0.001711 | 0.0023 |
+| B_central SuperTall MTL | residential 0.28%, residential_common 0.08%, office 0.05%, retail 0.04%, service_MEP 0.03%, hotel 0.02% | 0.000021 | 0.0009 |
+| B_central SuperTall CLG | residential 0.21%, residential_common 0.07%, office 0.04%, retail 0.03%, service_MEP 0.03%, hotel 0.02% | 0.000466 | 0.0008 |
+
+The "Peak-hour SD" column above is the whole-building circular peak-hour SD (`_BUILDING`, all days,
+energy_W). Per-channel peak-hour SD goes up to 0.117 h (Y2022 Tall CLG `residential_common`) and
+0.083 h (B_central Tall CLG `residential_common`); every other channel in every group is at or below
+0.03 h. **Largest EUI CV over every channel and every group: 0.543% (B_central Tall MTL, residential).**
+**Largest peak-hour SD over every channel and every group: 0.117 h (Y2022 Tall CLG,
+residential_common).**
+
+**2030-minus-2022 EUI delta, within seed, all four tower-city cells, all six channels. Rule
+(pre-registered): a published delta counts as larger than draw noise only if
+|published delta| > 2 x SD(delta across the 5 seeds); published = the P10R arm (seed 42).**
+
+| Cell | Channel | Published delta (kWh/m2, CFA) | SD across seeds | Larger than draw noise? |
+|---|---|---|---|---|
+| SuperTall CLG | office | -0.651 | 0.024 | yes |
+| SuperTall CLG | retail | -4.564 | 0.016 | yes |
+| SuperTall CLG | hotel | +1.032 | 0.018 | yes |
+| SuperTall CLG | residential | +0.346 | 0.248 | no |
+| SuperTall CLG | residential_common | +0.182 | 0.045 | yes |
+| SuperTall CLG | service_MEP | +0.317 | 0.011 | yes |
+| SuperTall MTL | office | -0.450 | 0.034 | yes |
+| SuperTall MTL | retail | -0.725 | 0.026 | yes |
+| SuperTall MTL | hotel | +0.278 | 0.026 | yes |
+| SuperTall MTL | residential | +0.513 | 0.343 | no |
+| SuperTall MTL | residential_common | +0.049 | 0.085 | no |
+| SuperTall MTL | service_MEP | +0.218 | 0.013 | yes |
+| Tall CLG | office | -0.729 | 0.028 | yes |
+| Tall CLG | retail | -4.611 | 0.024 | yes |
+| Tall CLG | hotel | +1.053 | 0.019 | yes |
+| Tall CLG | residential | +0.236 | 0.190 | no |
+| Tall CLG | residential_common | -0.084 | 0.084 | no |
+| Tall CLG | service_MEP | +0.342 | 0.015 | yes |
+| Tall MTL | office | -0.571 | 0.039 | yes |
+| Tall MTL | retail | -0.806 | 0.038 | yes |
+| Tall MTL | hotel | +0.327 | 0.046 | yes |
+| Tall MTL | residential | +0.438 | 0.253 | no |
+| Tall MTL | residential_common | +0.002 | 0.040 | no |
+| Tall MTL | service_MEP | +0.172 | 0.031 | yes |
+
+Office, retail and hotel are larger than draw noise in all four cells (12 of 12), by a factor of
+**7.1 to 282 times the noise SD** (smallest: Tall MTL hotel, 7.1x; largest: SuperTall CLG retail, 282x).
+Service_MEP is also larger than noise in all four cells (5.5x to 28x, not tabulated in the summary
+above). Residential is **not** larger than draw noise in any of the four cells (ratio 1.2x to 1.7x,
+below the 2x threshold), and its sign flips across seeds in all four (`sign_same_all_seeds = False`
+everywhere). Residential_common is larger than noise only in SuperTall CLG (yes); the other three cells
+are no.
+
+**Plain reading.** With all 40 runs in, the same pattern holds in the Tall tower that the partial result
+already showed in the SuperTall tower: the published 2022-to-2030 change in office, retail, hotel and
+service/MEP energy is a real signal, far bigger (7 to about 280 times) than the spread five different
+household draws alone produce. The household (residential) change is not a real signal in any of the
+four city-tower combinations: its size sits inside the noise band, and it does not even keep the same
+sign from one draw to the next. The five-seed spread itself is small everywhere: no channel in any
+group moves more than about half a percent from seed to seed, and the peak usage hour barely moves
+(at most about a tenth of an hour, in the household-common-area channel of the Montreal and Calgary
+Tall towers).
+
+### 11.7 What I did not verify (full run)
+
+- The `--slim` SQL-shrink step (section 11.3 step 4) was **not run**. It is described in section 11 as
+  safe (the aggregator only reads Zones and the calendar from each SQL, and `agg_P10R` itself was built
+  from slimmed SQLs), but the task that produced this section did not ask for it, so the 40 run folders
+  still hold their full `eplusout.sql` files (about 155-250 MB each) exactly as the runs left them.
+  Skipped, not attempted.
+- What pushed RAM to 73.2% at 03:14 UTC during the first (interrupted) run, and which processes made the
+  12-13 EnergyPlus count at 03:13 and 03:15 (carried over from section 11.5; irrelevant to the full
+  result since all 40 tasks now show `ep_return_code 0`).
+- GFA-share EUI basis: not computed here either; only CFA is reported (same limitation as section 11.5).
+- Whether the residential 2030-vs-2022 change would clear the noise bar with more than 5 seeds; only
+  5 seeds were drawn, per the pre-registered design.
+- The full-mode and `--slim` paths of `v3a_local_aggregate.py` have not run yet (partial mode only).
+
+## 11.8 FULL results after the hotel observed levels (2026-09-25)
+
+The 2030 hotel recovery levels were switched to the observed 2023-2025 means (AB 0.597, QC 0.610), so the
+20 B_central repeat-seed runs (task ids 20-39) were re-run on this computer with the new hotel CSV
+(md5 300716728df0c314e129fc544f386c70). The 20 Y2022 runs do not read that file and were kept.
+
+- Runs: driver `done ok=20 failed=0` (18:37:20Z); all 40 manifests OK. Control: the new md5 appears in
+  20 of 20 B_central manifests and 0 of 20 Y2022 manifests. RAM peaked at 69.7% (guard at 88% never fired).
+- Aggregate: `outputs_step8/agg_V3a_P10R_hotel_obs`, every seed 8/8 cells ok, attribution residual 0 on
+  all 40 (log `campaign_local_P10R_V3a/_logs/aggregate_hotel_obs.txt`). `v3_check.py v3a` exit 0 (tables in
+  `_check/`). Report: `IMP/data/V3/v3a_P10R/full_hotel_obs/`.
+- Positive control: seed 42 reproduces the re-run `agg_P10R` exactly in all 8 cells (worst annual and
+  hourly difference 0.0; every aggregate table 0 unmatched rows, max_abs 0).
+
+Compared with section 11.6:
+
+- Largest EUI CV: 0.542% (B_central Tall MTL residential), unchanged; about 0.5% still holds.
+- Largest peak-hour SD: 0.117 h (Y2022 Tall CLG residential_common), unchanged; about 0.1 h still holds.
+- Office, retail and hotel 2030-minus-2022 changes are now 5.4 to 311 times the draw SD (smallest Tall MTL
+  hotel, largest SuperTall CLG retail), was 7.1 to 282. Office 14.7-29.6, retail 22.7-311, hotel 5.4-37.6.
+  Sign the same in all 5 seeds for all three. service_MEP 4.3-60.7.
+- Residential: 1.15-1.60 times, sign flips in all 4 cells (unchanged verdict). residential_common above
+  noise only in SuperTall CLG (3.0), unchanged.
+- New published hotel deltas (kWh/m2 CFA): SuperTall CLG +0.629, SuperTall MTL -0.226, Tall CLG +0.628,
+  Tall MTL -0.255 (was +1.032, +0.278, +1.053, +0.327). The Montreal hotel change is now a small decrease.
+- Manuscript: `05_Limitations.md` line 3 "7 to 280 times" -> "5 to 310 times" (only change, CRLF kept,
+  backup in `chapters_v2/_archive_pre_hotel_obs_2026-09-25/05_Limitations.md`). The 0.5 %, 0.1 h and
+  residential sentences stand.
+
+### 11.9 What I did not verify (hotel observed re-run)
+
+- `--slim` was again not run; the 20 new run folders keep their full SQL files.
+- (Checked, not open) No manuscript sentence states the sign of the 2030-minus-2022 hotel change: grep of
+  Results, Discussion, Conclusion, Introduction and front matter for hotel + rise/increase/decrease finds only
+  Results line 58 (injected vs code, a different comparison) and the section 3.3 lever effects (vs central 2030).
+- GFA-share basis: not computed (CFA only), as in 11.5 and 11.7.

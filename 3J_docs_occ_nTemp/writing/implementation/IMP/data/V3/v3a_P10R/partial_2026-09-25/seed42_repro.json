@@ -1,0 +1,180 @@
+{
+  "cells": {
+    "Y2022__Tall__MTL": {
+      "status": "PASS",
+      "worst_ann": 0.0,
+      "worst_hourly": 0.0,
+      "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+      "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+      "n_cols": 51,
+      "n_cols_fail": 0
+    },
+    "Y2022__Tall__CLG": {
+      "status": "PASS",
+      "worst_ann": 0.0,
+      "worst_hourly": 0.0,
+      "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+      "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+      "n_cols": 51,
+      "n_cols_fail": 0
+    },
+    "Y2022__SuperTall__MTL": {
+      "status": "PASS",
+      "worst_ann": 0.0,
+      "worst_hourly": 0.0,
+      "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+      "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+      "n_cols": 51,
+      "n_cols_fail": 0
+    },
+    "Y2022__SuperTall__CLG": {
+      "status": "PASS",
+      "worst_ann": 0.0,
+      "worst_hourly": 0.0,
+      "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+      "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+      "n_cols": 51,
+      "n_cols_fail": 0
+    },
+    "B_central__Tall__MTL": {
+      "status": "DID_NOT_RUN",
+      "why": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step8_docs\\campaign_local_P10R_V3a\\V3a\\S__B_central__Tall__MTL__s42: manifest status=running"
+    },
+    "B_central__Tall__CLG": {
+      "status": "DID_NOT_RUN",
+      "why": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step8_docs\\campaign_local_P10R_V3a\\V3a\\S__B_central__Tall__CLG__s42: missing dir"
+    },
+    "B_central__SuperTall__MTL": {
+      "status": "PASS",
+      "worst_ann": 0.0,
+      "worst_hourly": 0.0,
+      "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+      "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+      "n_cols": 51,
+      "n_cols_fail": 0
+    },
+    "B_central__SuperTall__CLG": {
+      "status": "PASS",
+      "worst_ann": 0.0,
+      "worst_hourly": 0.0,
+      "worst_ann_col": "hourly_meters.csv:Electricity:Facility",
+      "worst_hourly_col": "hourly_meters.csv:Electricity:Facility",
+      "n_cols": 51,
+      "n_cols_fail": 0
+    }
+  },
+  "agg": {
+    "agg_annual.csv": {
+      "rows_a": 438,
+      "rows_b": 438,
+      "unmatched_rows": 0,
+      "key": [
+        "channel",
+        "end_use",
+        "fuel",
+        "allocation",
+        "cell_tag",
+        "scenario",
+        "building",
+        "city",
+        "cz"
+      ],
+      "cells_in_a_not_expected": [],
+      "cells_missing_in_a": [
+        "B_central__Tall__CLG",
+        "B_central__Tall__MTL"
+      ],
+      "non_numeric_cols_not_compared": [],
+      "max_abs_diff": 0.0,
+      "max_abs_col": null,
+      "max_rel_diff": 0.0
+    },
+    "agg_annual_by_channel.csv": {
+      "rows_a": 42,
+      "rows_b": 42,
+      "unmatched_rows": 0,
+      "key": [
+        "cell_tag",
+        "channel"
+      ],
+      "cells_in_a_not_expected": [],
+      "cells_missing_in_a": [
+        "B_central__Tall__CLG",
+        "B_central__Tall__MTL"
+      ],
+      "non_numeric_cols_not_compared": [],
+      "max_abs_diff": 0.0,
+      "max_abs_col": null,
+      "max_rel_diff": 0.0
+    },
+    "agg_peak.csv": {
+      "rows_a": 222,
+      "rows_b": 222,
+      "unmatched_rows": 0,
+      "key": [
+        "cell_tag",
+        "channel",
+        "daytype",
+        "metric"
+      ],
+      "cells_in_a_not_expected": [],
+      "cells_missing_in_a": [
+        "B_central__Tall__CLG",
+        "B_central__Tall__MTL"
+      ],
+      "non_numeric_cols_not_compared": [],
+      "max_abs_diff": 0.0,
+      "max_abs_col": null,
+      "max_rel_diff": 0.0
+    },
+    "agg_diurnal.csv": {
+      "rows_a": 13824,
+      "rows_b": 13824,
+      "unmatched_rows": 0,
+      "key": [
+        "season",
+        "daytype",
+        "hour",
+        "channel",
+        "metric",
+        "cell_tag"
+      ],
+      "cells_in_a_not_expected": [],
+      "cells_missing_in_a": [
+        "B_central__Tall__CLG",
+        "B_central__Tall__MTL"
+      ],
+      "non_numeric_cols_not_compared": [],
+      "max_abs_diff": 0.0,
+      "max_abs_col": null,
+      "max_rel_diff": 0.0
+    },
+    "agg_meta.csv": {
+      "rows_a": 6,
+      "rows_b": 6,
+      "unmatched_rows": 0,
+      "key": [
+        "cell_tag"
+      ],
+      "cells_in_a_not_expected": [],
+      "cells_missing_in_a": [
+        "B_central__Tall__CLG",
+        "B_central__Tall__MTL"
+      ],
+      "non_numeric_cols_not_compared": [
+        "scenario",
+        "building",
+        "city",
+        "cz",
+        "PLATFORM",
+        "INJ_HASH",
+        "INPUTS_HASH",
+        "OUTPUT_SCHEMA_HASH",
+        "energyplus_version"
+      ],
+      "max_abs_diff": 0.0,
+      "max_abs_col": null,
+      "max_rel_diff": 0.0
+    }
+  }
+}

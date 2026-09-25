@@ -56,11 +56,19 @@ CITIES = {
             "epw": "CAN_AB_Calgary-Canadian.Olympic.Park.Upper.712350_TMYx_6B.epw"},
 }
 
-# Frozen-arm product files per scenario (md5s read from the frozen manifests
-# campaign_local_deliverable/<scenario>__Tall__MTL/manifest.json -> INPUTS_HASH_DETAIL).
-# B_central's office and retail files are the *_BAK_2026-08-02 copies: the live files in
-# outputs_step7 were rebuilt after the frozen arm ran (FINDING 6/7) and have different md5s.
-PRODUCTS = {
+# ---- P10R switch (2026-09-25, V3a local run; backup v3_lib.py.pre_P10R_2026-09-25.bak) ----------
+# V3a now reads the P10R sibling arm (IMP/P10R_fix.md), the arm the paper reports:
+#   products  Step7_docs/outputs_step7_P10R/  (md5s = campaign_local_P10R/<scenario>__*__*/manifest.json
+#             INPUTS_HASH_DETAIL = P10R_products_registry.json, all 8 cells, verified on disk 2026-09-25)
+#   injector  preserve_load_standby_floor=True (T9-9 fix ON, as 3rdJ_08D_campaign_cell_P10R.py runs it)
+#   reference campaign_local_P10R/<cell>/injected_resized.idf (seed-42 static check, arm S)
+# The frozen-arm table is kept as PRODUCTS_FROZEN for the record; V3b (arms U/U2/R/N/X) is unchanged
+# and still uses FROZEN + standby floor OFF.
+S7O_FROZEN = S7O
+S7O = os.path.join(J3, "Leg3_4-split", "Step7_docs", "outputs_step7_P10R")
+P10R_CAMPAIGN = os.path.join(S8, "campaign_local_P10R")
+P10R_STANDBY_FLOOR = True
+PRODUCTS_FROZEN = {
     "Y2022": {
         "office": ("office_presence_multiplier_2022.csv", "ff0fc98704042f79c66e993e0400a7bb", "observed"),
         "retail": ("retail_presence_multiplier_2022.csv", "e31f528e26bd74286a90c425921fd32b"),
@@ -72,6 +80,21 @@ PRODUCTS = {
         "retail": ("retail_presence_multiplier_2030_central_BAK_2026-08-02.csv", "cf8721c62030fc7c1f23b999f85056d0"),
         "hotel": ("hotel_schedule_multiplier_2030_central.csv", "4b3d3a4603cc0cccc6a1bf42139d69ee"),
         "residential": ("BEM_Schedules_4split_2030_central.csv", "d36388c8958f4f3ac72f5e9ae508c711"),
+    },
+}
+PRODUCTS = {
+    "Y2022": {
+        "office": ("office_presence_multiplier_2022.csv", "d94d86554bd2c3713128dbb074da4265", "observed"),
+        "retail": ("retail_presence_multiplier_2022.csv", "33708341dacabf4d32e786a2bdd6d9ee"),
+        "hotel": ("hotel_schedule_multiplier_2022.csv", "7b62a8854381fd93859d988f3852e2af"),
+        "residential": ("BEM_Schedules_4split_2022.csv", "bdb9b506911922646bca6f06f065b516"),
+    },
+    "B_central": {
+        "office": ("office_presence_multiplier_2030.csv", "d78650c0922b48978f3ff736adbb0e5b", "hybrid"),
+        "retail": ("retail_presence_multiplier_2030_central.csv", "0ec541ae0d0e9da206db486086df79a2"),
+        # hotel_obs 2026-09-25: observed 2023-2025 recovery levels (was 4b3d3a4603cc0cccc6a1bf42139d69ee)
+        "hotel": ("hotel_schedule_multiplier_2030_central.csv", "300716728df0c314e129fc544f386c70"),
+        "residential": ("BEM_Schedules_4split_2030_central.csv", "65a078b798862f42c4e32f2656d28e48"),
     },
 }
 
@@ -110,6 +133,13 @@ def epw_path(city):
 
 def frozen_idf(scenario, building, city):
     return os.path.join(FROZEN, cell_tag(scenario, building, city), "injected_resized.idf")
+
+
+def p10r_idf(scenario, building, city):
+    """P10R patch: the V3a seed-42 static reference (read only)."""
+    p = os.path.join(P10R_CAMPAIGN, cell_tag(scenario, building, city), "injected_resized.idf")
+    print("[patch P10R] static reference = %s" % p)
+    return p
 
 
 class Tools:
@@ -170,15 +200,17 @@ def set_runperiod_days(idf_path, days):
     return n
 
 
-def build_injected(tools, building, city, channels, tag, work, smoke_days=None):
-    """Deliverable chain on the base IDF. Returns (final_idf, info)."""
+def build_injected(tools, building, city, channels, tag, work, smoke_days=None, standby_floor=False):
+    """Deliverable chain on the base IDF. Returns (final_idf, info).
+    standby_floor=False = frozen-arm wiring (V3b N/X); True = P10R wiring (V3a arm S, T9-9 fix ON)."""
+    print("[patch P10R] build_injected preserve_load_standby_floor=%s (%s)" % (standby_floor, tag))
     os.makedirs(work, exist_ok=True)
     src = base_idf(building, city)
     pre = os.path.join(work, "injected.idf")
     meta = {"building": building, "city": city, "cz": CITIES[city]["cz"], "purpose": "V3",
             "scenario_label": tag}
     res = tools.ci.inject_mixed_use(src, pre, channels, meta, verbose=True,
-                                    preserve_load_standby_floor=False, lighting_model=None,
+                                    preserve_load_standby_floor=bool(standby_floor), lighting_model=None,
                                     dhw_model=None)
     from eppy.modeleditor import IDF
     IDF.setiddname(os.environ["EPLUS_IDD"])
@@ -196,6 +228,7 @@ def build_injected(tools, building, city, channels, tag, work, smoke_days=None):
         set_runperiod_days(final, smoke_days)
     info = {"inject_mixed_use_result": res, "d9_swaps": n_swap, "resize_per_object": per_object,
             "plant_kW_base": base_kW, "plant_kW_resized": new_kW, "base_idf": src,
+            "preserve_load_standby_floor": bool(standby_floor),
             "base_idf_md5": md5_file(src)}
     return final, info
 
@@ -265,15 +298,17 @@ def fixture_channels(city, negative=False):
 
 
 def product_channels(scenario, city, seed, check_md5=True):
-    """The frozen arm's own product files for `scenario`, residential draw re-seeded to `seed`."""
+    """The P10R arm's product files for `scenario`, residential draw re-seeded to `seed`."""
     pr = CITIES[city]["pr"]
     P = PRODUCTS[scenario]
+    print("[patch P10R] products dir=%s scenario=%s" % (S7O, scenario))
     paths = {ch: os.path.join(S7O, P[ch][0]) for ch in P}
     if check_md5:
         for ch in P:
             got = md5_file(paths[ch])
             if got != P[ch][1]:
-                raise SystemExit("REFUSING: %s product md5 %s != frozen %s (%s)" % (ch, got, P[ch][1], paths[ch]))
+                raise SystemExit("REFUSING: %s product md5 %s != P10R %s (%s)" % (ch, got, P[ch][1], paths[ch]))
+            print("[patch P10R] md5 ok %s %s %s" % (ch, P[ch][0], got))
     return {
         "office": {"csv": paths["office"], "archetype": "Office_Knowledge", "band": P["office"][2]},
         "retail": {"csv": paths["retail"], "pr": pr},

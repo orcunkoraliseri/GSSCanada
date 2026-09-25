@@ -1,0 +1,72 @@
+# 4J — what only the author can do (2026-09-23)
+
+One list, in order of what unblocks the most. Details live in the files named; nothing here is new evidence.
+
+## A. Before submission (blocking)
+
+1. **Open the closest competitor.** Jutras-Dubé et al. (2024), Transportation Research Part C 169, 104830
+   (arXiv 2302.09193 is the cheap first look). Answer four questions: does it test transfer to a region not
+   in training; is IPF a baseline; is that IPF seeded from the target region or another region; who wins.
+   Until then the paper says only the one metadata sentence (`DeepResearchPrompts/VETTING_RL35.md` section 5).
+   Same questions for Qian et al. (2026) (arXiv 2407.01643, open access) and Jung (2026, BuildOcc).
+   **2026-09-24 DONE for Jutras-Dubé** (author supplied the arXiv PDF): transfer yes, IPF yes, seeded from the
+   source region (= our donor pool), their copula model wins. Line 35 and Table A.1 rewritten; answers in
+   `VETTING_RL35.md` section 5. Qian and Jung: author says leave uncited (CLOSED).
+   **2026-09-24:** item 2 moved to the MANAGER at the author's request (background check writing
+   `DeepResearchPrompts/VETTING_RL36_equation_sources.md`). Part B measured profiles: SKIP for now.
+   Still open: length (move Appendix B to SI?), cover-letter date on the day, final read.
+   **2026-09-24 also:** item 4 CLOSED (no public deposit; text says "available from the author"), item 6 CLOSED
+   (no suggested reviewers; placeholder removed), Acknowledgements DONE (data providers only).
+2. **Open the equation sources** marked `[AUTHOR TO OPEN]` in `writing/submission/IMP/prep/appendixB_equations_draft.md`
+   (14 items; list and exact questions in `VETTING_RL34.md` section 4). Most important: Richardson et al. (2010)
+   Section 2.7 (closed-form or iterative calibration).
+   **2026-09-24 DONE (manager):** `DeepResearchPrompts/VETTING_RL36_equation_sources.md`: 11 confirmed, 0 wrong, 5 not opened (none of the 5 cited). Only change: Pflugradt reference = TU Chemnitz dissertation; Word file rebuilt, in EB_upload.
+3. **Other literature marked "accept after open"** (`VETTING_RL35.md` section 4, items 4-8). Skip any you do
+   not want cited; the rewrite cites none of them beyond what the vetting allows.
+4. **Deposit the frozen pre-registration and its hash** (D4) on a public registry (for example OSF or Zenodo);
+   bring back the link. `prereg.md` md5 `e4243e07cdd80c9c846b91f40e3e8c45`.
+5. **Graphical abstract** (the journal requires one): prompt at `writing/submission/IMP/prep/graphical_abstract_prompt.md`.
+   I do not make images.
+6. **Suggested reviewers** in the cover letter (`writing/submission/4J_cover_letter.md`, placeholder).
+7. **Confirm the generative-AI declaration wording** at the end of the manuscript (draft names Claude for
+   language editing and Gemini for literature reports; say whether any figure image was AI-made).
+7a. **Funding line:** 2J says "NSERC through a Discovery Grant, and the Volt-Age Seed Fund". 4J says NSERC
+   without "Discovery Grant". Add it only if the same grant funds 4J.
+7b. **Figure 1** is still the old pipeline picture ("Steps 0 to 11"); only its caption changed. Replace it
+   with your own diagram, or keep it as is.
+   **2026-09-23 author answers:** 7 DONE (Claude = coding help + grammar; Gemini = deep-research prompts; text
+   updated). 7a DONE (sole author, no grant: E&B "did not receive any specific grant" sentence; NSERC
+   acknowledgement removed, placeholder left in Acknowledgements). 7b: replace, via a Gemini image prompt the
+   author runs (`figures/Prompts_Images/4thJ_figure01_workflow_three_rows.md`). SI Madrid count: DONE, 840 was from an earlier
+   run; the final run has 170 cells in 17 buildings, SI S9/S12 corrected (`IMP/impl/P16_madrid_incomplete_cells.md`).
+   Figure 1 prompt: READY, one arrow fixed by manager (heating from gains only; stock loads from appliances + hot water). Part B: YES, rule fixed in `IMP/impl/P17_measured_peak_check.md`.
+   Backup: `previous/4J_manuscript_submission.md.pre_declarations_20260923`.
+   **2026-09-23 later:** Gemini drew Figure 1 and the graphical abstract with plotting code. Content correct; text too small
+   for print, and the graphical abstract has three layout errors. Run `writing/submission/Gemini_prompts/GEMINI_03_fix_figure1_and_graphical_abstract.md`
+   in Gemini, then hand back for the manager's check. Details: `4J_docs_occ/Prompts/RESUME.md` last+300.
+   **2026-09-24:** GEMINI_03 checked: all four fixes right. The smaller graphical abstract now has text running into
+   text; Figure 1 row-3 boxes need more padding. Run `writing/submission/Gemini_prompts/GEMINI_04_fix_graphical_abstract_layout.md`
+   in Gemini and paste its report back. Figure 1 is now in the manuscript (caption + AI declaration name Gemini for
+   the plotting code); Word rebuild and upload copy wait for GEMINI_04. Details: RESUME.md last+301.
+   **2026-09-24 later:** GEMINI_04 checked. Figure 1 is DONE: it is in the rebuilt Word file and in the upload folder.
+   The graphical abstract has three small problems left (a number sits on a line, titles touch the top edge, the
+   right title and subtitle run together). Run `writing/submission/Gemini_prompts/GEMINI_05_graphical_abstract_last_touches.md`
+   in Gemini and paste its report back. Details: RESUME.md last+302.
+   **2026-09-24 final:** GEMINI_05 and GEMINI_06 run and checked. The graphical abstract is DONE: every label keeps
+   at least 1 pt clear of everything else, fonts 7.1 pt or larger, viewed. It is in the upload folder as
+   `EB_upload/Graphical_abstract.png` + `.pdf` (items 5 and 7b closed). Details: RESUME.md last+303.
+8. **Run the outside audit** (`writing/submission/IMP/prep/external_audit_prompt.md`) in Gemini and a second
+   model on the final draft; paste the answers back for vetting.
+   **Round 1 (Gemini, 2026-09-23) vetted:** 2 of 7 items were wrong (Platzer is cited; the 12,436 word count included the
+   appendices, main text is 7,603), and it checked no citations. Still needed: a second model, citations checked.
+9. **Read the final draft; submit.**
+
+## B. Optional (would strengthen the appliance-timing result; not blocking)
+
+Measured household profiles to compare with the real-diary peaks (UK 18:00, Italy 19:00, Spain 21:00).
+Routes in `VETTING_RL36.md` section 3:
+- Spain: IDAE SPAHOUSEC report, chapter 4 (does it print an hourly appliance curve?).
+- Italy: Besagni, Premoli Vilà and Borgarello (2020), Buildings 10(12) 217 (open in a browser).
+- UK: Low Carbon London smart-meter data (London Datastore); we can compute its peak on the cluster once
+  you say yes to downloading it.
+Fix the comparison rule before any file is opened (daily maximum hour, weekday).

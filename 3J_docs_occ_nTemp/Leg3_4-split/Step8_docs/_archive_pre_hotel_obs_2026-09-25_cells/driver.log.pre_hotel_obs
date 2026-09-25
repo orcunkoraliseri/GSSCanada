@@ -1,0 +1,442 @@
+2026-09-22T23:01:01.466808+00:00 [start] 55 cells to run + 1 kept, workers=4, min_free_gb=3.0
+2026-09-22T23:01:01.478597+00:00 [skip] B_central__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-22T23:01:01.478997+00:00 [slim] B_central__Tall__MTL: no run/eplusout.sql (already slim or cell has none)
+2026-09-22T23:01:01.480741+00:00 [run] Default_NECB__Tall__MTL attempt=1
+2026-09-22T23:01:01.481519+00:00 [run] Y2022__Tall__MTL attempt=1
+2026-09-22T23:01:01.481673+00:00 [run] B_cons__Tall__MTL attempt=1
+2026-09-22T23:01:01.482028+00:00 [run] B_opt__Tall__MTL attempt=1
+2026-09-22T23:08:26.631939+00:00 [ok] Default_NECB__Tall__MTL attempt=1
+2026-09-22T23:08:27.255138+00:00 [slim] Default_NECB__Tall__MTL: [slim] Default_NECB__Tall__MTL: 160.8 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:08:27.256064+00:00 [disk] 2.69 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:08:31.338676+00:00 [ok] Y2022__Tall__MTL attempt=1
+2026-09-22T23:08:32.018532+00:00 [slim] Y2022__Tall__MTL: [slim] Y2022__Tall__MTL: 161.8 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:08:32.019573+00:00 [disk] 2.99 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:08:33.232988+00:00 [ok] B_cons__Tall__MTL attempt=1
+2026-09-22T23:08:33.777517+00:00 [slim] B_cons__Tall__MTL: [slim] B_cons__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:08:33.778003+00:00 [run] Y2015__Tall__MTL attempt=1
+2026-09-22T23:08:36.179248+00:00 [ok] B_opt__Tall__MTL attempt=1
+2026-09-22T23:08:36.744728+00:00 [slim] B_opt__Tall__MTL: [slim] B_opt__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:08:36.745756+00:00 [run] sens_office_cons__Tall__MTL attempt=1
+2026-09-22T23:09:27.257025+00:00 [run] Y2005__Tall__MTL attempt=1
+2026-09-22T23:09:32.021451+00:00 [run] Y2010__Tall__MTL attempt=1
+2026-09-22T23:16:04.346458+00:00 [ok] sens_office_cons__Tall__MTL attempt=1
+2026-09-22T23:16:05.048982+00:00 [slim] sens_office_cons__Tall__MTL: [slim] sens_office_cons__Tall__MTL: 161.8 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:16:05.049850+00:00 [disk] 1.49 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:16:07.754238+00:00 [ok] Y2015__Tall__MTL attempt=1
+2026-09-22T23:16:08.397662+00:00 [slim] Y2015__Tall__MTL: [slim] Y2015__Tall__MTL: 161.3 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:16:08.399153+00:00 [disk] 1.87 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:17:05.050772+00:00 [disk] 1.58 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:17:08.399780+00:00 [disk] 1.55 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:17:09.556023+00:00 [ok] Y2010__Tall__MTL attempt=1
+2026-09-22T23:17:09.830376+00:00 [ok] Y2005__Tall__MTL attempt=1
+2026-09-22T23:17:10.197530+00:00 [slim] Y2010__Tall__MTL: [slim] Y2010__Tall__MTL: 161.3 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:17:10.198810+00:00 [disk] 2.06 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:17:10.475861+00:00 [slim] Y2005__Tall__MTL: [slim] Y2005__Tall__MTL: 161.3 MB -> 1.0 MB (99.4% smaller)
+2026-09-22T23:17:10.476411+00:00 [disk] 2.22 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:18:05.051966+00:00 [disk] 2.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:18:08.400825+00:00 [disk] 1.99 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:18:10.199921+00:00 [disk] 1.99 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:18:10.477558+00:00 [disk] 1.99 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:19:05.052838+00:00 [disk] 1.82 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:19:08.402345+00:00 [disk] 1.78 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:19:10.201732+00:00 [disk] 1.78 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:19:10.479123+00:00 [disk] 1.77 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:20:05.053823+00:00 [disk] 1.74 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:20:08.403109+00:00 [disk] 1.69 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:20:10.203517+00:00 [disk] 1.69 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:20:10.480214+00:00 [disk] 1.69 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:21:05.054957+00:00 [disk] 1.53 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:21:08.404278+00:00 [disk] 1.53 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:21:10.204699+00:00 [disk] 1.50 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:21:10.481470+00:00 [disk] 1.50 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:22:05.056122+00:00 [disk] 1.44 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:22:08.405218+00:00 [disk] 1.42 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:22:10.206176+00:00 [disk] 1.40 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:22:10.483224+00:00 [disk] 1.40 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:23:05.057481+00:00 [disk] 1.07 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:23:08.406652+00:00 [disk] 1.06 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:23:10.207477+00:00 [disk] 1.04 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:23:10.485039+00:00 [disk] 1.04 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:24:05.058400+00:00 [disk] 1.01 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:24:08.407831+00:00 [disk] 0.96 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:24:10.208849+00:00 [disk] 0.95 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:24:10.488712+00:00 [disk] 0.95 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:25:05.060169+00:00 [disk] 0.72 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:25:08.409174+00:00 [disk] 0.80 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:25:10.209762+00:00 [disk] 0.79 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:25:10.489907+00:00 [disk] 0.79 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:26:05.061607+00:00 [disk] 0.64 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:26:08.410631+00:00 [disk] 0.61 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:26:10.211227+00:00 [disk] 0.60 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:26:10.490894+00:00 [disk] 0.60 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:27:05.062850+00:00 [disk] 0.11 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:27:08.411466+00:00 [disk] 0.09 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:27:10.212605+00:00 [disk] 0.08 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:27:10.491947+00:00 [disk] 0.08 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:28:05.063692+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:28:08.412698+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:28:10.214010+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:28:10.493150+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:29:05.064722+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:29:08.413673+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:29:10.215571+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:29:10.494400+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:30:05.066220+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:30:08.414742+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:30:10.216761+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:30:10.495584+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:31:05.067491+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:31:08.415988+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:31:10.218163+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:31:10.497078+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:32:05.068838+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:32:08.417261+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:32:10.219336+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:32:10.498533+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:33:05.069907+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:33:08.418713+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:33:10.220834+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:33:10.499702+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:34:05.071439+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:34:08.420224+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:34:10.222410+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:34:10.501121+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:35:05.073020+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:35:08.421697+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:35:10.223877+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:35:10.502803+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:36:05.074516+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:36:08.422998+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:36:10.225147+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:36:10.503716+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:05.075689+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:08.424411+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.226311+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.504526+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.533598+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.534376+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.534752+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.535006+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.535324+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.535580+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.535839+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.536132+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.536374+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.536630+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.536866+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.537101+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.537343+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.537574+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.537799+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.538080+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.538458+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.538857+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.539104+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.539581+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.540226+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.540793+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.541294+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-22T23:37:10.541616+00:00 [disk] 0.00 GB free < 3.00 GB minimum -- waiting 60 s
+2026-09-23T00:19:29.823517+00:00 [start] 47 cells to run + 9 kept, workers=4, min_free_gb=3.0
+2026-09-23T00:19:29.825777+00:00 [skip] Default_NECB__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:30.699029+00:00 [slim] Default_NECB__Tall__MTL: [slim] Default_NECB__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:30.700545+00:00 [skip] Y2022__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:31.277144+00:00 [slim] Y2022__Tall__MTL: [slim] Y2022__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:31.278167+00:00 [skip] B_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:32.854032+00:00 [slim] B_cons__Tall__MTL: [slim] B_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:32.856328+00:00 [skip] B_central__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:32.870712+00:00 [slim] B_central__Tall__MTL: no run/eplusout.sql (already slim or cell has none)
+2026-09-23T00:19:32.874551+00:00 [skip] B_opt__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:35.308528+00:00 [slim] B_opt__Tall__MTL: [slim] B_opt__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:35.309986+00:00 [skip] Y2005__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:38.043552+00:00 [slim] Y2005__Tall__MTL: [slim] Y2005__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:38.045049+00:00 [skip] Y2010__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:42.740573+00:00 [slim] Y2010__Tall__MTL: [slim] Y2010__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:42.741350+00:00 [skip] Y2015__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:43.528513+00:00 [slim] Y2015__Tall__MTL: [slim] Y2015__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:43.530299+00:00 [skip] sens_office_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-23T00:19:44.373034+00:00 [slim] sens_office_cons__Tall__MTL: [slim] sens_office_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-23T00:19:44.506499+00:00 [run] sens_office_opt__Tall__MTL attempt=1
+2026-09-23T00:19:44.582121+00:00 [run] sens_retail_cons__Tall__MTL attempt=1
+2026-09-23T00:19:44.609947+00:00 [run] sens_retail_opt__Tall__MTL attempt=1
+2026-09-23T00:19:44.611904+00:00 [run] sens_hotel_cons__Tall__MTL attempt=1
+2026-09-25T00:02:57.912311+00:00 [start] 47 cells to run + 9 kept, workers=10, min_free_gb=3.0
+2026-09-25T00:02:57.913943+00:00 [skip] Default_NECB__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:58.083719+00:00 [slim] Default_NECB__Tall__MTL: [slim] Default_NECB__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:58.084410+00:00 [skip] Y2022__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:58.238590+00:00 [slim] Y2022__Tall__MTL: [slim] Y2022__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:58.239925+00:00 [skip] B_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:58.398398+00:00 [slim] B_cons__Tall__MTL: [slim] B_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:58.399055+00:00 [skip] B_central__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:58.399311+00:00 [slim] B_central__Tall__MTL: no run/eplusout.sql (already slim or cell has none)
+2026-09-25T00:02:58.399677+00:00 [skip] B_opt__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:58.553399+00:00 [slim] B_opt__Tall__MTL: [slim] B_opt__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:58.554040+00:00 [skip] Y2005__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:58.825546+00:00 [slim] Y2005__Tall__MTL: [slim] Y2005__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:58.826211+00:00 [skip] Y2010__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:58.978429+00:00 [slim] Y2010__Tall__MTL: [slim] Y2010__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:58.979160+00:00 [skip] Y2015__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:59.132102+00:00 [slim] Y2015__Tall__MTL: [slim] Y2015__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:59.132969+00:00 [skip] sens_office_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T00:02:59.311864+00:00 [slim] sens_office_cons__Tall__MTL: [slim] sens_office_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T00:02:59.312847+00:00 [run] sens_office_opt__Tall__MTL attempt=1
+2026-09-25T00:02:59.313084+00:00 [run] sens_retail_cons__Tall__MTL attempt=1
+2026-09-25T00:02:59.313285+00:00 [run] sens_retail_opt__Tall__MTL attempt=1
+2026-09-25T00:02:59.313532+00:00 [run] sens_hotel_cons__Tall__MTL attempt=1
+2026-09-25T00:02:59.313741+00:00 [run] sens_hotel_opt__Tall__MTL attempt=1
+2026-09-25T00:02:59.313951+00:00 [run] Default_NECB__Tall__CLG attempt=1
+2026-09-25T00:02:59.314222+00:00 [run] Y2022__Tall__CLG attempt=1
+2026-09-25T00:02:59.314481+00:00 [run] B_cons__Tall__CLG attempt=1
+2026-09-25T00:02:59.314919+00:00 [run] B_central__Tall__CLG attempt=1
+2026-09-25T00:02:59.315023+00:00 [run] B_opt__Tall__CLG attempt=1
+2026-09-25T00:16:14.067933+00:00 [ok] sens_hotel_opt__Tall__MTL attempt=1
+2026-09-25T00:16:15.248043+00:00 [slim] sens_hotel_opt__Tall__MTL: [slim] sens_hotel_opt__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:16:15.249468+00:00 [run] Y2005__Tall__CLG attempt=1
+2026-09-25T00:16:18.979492+00:00 [ok] sens_office_opt__Tall__MTL attempt=1
+2026-09-25T00:16:20.271613+00:00 [slim] sens_office_opt__Tall__MTL: [slim] sens_office_opt__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:16:20.272381+00:00 [run] Y2010__Tall__CLG attempt=1
+2026-09-25T00:16:20.454426+00:00 [ok] sens_retail_cons__Tall__MTL attempt=1
+2026-09-25T00:16:21.587705+00:00 [slim] sens_retail_cons__Tall__MTL: [slim] sens_retail_cons__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:16:21.588692+00:00 [run] Y2015__Tall__CLG attempt=1
+2026-09-25T00:16:23.306186+00:00 [ok] sens_hotel_cons__Tall__MTL attempt=1
+2026-09-25T00:16:24.210055+00:00 [slim] sens_hotel_cons__Tall__MTL: [slim] sens_hotel_cons__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:16:24.211530+00:00 [run] sens_office_cons__Tall__CLG attempt=1
+2026-09-25T00:16:25.571687+00:00 [ok] sens_retail_opt__Tall__MTL attempt=1
+2026-09-25T00:16:26.482506+00:00 [slim] sens_retail_opt__Tall__MTL: [slim] sens_retail_opt__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:16:26.483977+00:00 [run] sens_office_opt__Tall__CLG attempt=1
+2026-09-25T00:18:32.047110+00:00 [ok] Default_NECB__Tall__CLG attempt=1
+2026-09-25T00:18:32.958653+00:00 [slim] Default_NECB__Tall__CLG: [slim] Default_NECB__Tall__CLG: 160.8 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:18:32.959917+00:00 [run] sens_retail_cons__Tall__CLG attempt=1
+2026-09-25T00:18:41.519472+00:00 [ok] B_central__Tall__CLG attempt=1
+2026-09-25T00:18:42.423691+00:00 [slim] B_central__Tall__CLG: [slim] B_central__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:18:42.425071+00:00 [run] sens_retail_opt__Tall__CLG attempt=1
+2026-09-25T00:18:46.615702+00:00 [ok] Y2022__Tall__CLG attempt=1
+2026-09-25T00:18:46.860185+00:00 [ok] B_opt__Tall__CLG attempt=1
+2026-09-25T00:18:47.608592+00:00 [slim] Y2022__Tall__CLG: [slim] Y2022__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:18:47.610193+00:00 [run] sens_hotel_cons__Tall__CLG attempt=1
+2026-09-25T00:18:47.773479+00:00 [slim] B_opt__Tall__CLG: [slim] B_opt__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:18:47.774918+00:00 [run] sens_hotel_opt__Tall__CLG attempt=1
+2026-09-25T00:18:54.414115+00:00 [ok] B_cons__Tall__CLG attempt=1
+2026-09-25T00:18:55.327358+00:00 [slim] B_cons__Tall__CLG: [slim] B_cons__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:18:55.327990+00:00 [run] Default_NECB__SuperTall__MTL attempt=1
+2026-09-25T00:33:19.706216+00:00 [ok] sens_office_opt__Tall__CLG attempt=1
+2026-09-25T00:33:20.331846+00:00 [slim] sens_office_opt__Tall__CLG: [slim] sens_office_opt__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:33:20.332693+00:00 [run] Y2022__SuperTall__MTL attempt=1
+2026-09-25T00:33:37.150649+00:00 [ok] Y2005__Tall__CLG attempt=1
+2026-09-25T00:33:38.132820+00:00 [slim] Y2005__Tall__CLG: [slim] Y2005__Tall__CLG: 161.3 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:33:38.133649+00:00 [run] B_cons__SuperTall__MTL attempt=1
+2026-09-25T00:33:42.263849+00:00 [ok] sens_office_cons__Tall__CLG attempt=1
+2026-09-25T00:33:42.925134+00:00 [slim] sens_office_cons__Tall__CLG: [slim] sens_office_cons__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:33:42.925902+00:00 [run] B_central__SuperTall__MTL attempt=1
+2026-09-25T00:33:48.467791+00:00 [ok] Y2010__Tall__CLG attempt=1
+2026-09-25T00:33:49.014190+00:00 [slim] Y2010__Tall__CLG: [slim] Y2010__Tall__CLG: 161.3 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:33:49.014886+00:00 [run] B_opt__SuperTall__MTL attempt=1
+2026-09-25T00:35:10.084671+00:00 [ok] Y2015__Tall__CLG attempt=1
+2026-09-25T00:35:10.695817+00:00 [slim] Y2015__Tall__CLG: [slim] Y2015__Tall__CLG: 161.3 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:35:10.696585+00:00 [run] Y2005__SuperTall__MTL attempt=1
+2026-09-25T00:35:33.774522+00:00 [ok] sens_hotel_opt__Tall__CLG attempt=1
+2026-09-25T00:35:34.356752+00:00 [slim] sens_hotel_opt__Tall__CLG: [slim] sens_hotel_opt__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:35:34.357712+00:00 [run] Y2010__SuperTall__MTL attempt=1
+2026-09-25T00:35:35.864859+00:00 [ok] sens_retail_opt__Tall__CLG attempt=1
+2026-09-25T00:35:36.505653+00:00 [slim] sens_retail_opt__Tall__CLG: [slim] sens_retail_opt__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:35:36.506311+00:00 [run] Y2015__SuperTall__MTL attempt=1
+2026-09-25T00:35:37.907101+00:00 [ok] sens_retail_cons__Tall__CLG attempt=1
+2026-09-25T00:35:38.514341+00:00 [slim] sens_retail_cons__Tall__CLG: [slim] sens_retail_cons__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:35:38.515710+00:00 [ok] sens_hotel_cons__Tall__CLG attempt=1
+2026-09-25T00:35:38.515754+00:00 [run] sens_office_cons__SuperTall__MTL attempt=1
+2026-09-25T00:35:39.283561+00:00 [slim] sens_hotel_cons__Tall__CLG: [slim] sens_hotel_cons__Tall__CLG: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T00:35:39.284423+00:00 [run] sens_office_opt__SuperTall__MTL attempt=1
+2026-09-25T00:46:02.718245+00:00 [ok] Default_NECB__SuperTall__MTL attempt=1
+2026-09-25T00:46:03.762130+00:00 [slim] Default_NECB__SuperTall__MTL: [slim] Default_NECB__SuperTall__MTL: 251.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T00:46:03.763023+00:00 [run] sens_retail_cons__SuperTall__MTL attempt=1
+2026-09-25T00:59:48.100258+00:00 [ok] Y2022__SuperTall__MTL attempt=1
+2026-09-25T00:59:48.931494+00:00 [slim] Y2022__SuperTall__MTL: [slim] Y2022__SuperTall__MTL: 253.2 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T00:59:48.932287+00:00 [run] sens_retail_opt__SuperTall__MTL attempt=1
+2026-09-25T00:59:56.430325+00:00 [ok] B_opt__SuperTall__MTL attempt=1
+2026-09-25T00:59:57.263378+00:00 [slim] B_opt__SuperTall__MTL: [slim] B_opt__SuperTall__MTL: 253.2 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T00:59:57.264178+00:00 [run] sens_hotel_cons__SuperTall__MTL attempt=1
+2026-09-25T01:00:04.838712+00:00 [ok] B_central__SuperTall__MTL attempt=1
+2026-09-25T01:00:05.684219+00:00 [slim] B_central__SuperTall__MTL: [slim] B_central__SuperTall__MTL: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:00:05.685024+00:00 [run] sens_hotel_opt__SuperTall__MTL attempt=1
+2026-09-25T01:00:09.425421+00:00 [ok] B_cons__SuperTall__MTL attempt=1
+2026-09-25T01:00:10.232250+00:00 [slim] B_cons__SuperTall__MTL: [slim] B_cons__SuperTall__MTL: 253.2 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:00:10.233080+00:00 [run] Default_NECB__SuperTall__CLG attempt=1
+2026-09-25T01:01:55.055974+00:00 [ok] Y2005__SuperTall__MTL attempt=1
+2026-09-25T01:01:56.175729+00:00 [slim] Y2005__SuperTall__MTL: [slim] Y2005__SuperTall__MTL: 252.4 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:01:56.176766+00:00 [run] Y2022__SuperTall__CLG attempt=1
+2026-09-25T01:01:57.334898+00:00 [ok] sens_office_opt__SuperTall__MTL attempt=1
+2026-09-25T01:01:58.334896+00:00 [slim] sens_office_opt__SuperTall__MTL: [slim] sens_office_opt__SuperTall__MTL: 253.2 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:01:58.335909+00:00 [run] B_cons__SuperTall__CLG attempt=1
+2026-09-25T01:02:02.335639+00:00 [ok] Y2010__SuperTall__MTL attempt=1
+2026-09-25T01:02:03.387885+00:00 [slim] Y2010__SuperTall__MTL: [slim] Y2010__SuperTall__MTL: 252.5 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:02:03.388813+00:00 [run] B_central__SuperTall__CLG attempt=1
+2026-09-25T01:02:08.162803+00:00 [ok] sens_office_cons__SuperTall__MTL attempt=1
+2026-09-25T01:02:09.117522+00:00 [slim] sens_office_cons__SuperTall__MTL: [slim] sens_office_cons__SuperTall__MTL: 253.2 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:02:09.118438+00:00 [run] B_opt__SuperTall__CLG attempt=1
+2026-09-25T01:02:43.602430+00:00 [ok] Y2015__SuperTall__MTL attempt=1
+2026-09-25T01:02:44.450697+00:00 [slim] Y2015__SuperTall__MTL: [slim] Y2015__SuperTall__MTL: 252.5 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:02:44.451611+00:00 [run] Y2005__SuperTall__CLG attempt=1
+2026-09-25T01:11:48.472933+00:00 [ok] sens_retail_cons__SuperTall__MTL attempt=1
+2026-09-25T01:11:49.410842+00:00 [slim] sens_retail_cons__SuperTall__MTL: [slim] sens_retail_cons__SuperTall__MTL: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:11:49.411714+00:00 [run] Y2010__SuperTall__CLG attempt=1
+2026-09-25T01:26:02.716206+00:00 [ok] sens_retail_opt__SuperTall__MTL attempt=1
+2026-09-25T01:26:03.687615+00:00 [slim] sens_retail_opt__SuperTall__MTL: [slim] sens_retail_opt__SuperTall__MTL: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:26:03.688521+00:00 [run] Y2015__SuperTall__CLG attempt=1
+2026-09-25T01:26:13.841009+00:00 [ok] sens_hotel_cons__SuperTall__MTL attempt=1
+2026-09-25T01:26:14.810784+00:00 [slim] sens_hotel_cons__SuperTall__MTL: [slim] sens_hotel_cons__SuperTall__MTL: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:26:14.811809+00:00 [run] sens_office_cons__SuperTall__CLG attempt=1
+2026-09-25T01:26:16.298245+00:00 [ok] sens_hotel_opt__SuperTall__MTL attempt=1
+2026-09-25T01:26:17.152322+00:00 [slim] sens_hotel_opt__SuperTall__MTL: [slim] sens_hotel_opt__SuperTall__MTL: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:26:17.153028+00:00 [run] sens_office_opt__SuperTall__CLG attempt=1
+2026-09-25T01:32:06.853076+00:00 [ok] Default_NECB__SuperTall__CLG attempt=1
+2026-09-25T01:32:07.826311+00:00 [slim] Default_NECB__SuperTall__CLG: [slim] Default_NECB__SuperTall__CLG: 251.0 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:32:07.827254+00:00 [run] sens_retail_cons__SuperTall__CLG attempt=1
+2026-09-25T01:32:43.914363+00:00 [ok] B_central__SuperTall__CLG attempt=1
+2026-09-25T01:32:44.680603+00:00 [ok] B_cons__SuperTall__CLG attempt=1
+2026-09-25T01:32:44.866780+00:00 [slim] B_central__SuperTall__CLG: [slim] B_central__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:32:44.867744+00:00 [run] sens_retail_opt__SuperTall__CLG attempt=1
+2026-09-25T01:32:45.637107+00:00 [slim] B_cons__SuperTall__CLG: [slim] B_cons__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:32:45.638976+00:00 [run] sens_hotel_cons__SuperTall__CLG attempt=1
+2026-09-25T01:32:52.329247+00:00 [ok] Y2022__SuperTall__CLG attempt=1
+2026-09-25T01:32:53.299719+00:00 [slim] Y2022__SuperTall__CLG: [slim] Y2022__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:32:53.302012+00:00 [run] sens_hotel_opt__SuperTall__CLG attempt=1
+2026-09-25T01:33:36.993993+00:00 [ok] Y2005__SuperTall__CLG attempt=1
+2026-09-25T01:33:38.032901+00:00 [slim] Y2005__SuperTall__CLG: [slim] Y2005__SuperTall__CLG: 252.4 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:35:28.896288+00:00 [ok] B_opt__SuperTall__CLG attempt=1
+2026-09-25T01:35:29.863718+00:00 [slim] B_opt__SuperTall__CLG: [slim] B_opt__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:40:20.126314+00:00 [ok] Y2010__SuperTall__CLG attempt=1
+2026-09-25T01:40:21.052497+00:00 [slim] Y2010__SuperTall__CLG: [slim] Y2010__SuperTall__CLG: 252.4 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:49:39.280543+00:00 [ok] sens_office_cons__SuperTall__CLG attempt=1
+2026-09-25T01:49:40.163119+00:00 [slim] sens_office_cons__SuperTall__CLG: [slim] sens_office_cons__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:49:46.565542+00:00 [ok] Y2015__SuperTall__CLG attempt=1
+2026-09-25T01:49:47.410814+00:00 [slim] Y2015__SuperTall__CLG: [slim] Y2015__SuperTall__CLG: 252.4 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:52:35.024560+00:00 [ok] sens_office_opt__SuperTall__CLG attempt=1
+2026-09-25T01:52:35.861680+00:00 [slim] sens_office_opt__SuperTall__CLG: [slim] sens_office_opt__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:53:22.359910+00:00 [ok] sens_retail_cons__SuperTall__CLG attempt=1
+2026-09-25T01:53:23.173091+00:00 [slim] sens_retail_cons__SuperTall__CLG: [slim] sens_retail_cons__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:53:38.776194+00:00 [ok] sens_retail_opt__SuperTall__CLG attempt=1
+2026-09-25T01:53:39.537446+00:00 [slim] sens_retail_opt__SuperTall__CLG: [slim] sens_retail_opt__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:53:49.109381+00:00 [ok] sens_hotel_cons__SuperTall__CLG attempt=1
+2026-09-25T01:53:49.818158+00:00 [slim] sens_hotel_cons__SuperTall__CLG: [slim] sens_hotel_cons__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:53:50.948736+00:00 [ok] sens_hotel_opt__SuperTall__CLG attempt=1
+2026-09-25T01:53:51.631232+00:00 [slim] sens_hotel_opt__SuperTall__CLG: [slim] sens_hotel_opt__SuperTall__CLG: 253.1 MB -> 1.0 MB (99.6% smaller)
+2026-09-25T01:53:51.632298+00:00 [campaign] ok=56 failed=0
+2026-09-25T01:53:51.633285+00:00 [aggregate] py -3 C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\3rdJ_08E_aggregate_4split.py --campaign-dir C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\campaign_local_P10R --outdir C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\outputs_step8\agg_P10R --idf-name injected_resized.idf
+2026-09-25T01:54:04.894929+00:00 [aggregate] exit=1
+2026-09-25T01:54:53.109788+00:00 [start] 1 cells to run + 55 kept, workers=1, min_free_gb=3.0
+2026-09-25T01:54:53.110418+00:00 [skip] Default_NECB__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:53.386689+00:00 [slim] Default_NECB__Tall__MTL: [slim] Default_NECB__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:53.387405+00:00 [skip] Y2022__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:53.540336+00:00 [slim] Y2022__Tall__MTL: [slim] Y2022__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:53.541035+00:00 [skip] B_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:53.699231+00:00 [slim] B_cons__Tall__MTL: [slim] B_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:53.699932+00:00 [skip] B_opt__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:53.854206+00:00 [slim] B_opt__Tall__MTL: [slim] B_opt__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:53.854903+00:00 [skip] Y2005__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:54.007139+00:00 [slim] Y2005__Tall__MTL: [slim] Y2005__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:54.007835+00:00 [skip] Y2010__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:54.163597+00:00 [slim] Y2010__Tall__MTL: [slim] Y2010__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:54.164222+00:00 [skip] Y2015__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:54.324892+00:00 [slim] Y2015__Tall__MTL: [slim] Y2015__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:54.325739+00:00 [skip] sens_office_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:54.496099+00:00 [slim] sens_office_cons__Tall__MTL: [slim] sens_office_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:54.497427+00:00 [skip] sens_office_opt__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:54.650106+00:00 [slim] sens_office_opt__Tall__MTL: [slim] sens_office_opt__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:54.650922+00:00 [skip] sens_retail_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:54.815099+00:00 [slim] sens_retail_cons__Tall__MTL: [slim] sens_retail_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:54.815888+00:00 [skip] sens_retail_opt__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:54.972780+00:00 [slim] sens_retail_opt__Tall__MTL: [slim] sens_retail_opt__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:54.973442+00:00 [skip] sens_hotel_cons__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:55.138695+00:00 [slim] sens_hotel_cons__Tall__MTL: [slim] sens_hotel_cons__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:55.139371+00:00 [skip] sens_hotel_opt__Tall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:55.293137+00:00 [slim] sens_hotel_opt__Tall__MTL: [slim] sens_hotel_opt__Tall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:55.293796+00:00 [skip] Default_NECB__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:55.455893+00:00 [slim] Default_NECB__Tall__CLG: [slim] Default_NECB__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:55.456632+00:00 [skip] Y2022__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:55.609788+00:00 [slim] Y2022__Tall__CLG: [slim] Y2022__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:55.610489+00:00 [skip] B_cons__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:55.766063+00:00 [slim] B_cons__Tall__CLG: [slim] B_cons__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:55.766995+00:00 [skip] B_central__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:55.922759+00:00 [slim] B_central__Tall__CLG: [slim] B_central__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:55.923383+00:00 [skip] B_opt__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:56.079227+00:00 [slim] B_opt__Tall__CLG: [slim] B_opt__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:56.079917+00:00 [skip] Y2005__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:56.235069+00:00 [slim] Y2005__Tall__CLG: [slim] Y2005__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:56.235696+00:00 [skip] Y2010__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:56.399912+00:00 [slim] Y2010__Tall__CLG: [slim] Y2010__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:56.400657+00:00 [skip] Y2015__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:56.549390+00:00 [slim] Y2015__Tall__CLG: [slim] Y2015__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:56.550169+00:00 [skip] sens_office_cons__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:56.707382+00:00 [slim] sens_office_cons__Tall__CLG: [slim] sens_office_cons__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:56.708126+00:00 [skip] sens_office_opt__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:56.864716+00:00 [slim] sens_office_opt__Tall__CLG: [slim] sens_office_opt__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:56.865747+00:00 [skip] sens_retail_cons__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:57.023668+00:00 [slim] sens_retail_cons__Tall__CLG: [slim] sens_retail_cons__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:57.024330+00:00 [skip] sens_retail_opt__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:57.191700+00:00 [slim] sens_retail_opt__Tall__CLG: [slim] sens_retail_opt__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:57.192371+00:00 [skip] sens_hotel_cons__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:57.352303+00:00 [slim] sens_hotel_cons__Tall__CLG: [slim] sens_hotel_cons__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:57.353404+00:00 [skip] sens_hotel_opt__Tall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:57.516821+00:00 [slim] sens_hotel_opt__Tall__CLG: [slim] sens_hotel_opt__Tall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:57.517444+00:00 [skip] Default_NECB__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:57.681598+00:00 [slim] Default_NECB__SuperTall__MTL: [slim] Default_NECB__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:57.682333+00:00 [skip] Y2022__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:57.838561+00:00 [slim] Y2022__SuperTall__MTL: [slim] Y2022__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:57.839220+00:00 [skip] B_cons__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:57.998961+00:00 [slim] B_cons__SuperTall__MTL: [slim] B_cons__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:57.999785+00:00 [skip] B_central__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:58.153556+00:00 [slim] B_central__SuperTall__MTL: [slim] B_central__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:58.154241+00:00 [skip] B_opt__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:58.316660+00:00 [slim] B_opt__SuperTall__MTL: [slim] B_opt__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:58.317308+00:00 [skip] Y2005__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:58.487566+00:00 [slim] Y2005__SuperTall__MTL: [slim] Y2005__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:58.488282+00:00 [skip] Y2010__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:58.647386+00:00 [slim] Y2010__SuperTall__MTL: [slim] Y2010__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:58.648120+00:00 [skip] Y2015__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:58.801272+00:00 [slim] Y2015__SuperTall__MTL: [slim] Y2015__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:58.801962+00:00 [skip] sens_office_cons__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:58.964282+00:00 [slim] sens_office_cons__SuperTall__MTL: [slim] sens_office_cons__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:58.964931+00:00 [skip] sens_office_opt__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:59.248823+00:00 [slim] sens_office_opt__SuperTall__MTL: [slim] sens_office_opt__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:59.249484+00:00 [skip] sens_retail_cons__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:59.412174+00:00 [slim] sens_retail_cons__SuperTall__MTL: [slim] sens_retail_cons__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:59.412856+00:00 [skip] sens_retail_opt__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:59.567914+00:00 [slim] sens_retail_opt__SuperTall__MTL: [slim] sens_retail_opt__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:59.568729+00:00 [skip] sens_hotel_cons__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:59.730716+00:00 [slim] sens_hotel_cons__SuperTall__MTL: [slim] sens_hotel_cons__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:59.731410+00:00 [skip] sens_hotel_opt__SuperTall__MTL: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:54:59.886498+00:00 [slim] sens_hotel_opt__SuperTall__MTL: [slim] sens_hotel_opt__SuperTall__MTL: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:54:59.887107+00:00 [skip] Default_NECB__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:00.044050+00:00 [slim] Default_NECB__SuperTall__CLG: [slim] Default_NECB__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:00.044934+00:00 [skip] Y2022__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:00.196862+00:00 [slim] Y2022__SuperTall__CLG: [slim] Y2022__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:00.197568+00:00 [skip] B_cons__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:00.356452+00:00 [slim] B_cons__SuperTall__CLG: [slim] B_cons__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:00.357154+00:00 [skip] B_central__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:00.515750+00:00 [slim] B_central__SuperTall__CLG: [slim] B_central__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:00.516408+00:00 [skip] B_opt__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:00.671730+00:00 [slim] B_opt__SuperTall__CLG: [slim] B_opt__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:00.672395+00:00 [skip] Y2005__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:00.835412+00:00 [slim] Y2005__SuperTall__CLG: [slim] Y2005__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:00.836177+00:00 [skip] Y2010__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:00.994650+00:00 [slim] Y2010__SuperTall__CLG: [slim] Y2010__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:00.995349+00:00 [skip] Y2015__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:01.159646+00:00 [slim] Y2015__SuperTall__CLG: [slim] Y2015__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:01.160324+00:00 [skip] sens_office_cons__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:01.323046+00:00 [slim] sens_office_cons__SuperTall__CLG: [slim] sens_office_cons__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:01.323824+00:00 [skip] sens_office_opt__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:01.483856+00:00 [slim] sens_office_opt__SuperTall__CLG: [slim] sens_office_opt__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:01.484500+00:00 [skip] sens_retail_cons__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:01.647278+00:00 [slim] sens_retail_cons__SuperTall__CLG: [slim] sens_retail_cons__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:01.648011+00:00 [skip] sens_retail_opt__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:01.801723+00:00 [slim] sens_retail_opt__SuperTall__CLG: [slim] sens_retail_opt__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:01.802506+00:00 [skip] sens_hotel_cons__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:01.959524+00:00 [slim] sens_hotel_cons__SuperTall__CLG: [slim] sens_hotel_cons__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:01.960571+00:00 [skip] sens_hotel_opt__SuperTall__CLG: existing manifest P10R_STATUS=ok, kept
+2026-09-25T01:55:02.122572+00:00 [slim] sens_hotel_opt__SuperTall__CLG: [slim] sens_hotel_opt__SuperTall__CLG: 1.0 MB -> 1.0 MB (0.0% smaller)
+2026-09-25T01:55:02.123478+00:00 [run] B_central__Tall__MTL attempt=1
+2026-09-25T02:01:36.451059+00:00 [ok] B_central__Tall__MTL attempt=1
+2026-09-25T02:01:36.960871+00:00 [slim] B_central__Tall__MTL: [slim] B_central__Tall__MTL: 161.7 MB -> 1.0 MB (99.4% smaller)
+2026-09-25T02:01:36.961654+00:00 [campaign] ok=56 failed=0
+2026-09-25T02:01:36.962246+00:00 [aggregate] py -3 C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\3rdJ_08E_aggregate_4split.py --campaign-dir C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\campaign_local_P10R --outdir C:\Users\o_iseri\Desktop\GSSCanada\GSSCanada-main\3J_docs_occ_nTemp\Leg3_4-split\Step8_docs\outputs_step8\agg_P10R --idf-name injected_resized.idf
+2026-09-25T02:04:40.999302+00:00 [aggregate] exit=0

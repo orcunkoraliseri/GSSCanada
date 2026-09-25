@@ -1,0 +1,626 @@
+# Supplementary material
+
+Companion to *Can a fine-tuned language model generate time-use diaries for a country without survey
+data? A pre-registered test against reweighted real diaries*.
+
+Contents. S1 the registered check set, with each tolerance's provenance. S2 the model card. S3 the
+conditioning prefix and its census sources. S4 campaign sizes. S5 survey details. S6 harmonisation,
+serialisation and population-linkage checks in detail. S7 supplementary results (Figures S1 to S4,
+Tables S2 to S5). S8 the schedule clock correction. S9 the observed-stock campaigns. S10 validation
+conventions. S11 limitations in full. S12 open items and documentation notes.
+
+---
+
+## S1. The registered check set
+
+Tolerances are marked **P** where the threshold comes from a published external source, **C** where it
+was chosen by this project and registered before use, and **H** where it is a heuristic with no external
+authority. The provenance mark is part of the registration and was not assigned after the results were
+seen. Verdicts are printed as PASS, FAIL or NOT CHECKED.
+
+### S1.1 Corpus, harmonisation and serialisation
+
+| Check | What it scores | Tolerance | Prov. | Verdict |
+|---|---|---|---|---|
+| Acquisition, 16 checks | delivery integrity, codebook coverage, weight bounds, manifest completeness | various | C | Spain 15 PASS; Italy 1 FAIL; UK 1 FAIL |
+| Italy source URL | a per-file source URL exists in the delivery | present | C | FAIL, recorded as not found |
+| UK activity labels | every delivered activity code is labelled | complete | C | FAIL, one code labelled nowhere in the delivery |
+| Harmonisation, 18 checks | alphabet closure, episode conservation, slot tiling, unknown-band prevalence | various | C | 16 PASS, 1 FAIL, 1 NOT CHECKED |
+| Unknown-band escalation | one country's unknown share against another's | 10x ratio | H | FAIL; the clause fires unconditionally against a zero share |
+| National table agreement | harmonised budgets against a published national table | -- | -- | NOT CHECKED; no independent published table is held |
+| Serialisation, 20 checks | round-trip fidelity, token length, terminator presence, stratum coverage | various | C | 19 of 20 PASS; every fault-injection test detected |
+| Sequence length | median, 99th percentile, maximum | 300 / 700 / 1200 tokens | C | PASS at 256 / 632 / 1178 |
+| Stratum completeness | no stratum coded unknown | zero | C | FAIL on the UK, 551 diaries, neither imputed nor dropped |
+
+### S1.2 Training
+
+| Check | What it scores | Tolerance | Prov. | Verdict |
+|---|---|---|---|---|
+| Within-stratum variance ratio | generated against real dispersion inside a stratum | 0.80 to 1.25 | C | FAIL, 3 of 3; resolution-limited, see S1.6 |
+| Shuffled-prefix cross-entropy | rise when the prefix is permuted | at least 0.15 nats/token | **H, unsourced** | FAIL, 7 of 7; measured 0.068 to 0.106 |
+| Adapter merge drift | maximum logit difference, merged against unmerged | below 1e-4 | H | FAIL, 4 of 4; measured 3.2e-4 to 7.3e-4 across those four scored runs |
+| Loss masking | prompt and pad positions carry the ignore label | 100 per cent | C | PASS |
+| Held-in probe loss | final checkpoint within 5 per cent of its own best | 5 per cent | C | PASS on OLMo 3 7B, FAIL on Qwen2.5-7B |
+| Within-stratum shuffle | cross-entropy rise and mutual-information drop, conjoined | 0.15 nats and 0.10 | H | FAIL; no decision record, see S1.6 |
+| Fold isolation | held-out-country records loaded during training | exactly zero | C | PASS, every run |
+| Pre-registration precedence | live hash of the frozen file against its registered value | exact match | C | PASS, every run |
+
+### S1.3 Conditioning and population linkage
+
+| Check | What it scores | Tolerance | Prov. | Verdict |
+|---|---|---|---|---|
+| Raking convergence | worst absolute marginal deviation after fitting | below 1e-13 | C | PASS |
+| Marginal provenance | both sides of any comparison carry the same marginal source | identical | C | PASS, enforced in code |
+| Temperature calibration reporting | the chosen temperature and its sensitivity are reported | reported | C | PASS |
+| Temperature calibration sensitivity | entropy step exceeds seed-to-seed re-run noise | ratio above 1 | C | **FAIL on Spain (0.51) and the UK (0.99), PASS on Italy (1.29)** |
+
+Of 36 check-by-fold verdicts at this stage, 34 pass and 2 do not. Both are the temperature sensitivity
+check, which on Spain and the UK shows an entropy step no larger than the seed-to-seed noise. No
+temperature was re-tuned and no re-run was performed.
+
+### S1.4 Transfer
+
+| Check | What it scores | Tolerance | Prov. | Verdict |
+|---|---|---|---|---|
+| **Transfer bar** | model time-budget error against the raked donor pool | positive margin | **C, pre-registered** | **FAIL, 9 of 9** |
+| Single-donor baselines | each donor country's own population as a comparison | positive margin | C | reported, six populations |
+| Pooled-average baseline | the cross-country pooled average, demoted to secondary | positive margin | C | reported |
+| Budget agreement | level-1 budget against published tables | MAPE at or below 15 per cent; absolute bar of 15 min/day for groups below 10 min/day | P | FAIL, 9 of 9 |
+| Frozen limitation criteria | three pre-declared conditions (model error not below the baseline's; MAPE above 20 per cent; model and published budget on opposite sides of the HETUS mean) | a cell is marked if any one holds | C | FAIL, 9 of 9; fault-injection coverage not demonstrable, see S7.2 |
+| Held-in regression | training-country prefixes clear the same bar, and no forgetting | 15 per cent | P | FAIL, 6 of 6 on clause 1 |
+| Fictional country, direction | movement in the specified direction | R-squared at least 0.80 | C | PASS, 3 of 3, OLMo 3 7B |
+| Fictional country, amplitude | movement of the specified size | slope at least 0.80 | C | FAIL, 3 of 3 |
+| Joint structure, dwell time | largest Wasserstein distance of episode durations over ten activities, against real held-out diaries | 10.0 min | C | FAIL, 50.13 to 66.57 |
+| Joint structure, transitions | total variation of the transition distribution | 0.050 | C | FAIL, 0.1623 to 0.2344 |
+| Joint structure, daily shape | Jensen-Shannon divergence of time-of-day distributions, mean over activities | 0.015 (maximum at most 0.025) | C | FAIL, 0.0690 to 0.1189 |
+| Joint structure, budget | worst of ten activity budgets against real held-out diaries | 8.0 min | C | FAIL, 38.26 to 68.67 |
+| Transition rate | absolute error in mean transitions per diary | 1.50 | C | Markov comparator PASSES at an error of 0.264 |
+| Country discrimination | nearer its own published table than any other, by margin | relative margin above 0.5 | C | FAIL, 9 of 9 |
+| Hour-support constancy | completeness invariant of the binning | complete | C | built and self-tested; never scored on model output (S12) |
+
+### S1.5 Privacy
+
+| Check | What it scores | Tolerance | Prov. | Verdict |
+|---|---|---|---|---|
+| Loss-based membership inference | area under the curve, 2,000 per class; true-positive rate at 0.1 per cent false-positive rate | AUC at most 0.65; TPR at most 5 per cent | C | **FAIL, 0.6645**, base floor 0.4886 |
+| Reference-based membership inference | against the untuned public base | at most 0.75 | C | PASS, 0.5594 |
+| Prefix-prompted extraction | exact matches on strata with fewer than five records | zero | C | PASS, 0 of 103 |
+| Distance to closest record | released synthetic set against training records | see S7.4 | C | PASS Spain, PASS Italy, **FAIL UK** |
+| Perplexity gap | control, not independent | at most 0.05 | C | FAIL, 0.0570; also 0.0511 on a permuted adapter |
+| Memorisation ceiling | random-label-permutation control | -- | -- | **INCONCLUSIVE AS A CEILING**, 0.6496 |
+
+Two registered privacy checks are not met and one is partial, so this set is not a passing audit.
+
+### S1.6 Four training checks that miss their tolerance for reasons that are not about the model
+
+Four training-stage checks never pass in this study. Each was traced to its own instrument. The
+distinction supports the main text's reading that the model conditions and still loses.
+
+**The variance-ratio tolerance is narrower than its own noise floor in two folds.** A probe on frozen
+weights over five seeds per fold returns a seed-alone spread of 0.529 in Spain, 0.658 in the UK and 0.385
+in Italy. The acceptance band is 0.45 wide in total. The spread is wider than the band in Spain and the UK
+and narrower in Italy. In Spain and the UK the check therefore cannot separate a model effect from seed
+noise at the sample size it runs at, and it is marked resolution-limited. One apparent pass on one fold
+was a one-in-five-seed artefact and was not kept.
+
+**The cross-entropy-rise bar has no recorded provenance.** It is the only threshold in its group with none.
+The measured rise is 0.068 to 0.106 nats per token, and its sign is correct in every run. The fine-tune
+bought between 84 and 1,062 times the untrained baseline's conditioning response (same-run pairs). The
+check does not clear a bar that nothing justifies.
+
+**The merge-drift tolerance can be met only by an adapter that learned nothing.** Scaling the adapter down
+by a factor of 1,000 does not bring the drift inside the tolerance; it plateaus an order of magnitude above
+it, and only a zero-scale adapter passes. The drift is behaviourally real rather than numerical noise. In
+the shipping precision, merged and unmerged adapters produce different diaries in 39 to 46 of 48 cases,
+81 to 96 per cent, while the unmerged-against-unmerged control is clean in 48 of 48 in every fold.
+
+**One check was never adjudicated.** Its shuffle key omits one of the six prefix fields, so it can change at
+most one field, and for 55 to 64 per cent of diaries it changes nothing at all. It is nevertheless required
+to move cross-entropy as much as a full permutation would. Its measured rise is 0.002 to 0.0069. It carries
+no decision record (S12).
+
+---
+
+## S2. Model card
+
+| | |
+|---|---|
+| Backbone, main model | OLMo 3 7B, `allenai/Olmo-3-1025-7B`, revision `a81bae42db3975be1671e27b9c9a56da1a9f980f`, 7.30 B parameters |
+| Backbone, smaller model | OLMo 2 1B, `allenai/OLMo-2-0425-1B`, revision `a1847dff35000b4271fa70afc5db10fd29fedbdf`, 1.48 B parameters |
+| Backbone, second family | Qwen2.5-7B, `Qwen/Qwen2.5-7B`, revision `d149729398750b98c0af14eb82c78cfe92750796`, Spanish fold only |
+| Adaptation | low-rank adapter, rank 32, scaling 64, dropout 0.05, rank-stabilised |
+| Target modules | all seven linear projections per block |
+| Trainable parameters | 79,953,920 (1.0837 per cent of 7,377,965,056) |
+| Full fine-tune control | all 7,377,965,056 parameters, Spanish fold only |
+| Objective | next-token cross-entropy, completion-only masking, unweighted |
+| Epochs | 3 |
+| Batch size / gradient accumulation | 2 / 8 |
+| Learning rate | 1e-4, constant, no warmup or schedule |
+| Optimiser | AdamW |
+| Precision | bfloat16 |
+| Maximum sequence length | 1,280 tokens |
+| Seed | one fixed seed per trained model; no multi-seed training replication |
+| Hardware | one A100 GPU partition |
+| Wall time, OLMo 3 7B | Spain 11:00 h, UK 10:05 h, Italy 7:28 h |
+| Checkpoint selection | none; the final checkpoint of the last epoch is used |
+| Tokeniser | the backbone's own vocabulary, no tokens added |
+| Decoding | grammar-constrained; temperature 1.30 / 1.10 / 1.20 (Spain / UK / Italy); nucleus sampling disabled |
+
+No learning-rate schedule or warmup is applied; this is what the training code does, and no design
+record chose it.
+
+---
+
+## S3. The conditioning prefix and its census sources
+
+Six fields, frozen before training, reduced from an original nine.
+
+| Field | Values | Source of the marginal used to build the synthetic population |
+|---|---|---|
+| country | 3 | -- |
+| age band | 8 | national census age table |
+| sex | 2 | national census sex table |
+| household type | 6 in the alphabet, 5 raked | national census household table; the European census hub for Italy |
+| economic status | 7 in the alphabet, **5 raked for Spain** | national census economic-activity table; on-demand microdata for Spain |
+| day type | 3 | **no published marginal in any country; assigned at 5/7, 1/7, 1/7** |
+
+The marginal sources are the census dissemination service for the UK, the 2011 census releases for
+Spain, and, for Italy, a combination of the national census tract release and the European census hub,
+because the Italian tract file publishes no household-type table. Iterative proportional fitting runs over
+the four-way joint of age, sex, household type and economic status, starting from a uniform seed over the
+admissible cells; a donor-seeded table was declared as a sensitivity only. The raked donor baseline is
+raked onto the shares of this synthetic population on five variables, including day type at the
+calendar-week shares. Expansion to 100,000 persons per
+country is by deterministic largest-remainder integerisation, so the synthetic population carries no
+sampling seed. The output is a person-level table; households are not assembled.
+
+---
+
+## S4. Campaign sizes
+
+| Campaign | Composition | Total |
+|---|---|---|
+| Generation, per fold | 5,200 constrained + 5,200 unconstrained | 10,400 per fold |
+| Held-in regression | 600 x 6 configurations | 3,600 |
+| Fictional-country control | 600 x 5 levels x 3 folds | 9,000 |
+| Archetype simulation | 88 archetypes x (1 control + 4 levels x 10 diaries) + 440 re-runs | 4,048 |
+| Day-chaining experiment | 3 folds x 6 rule points x 5 seeds x 100 dwellings | 9,000 |
+| Calendar probe | 3 folds x (10 + 10) | 60 |
+| **Archetype campaign total** | executed twice, see S8 | **13,108** |
+| Observed stock, heating campaign | completed cells: Madrid 11,340 / Bologna 11,680 / London 12,070 | **35,090 cells**; 3,529 buildings, 31,591 dwellings; not used in the paper (S9) |
+| Observed stock, exploratory layout | different subdivision layout, exploratory, not used in the paper | 410 cells |
+| Stock-scale end use | London 7,602 flats in 1,200 buildings; Bologna 29,902 flats in 1,126 buildings | 2 folds |
+| Appliance timing by diary source | 3 folds x 3 diary sources (generated, real, raked donor), 100 dwellings, one year | 9 runs |
+
+The count of 5,200 unconstrained diaries per fold was verified when that batch was generated. The
+unconstrained files on disk were later replaced by a larger batch drawn for a different check, so the
+decoding-neutrality comparison of the main text refers to the batch as generated.
+
+---
+
+## S5. Survey details
+
+**Table S1.** - The three national time-use surveys as delivered.
+
+| | Spain | United Kingdom | Italy |
+|---|---|---|---|
+| Instrument | INE *Encuesta de Empleo del Tiempo* | UK Time Use Survey (UKTUS), UK Data Service SN 8128 | ISTAT *Uso del Tempo* |
+| Wave | 2009-10 | 2014-15 | 2013-14 |
+| Delivered form | 144 fixed 10-minute slots | native episodes | native episodes, explicit clock times |
+| Diaries | 19,295 | 16,533 | 41,229 |
+| Episodes as delivered | 430,754 | 587,632 | 1,077,657 |
+| Diary days per respondent | 1 | up to 2 (8,259 of 8,274 gave both) | 1 |
+| Minimum age | 10 | 8 | 3 (proxy for 3 to 10) |
+| Diary weight variable | `FACTORF` | `dia_wt_a` | `coefi2` |
+| Weight convention | expansion | normalised, mean 1.000 | expansion |
+| Calibration target | INE age-by-sex projection, by autonomous community | 2014 mid-year estimates, age and sex margins | ISTAT sex by nine age classes, regional totals |
+| Access | open download, no credential | End User Licence, free registration | ISTAT public-use file |
+
+Spain's episodes are reconstructed from its slot grid; the reconstruction is deterministic and is
+verified against the grid it came from. Spain's episode boundaries are therefore an inference from a grid,
+while the other two countries' are recorded. The Italian corpus contains diaries completed by parents for
+children aged 3 to 10.
+
+The three weights are each calibrated to their own national reference, and no two are calibrated to the
+same table. They also target three different diary-day bases, and only the UK weight represents the
+calendar week. Left uncorrected, this shifts at-home time by about one percentage point in Spain and Italy
+and by essentially nothing in the UK. Every diary is reweighted to the calendar week before any statistic
+is computed. Both the 2008 and the 2018 HETUS guidelines recommend two diary days per respondent, one
+weekday and one weekend day, and accept a single day while noting that it leaves intra-personal variation
+unmeasured (Eurostat, 2009, §2.2.1; Eurostat, 2019, §2.2.1). Of the three surveys, only the UK survey
+follows the two-day recommendation.
+
+Two delivery properties are recorded as data properties. One UK activity code appears in the data and is
+labelled nowhere in the delivery. The Italian file carries no per-file source URL, so its acquisition
+manifest records the field as not found.
+
+---
+
+## S6. Harmonisation, serialisation and population linkage in detail
+
+**Harmonisation.** Harmonisation yields 2,024,068 episodes over 73,254 diaries, down from 2,096,043
+episodes and 77,057 diaries as delivered. The episode difference closes exactly: 90,890 episodes are
+removed below the age-11 floor, net of 18,915 episodes created when the 04:00 day start splits an episode
+across the new boundary. The diary difference falls on the same age-11 floor, applied per respondent. Of
+eighteen registered checks, seventeen were scored and sixteen passed. The exception is an escalation
+clause that fires when one country's unknown-category share exceeds another's by a factor of ten. It fires
+unconditionally whenever the comparison country's share is exactly zero, because any positive number
+exceeds ten times zero; the check is at fault, not the data. One further check was not performed, because
+no independent published national table is held. A re-tabulation of the project's own harmonised data
+would share an ancestor with the reference and could never come up short.
+
+Activity codes are mapped at the three-digit level from each country's primary activity variable. At the
+published level the third digit buys exactly one distinction; it is kept for microdata fidelity, not for
+published distinguishing power. One transition rule in the original design, expressed in terms of a
+workplace location, could not be enforced because the harmonised location alphabet has no workplace class.
+The corresponding check was demoted to a reported rate before generation.
+
+**Why margins do not certify the joint.** During development, a correction that repaired one marginal left
+the corresponding joint badly wrong: it generated more than fifteen hundred employed thirteen-year-olds
+from a single donor day. It was found only because the joint was inspected directly. This is why every
+stage of the study scores quantities that were never in the prompt and treats marginal agreement as a
+precondition rather than as evidence.
+
+**Serialisation.** The prefix was reduced to six fields from an original nine before training. Records
+have a median length of 256 tokens, a 99th percentile of 632 and a maximum of 1,178. All 73,254 diaries
+serialise, with no rows and no diaries dropped. Nineteen of twenty registered checks pass at baseline, and
+all twenty-one injected faults were detected by the check they targeted. The single exception is the
+stratum-completeness check: 551 UK diaries carry a household type recorded as unknown. No row is imputed
+or dropped, and the check is left unmet because the category exists in the data.
+
+**Population linkage.** The four-way joint table is fitted to a worst absolute marginal deviation below
+1e-13. Of 36 check-by-fold verdicts, 34 pass (S1.3). Day type is assigned at calendar-week proportions,
+and Spain is fitted on five of seven economic-status categories.
+
+---
+
+## S7. Supplementary results
+
+### S7.1 Primary comparison
+
+![Figure S1](figures/Figure_03_nine_cells.png)
+
+**Figure S1.** - Time-budget mean absolute error of the model and the raked donor pool in the nine cells.
+
+The exact margins are -26.8784, -25.6944 and -32.5068 minutes per day for Spain (ages 25-44, 45-64, 65
+and over), -37.113, -41.2313 and -2.698 for the UK, and -42.7338, -20.0943 and -20.335 for Italy. The
+model-to-baseline error ratio ranges from 1.1461 (UK, 65 and over) to 3.9119 (Spain, 45-64).
+
+### S7.2 Further transfer checks
+
+**Limitation criteria.** The fault-injection coverage of this check is not demonstrable, for vacuity rather
+than weakness: every cell already falls short at baseline, so no injected fault can show detection.
+
+**In-sample regression.** Table S2 gives the six in-sample cells of OLMo 3 7B. A pair "a on b" is the model
+of the fold that holds out country a, scored on training country b. The bar is a worst-band MAPE of at most
+15 per cent. The same check scored on the real corpus gives 4.64 per cent in Spain, 5.96 per cent in the UK
+and 11.50 per cent in Italy, so the bar can be met. A second clause of this check was first read as passing
+in five of six cells on the 1B model and, on re-derivation, passes in two.
+
+**Table S2.** - In-sample check of OLMo 3 7B on its training countries.
+
+| Fold (held out) | Training country scored | Worst-band MAPE (per cent) | Worst-band MAE (min/day) | Verdict |
+|---|---|---:|---:|---|
+| Spain | Italy | 158.07 | 49.06 | FAIL |
+| Spain | UK | 33.10 | 45.79 | FAIL |
+| Italy | Spain | 53.94 | 88.10 | FAIL |
+| Italy | UK | 48.93 | 51.28 | FAIL |
+| UK | Spain | 45.88 | 71.36 | FAIL |
+| UK | Italy | 151.49 | 44.27 | FAIL |
+
+**Country discrimination.** In the Italian fold's youngest band the margin is -0.4555: Italy's own real
+diaries are nearer to Spain's published table than to Italy's. This is the different survey round of
+Italy's published budget appearing as a measurement.
+
+**Capacity.** Table S3 gives the three capacity interventions.
+
+**Table S3.** - Three capacity interventions.
+
+| Intervention | Change | Effect on the transfer result |
+|---|---|---|
+| Backbone size | 1.48 B to 7.30 B, a factor of 4.9 | mean error 42.05 to 43.14 minutes per day, worse; 4 cells better, 5 worse |
+| Trainable parameters | 79,953,920 to 7,377,965,056, a factor of 92 | higher training loss at every epoch; adapter 0.508305 against full fine-tune 0.513494 at the last epoch |
+| Backbone family | Qwen2.5-7B, same recipe, Spanish fold | about 22 per cent more wall time, 16 per cent more memory; only the held-in probe-loss check separates the two |
+
+The full fine-tune and the adapter tie on content loss. No claim is made that the full fine-tune changed
+dispersion in either direction.
+
+**Fictional-country control, exact values.** Only the age-band mix of the conditioning population is tilted.
+Direction is scored on the study group that the tilt targets; amplitude is the slope pooled over the five
+outcome groups other than leisure. For OLMo 3 7B, the direction $R^2$ is 0.9897, 0.9914 and 0.9941
+(Spain, UK, Italy) and the pooled amplitude slope is 0.4153, 0.5329 and 0.4049. For OLMo 2 1B, $R^2$ is
+0.8455, 0.9808 and 0.9836 and the slope 0.2666, 0.4612 and 0.3785. Both are computed over the same five
+activity groups, with the leisure group excluded by name.
+
+### S7.3 Joint structure and decoding
+
+![Figure S2](figures/Figure_05_joint_structure.png)
+
+**Figure S2.** - Four structural properties, each as a multiple of its tolerance, across the three folds.
+
+Without the grammar mask, the valid-diary rate is 6.88 per cent in Spain, 30.96 per cent in the UK and
+10.65 per cent in Italy (358, 1,610 and 554 of 5,200), against a requirement of 99.90 per cent. The mask
+intervened in 93.16, 69.84 and 89.62 per cent of the generated population. The decoding-neutrality check,
+at 5,169, 5,066 and 5,065 valid diaries, has a worst three-digit activity code off by 101.02, 29.60 and 48.87 minutes per day
+against a tolerance of plus or minus 5.0.
+
+### S7.4 Privacy
+
+The loss-based attack scores an AUC of 0.6645, 1.70 standard deviations over the ceiling of 0.65; the
+untuned-base floor on the same construction is 0.4886. The reference-based attack scores 0.5594 against a
+ceiling of 0.75. Prefix-prompted extraction on strata with fewer than five records finds 0 exact matches in
+103 attempts. The distance-to-closest-record check passes on Spain and Italy; on the UK, the test-set median
+distance of 0.4236 lies above the size-matched training interval of 0.4028 to 0.4167. The perplexity gap is
+0.0570 against a ceiling of 0.05, and 0.0511 on a randomly permuted adapter, so it measures fit to the
+language of diaries rather than membership. The memorisation control scores 0.6496, only 0.0149 below the
+attack, and moved by 0.102 when capacity increased, so it does not bound the attack.
+
+### S7.5 Appliance and hot-water loads
+
+![Figure S3](figures/Figure_06_appliance_peaks.png)
+
+**Figure S3.** - Mean appliance electricity by hour of day from the generated diaries, three folds.
+
+**Table S4.** - Peak and runner-up hour of stock appliance electricity (W per dwelling), 100 dwellings, one year.
+
+| Country | Generated diaries | Real diaries (unweighted) | Raked donor diaries |
+|---|---|---|---|
+| Spain | 14:00, 502.9 W (2nd: 19:00, 436.5 W) | 21:00, 421.5 W (2nd: 13:00, 405.9 W) | 19:00, 408.5 W (2nd: 20:00, 402.5 W) |
+| Italy | 18:00, 403.5 W (2nd: 22:00, 332.0 W) | 19:00, 444.4 W (2nd: 20:00, 411.7 W) | 21:00, 396.5 W (2nd: 20:00, 379.4 W) |
+| United Kingdom | 20:00, 416.1 W (2nd: 13:00, 348.0 W) | 18:00, 427.2 W (2nd: 19:00, 415.7 W) | 21:00, 425.9 W (2nd: 20:00, 411.3 W) |
+
+Only the diary source differs between the three columns. The real pool holds 5,200 diaries per country,
+drawn uniformly from that country's diaries. The raked donor pool holds 5,200 diaries per country, drawn
+from the other two countries' diaries with probability proportional to the raked weight; it contains no
+diary from the target country. Re-running the generated-diary case reproduced the stock series behind the
+peaks byte for byte in all three folds; in two folds, one per-dwelling annual total differed by 0.001 kWh
+through last-digit rounding across computing platforms.
+
+**Secondary activity.** The generated diaries carry a secondary activity on 29.816 per cent of episodes and
+26.308 per cent of modelled minutes, across 29 distinct codes. The trigger never reads it.
+
+**Laundry.** Eligible laundry minutes per dwelling-year are 2,462 in Spain, 1,589 in the UK and 781 in Italy,
+against 27,036 required by the reference washing machine's published cycle count. After calibration,
+modelled washing-machine cycles reach 0.776, 0.179 and 0.092 of the published count. Load-shape agreement
+is $R^2$ = 0.2967, 0.4106 and 0.0346 against a floor of 0.85. At stock scale, on 7,602 London flats and
+29,902 Bologna flats, agreement is 0.4347 and 0.0781. Three appliances run 74 to 84 per cent below the
+published cycle count while the laundry appliances saturate. The reference profile is more than 77 per cent
+laundry at 11:00, and this model suppresses laundry starts by 80 to 90 per cent. No tolerance was moved at
+either scale.
+
+**Hot water.** The registered per-person check measured 100.16, 117.65 and 91.06 litres per person per day
+against a band of 30 to 50. The modelling source publishes 200 litres per day per dwelling at a 35 kelvin
+rise, with no per-person figure. The band traces instead to a review (Fuentes et al., 2018). The scored
+quantity reduces to 200 divided by household size, to within 0.0005 over all 300 rows, so the check measured
+household size rather than the hot-water model. It is kept as informational, with its band unchanged. A
+replacement check scores the stock mean per dwelling against the source's 200 litres, plus or minus ten per
+cent. It was shown to detect deliberately doubled draws (about 401 litres) before being used. It passes at
+200.79, 201.01 and 199.47 litres, and at stock scale at 202.41 and 200.35. It is a consistency check, not an
+external validation.
+
+### S7.6 Heating
+
+**Table S5.** - Occupancy effect on heating at full sensitivity ($f = 1$).
+
+| | Spain | United Kingdom | Italy |
+|---|---:|---:|---:|
+| Peak effect | +2.7145 % | +0.0393 % | -0.6332 % |
+| Between-diary spread | 4.9837 % | 2.3797 % | 1.5959 % |
+| Ratio of effect to spread | 0.54 | 0.02 | 0.40 |
+| Annual median effect | -1.5100 % | -0.3605 % | -0.4178 % |
+
+![Figure S4](figures/Figure_07_heating_null.png)
+
+**Figure S4.** - Occupancy effect on heating: peak effect against the between-diary spread (A), the annual channel (B1) and apartment buildings (B2).
+
+The apartment-building effect is +3.4617, +1.0421 and +0.5002 per cent. The hour of the annual peak never
+moves at any sensitivity level in any fold, because it is the thermostat recovery hour of the model.
+
+**Dynamic against quasi-steady-state heating.** Simulated hourly heating demand differs from TABULA's
+published quasi-steady-state monthly figure by +136.6 per cent in Spain, -29.6 per cent in the UK and -36.7
+per cent in Italy. In Spain, the published method counts gains over a 539-hour heating season, while the
+simulation heats for 2,901 hours at the same set point. This is a structural comparison between two models,
+kept as informational.
+
+**Exploratory observed-stock layout (410 cells).** In an exploratory run with a different subdivision layout, moving from no occupancy signal to the
+full signal moves annual heating by under half a per cent, while it moves the hourly peak by up to 7.92 per
+cent and the peak hour by up to 41 hours. It is not a scored result of this study.
+
+**Weather.** Stations were selected by scoring 44 candidates against TABULA's published monthly
+temperatures. The UK selection margin between the two best candidates was 0.002 K. The choice is worth 5 to
+11 per cent of heating demand.
+
+---
+
+## S8. The schedule clock correction
+
+Harmonisation places every diary on a 04:00 day start, the native start of two of the three surveys. The
+schedule writer emits an EnergyPlus `Schedule:File` whose first value carries no time-of-day field, and
+EnergyPlus reads that first value as midnight. Every one of the 13,108 simulations in the first archetype
+campaign therefore applied its occupancy signal four hours early. The fix is a single cyclic rotation of the
+whole annual series, applied before any perturbation. It was verified three ways: a bit-identical
+reproduction of the old result with rotation disabled; agreement with an independently written
+implementation in the end-use step on all 8,760 hourly values of 100 dwellings; and a byte-identical re-run
+of a schedule-free control. All 13,108 runs were then re-executed, and no pre-rotation number is used.
+
+After rotation, the occupancy effect on annual heating is negative in every fold at every level of $f$, and
+the peak effect falls below the between-diary spread in all three folds. The ordering across dwelling
+classes is the same before and after the correction.
+
+The gain conservation of Eq. (3) of the main text is enforced in the schedule emitter and was measured. One
+build held the annual mean to within four parts in ten million of the reference value rather than exactly,
+because the multiplier had been written to six decimal places; the check that found it is now a guard.
+
+---
+
+## S9. The observed-stock campaigns
+
+**Heating campaign.** This campaign applies a subdivision rule under which a floor plate divides into
+dwellings only, every square metre belongs to a flat, nothing is narrower than two metres, and one flat is
+one thermal zone. It covers 3,529 buildings and 31,591 dwellings in districts of Madrid, Bologna and London,
+with 35,090 completed simulation cells (Madrid 11,340, Bologna 11,680, London 12,070). Building footprints,
+construction years and dwelling counts come from national open registries, and each building carries the
+archetype identifier emitted by the stock pipeline. Its checks were scored after the results of this paper
+were fixed. That scoring found that, in a small number of cells, dwellings holding different diaries
+produced byte-identical internal-gain series. No scored result from this campaign is used in the paper. In
+Madrid, 170 cells in 17 buildings did not complete and were not repaired. Three courtyard buildings in
+Bologna are outside what this subdivision method can simulate. A Lyon district was kept in the wider project
+as a physical baseline only and is never a denominator for any result.
+
+**Exploratory layout (410 cells).** An exploratory campaign of 410 cells, with a different subdivision layout, is
+reported in S7.6 for completeness only. Two of its provenance links are missing: five manifest
+fields are written on zero of the 410 cells, and the rotation declaration is absent from every cell
+manifest, although the convention is declared correctly upstream. Neither was written retroactively.
+
+**Stock-scale end use.** The appliance and hot-water model runs on two districts, 7,602 flats in 1,200
+London buildings and 29,902 flats in 1,126 Bologna buildings. Forty-nine buildings carrying floor-averaged
+rather than per-flat diaries are excluded, never scored and never estimated.
+
+---
+
+## S10. Validation conventions
+
+Every threshold is registered with its provenance marked as published, project-chosen or heuristic (S1).
+Where a threshold carries no external authority, the verdict is kept and the missing provenance is stated.
+
+Every check is paired with a fault-injection test: a deliberately injected fault must be detected by the
+check that targets it before the check's passing verdict is trusted. The coverage summary distinguishes
+three states: a check that passed and was seen to detect the injected fault; a check that passed but whose
+detection could not be demonstrated; and a check that already fell short at baseline and therefore cannot
+demonstrate detection. Results of the third kind are reported as already unmet, not as detections.
+
+Three further conventions apply. A check that returns a verdict on zero rows reports that it is not
+evaluable, not that it passed. A check whose reference cannot be obtained reports as not checked; two such
+appear in this work, both citation checks requiring network access. And authorisation to run a campaign is
+not authorisation to read it as a scored result: the tooling emits no scored verdict until a second,
+separate authorisation is recorded.
+
+Five practical lessons follow from this study. A check scores a quantity and also detects a class of fault,
+so retiring it for the first reason also retires the second; when the per-person hot-water check became
+informational, a replacement detector had to be built. A crash is not a partial result: a self-test that
+raised an exception made every later fault unreachable while the summary still looked populated. An empty
+population has not been satisfied; several checks returned passes on zero rows before they were taught to
+report that they were not evaluable. A re-run that reproduces the previous answer exactly may mean the fix
+did not reach the tool; a bit-identical result across nine thousand simulations was traced to a script that
+bypassed the emitter. And the check itself can be the faulty artefact: a multiplier inert against a zero
+denominator, a first-match histogram that read like a diagnosis, and a parser blind to the only object shape
+it would meet were all found by asking what the instrument was doing.
+
+---
+
+## S11. Limitations in full
+
+**Corpus size.** The corpus is three countries with one wave each, and every fold trains on two. What was
+measured is that a model fine-tuned on two European countries does not beat a donor pool drawn from those
+same two countries. Whether the same model trained on eight or twenty source countries would beat the same
+baseline is not measured. The author searched survey statistics, small-area estimation, spatial
+microsimulation and the domain-generalisation literature for a published floor on the number of source
+populations below which cross-population transfer is not expected to succeed, and found none stated as a
+rule (search of 2026-09-13). The study cannot defend its result by pointing to such a threshold, and the
+result cannot be dismissed by pointing to one. Identifiability results for invariant-risk estimators bound
+the number of training environments needed to separate invariant from environment-specific structure, but
+they apply to estimators with an explicit invariance objective. The model here is a low-rank adapter
+trained by next-token prediction, with no such objective.
+
+**In-sample shortfall.** The held-in check does not clear its bar on any of the six training-country cells
+(Table S2). The shortfall is therefore not confined to transfer.
+
+**Survey year.** The three waves are 2009-10, 2013-14 and 2014-15, so survey year is confounded with
+country, and therefore with the leave-one-country-out split.
+
+**The conditioning vector.** The model receives demographic margins: age, sex, economic status, household
+structure and day type. What separates a Spanish weekday from a UK one is largely not demographic: the hour
+the working day ends, the hour of the main meal, school and shop hours, latitude and the time of sunset.
+None of that can be recovered from age and employment tables. The appliance-timing results are consistent
+with this: real diaries carry country timing, and neither synthetic source does. This limits the design,
+not the comparison, because the raked donor pool received the same margins and no more.
+
+**Survey and frame.** The study inherits the coverage and non-response of three national surveys. People in
+institutions, people without housing and hotel guests are outside the sampling frame. Respondents give one
+or two diary days each, so multi-day dependence is largely unobservable. The three files target different
+diary-day bases; every diary is reweighted to the calendar week. The Italian fold is scored against a
+published aggregate from a different survey round than its microdata. The UK household-type cell coded
+unknown covers 551 diaries, 3.5 per cent of that fold, and no generated diary can carry it because the
+census has no such category; dropping the cell moves whole-fold MAE by 0.158 minutes per day. Spain's
+synthetic population has no homemaker category, and day type is assigned by calendar week. Sex is a
+conditioning stratum and is not analysed separately.
+
+**Pretrained prior.** A pretrained backbone has read very different amounts of text about Spain, Italy and
+the UK, in different languages and from different periods. Nothing in the design separates what fine-tuning
+taught about a country from what pretraining already contained. This confound was pre-registered and is
+unresolved. In a leave-one-country-out design it is aligned with the split by construction.
+
+**Constrained decoding.** Renormalising the sampling distribution over the allowed tokens changes the
+distribution being sampled. The neutrality check misses its tolerance in all three folds at parity sample
+size, and the direction of the resulting bias is not quantified. Generated output is never raked, because
+raking would close the marginal gap by construction and the agreement would measure the raking.
+
+**Training seeds.** Each model was trained with one seed. The seed-to-seed probe on frozen weights measures
+generation noise only.
+
+**Energy claims.** Every energy-use intensity is heating-only and may not be compared with a whole-building
+or measured total. No cross-country comparison of absolute demand is safe at the ten per cent level, because
+the weather file alone is worth 5 to 11 per cent of heating demand and its sign differs by fold. Every
+cross-fold claim is therefore about timing, shape or ordering. Absolute intensities from the archetype and
+observed-stock campaigns are never placed side by side or differenced. The sensitivity design holds annual
+internal gain fixed, so it can redistribute gain in time but never add or remove energy over a year. Each
+dwelling is one thermal zone, so the study can say when gains move but not where in a dwelling. The UK
+archetypes are parameterised from England's typology.
+
+**Per-dwelling claims and the appliance model.** No per-dwelling prediction is made at any scale. Moving
+from archetypes to tens of thousands of real buildings raises confidence in an aggregate and does nothing
+for an individual household. The trigger fires from the primary recorded activity only, so a load recorded
+only as a secondary activity is invisible to it; the total of such loads has no published bound. The
+ownership shares are from the UK and about two decades old and are applied unchanged to Spain and Italy, so no
+ownership-dependent quantity should be read as country-specific. The real-diary pool behind the appliance
+timing is unweighted. Each appliance run covers 100 dwellings for one year with one seed, so the peak hour
+carries no interval, and the peaks are flat-topped. Timing is checked against real diaries through the same
+model, not against measured national load profiles, so the result concerns appliance timing, not load
+shape. The hot-water comparison is a denominator mismatch and is reported neither as a model limitation
+nor as a pass.
+
+**Reproducibility.** Reproduction gives the same statistics, not the same bytes, and this was measured.
+Results from the observed-stock campaign are numerically stable rather than bitwise reproducible. Merged and
+unmerged adapters produce measurably different populations, and no intermediate artefact records which of
+the two produced it.
+
+**Release.** The adapter weights are not released. The decision was taken before training, on the terms of
+the data agreements rather than any model licence, and is reinforced by the membership-inference result.
+The UK synthetic population is withheld with the weights. The Spanish and Italian synthetic populations,
+the code, the check implementations and the frozen pre-registration file are available as stated in the
+data availability statement. The archetypes are this study's own construction from TABULA parameters and
+are not an official TABULA product. The author's institution is not a Eurostat-recognised research entity;
+an enquiry was sent on 2026-08-26 and had received no reply when this material was prepared.
+
+**What should not be inferred.** The backbone comparison is two points and is not a scaling curve. The full
+fine-tune is a ceiling run on one fold, and the second model family was tested on one fold. The privacy set
+is not a passing audit. The memorisation control does not bound what it was built to bound, and the
+perplexity gap is not independent confirmation. No scored result is taken from the larger observed-stock
+campaign.
+
+---
+
+## S12. Open items and documentation notes
+
+**One check was never adjudicated.** The within-stratum shuffle check (S1.6) ships unmet, without a decision
+record. Its shuffle key omits one of the six prefix fields.
+
+**One invariant was built but never exercised on model output.** The hour-support constancy invariant was
+built, passed its self-test and detected a deliberately injected fault on real diaries, but it was never
+scored against generated output. It is not counted as passed.
+
+**Full fine-tune manifest.** The manifest shipped with the full fine-tune control describes a low-rank adapter
+run, while that job's own log records a full fine-tune with no adapter. The manifest was not edited; a
+correction file sits beside it, and the numbers in this paper come from the correction file.
+
+**Training-record label.** The comparison table in the training record labels the main model's column with
+the wrong backbone family. The manifest and the run configuration identify it correctly.
+
+**Observed-stock campaign.** The larger observed-stock campaign ran to completion, but no scored result from
+it is used (S9). In Madrid, 170 cells in 17 buildings did not complete, and three courtyard buildings in
+Bologna are outside the subdivision method.
+
+## References cited only in the supplementary material
+
+The supplementary material cites Eurostat (2009), Eurostat (2019) and Fuentes et al. (2018); full entries are
+in the reference list of the main paper.

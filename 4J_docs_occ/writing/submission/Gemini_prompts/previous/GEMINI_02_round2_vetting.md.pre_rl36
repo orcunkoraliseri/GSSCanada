@@ -1,0 +1,29 @@
+# GEMINI_02 outside review, round 2: vetting (2026-09-24)
+
+The author ran `GEMINI_02_outside_review.md` in Gemini (Antigravity) a second time and pasted the answer in chat.
+It reported 11 points: 1 critical, 3 major, 7 minor, and "UNVERIFIED references: none". The citation check
+in that line is not trusted: Gemini ran scripts over the files and did not open the cited papers.
+
+| # | Gemini point | Verdict | Action |
+|---|---|---|---|
+| 1 | Cover letter placeholders (date, suggested reviewers) | PARTLY HOLDS | Reviewers line was already removed earlier today; the docx in EB_upload was stale and still had it, now rebuilt. `[date of submission]` stays until the author picks the day (author question). |
+| 2 | Sec 3.2 line 192 cites Table S2 for capacity interventions; should be S3 | HOLDS | Fixed. |
+| 3 | Sec 3.6 line 237 cites Table S3 for heating; should be S5 | HOLDS | Fixed. |
+| 4 | Length over the ~20-page guideline; move Appendices A and B to the SI | HOLDS AS A FACT, fix is the author's call | Main text is 8,361 words by `wc -w` on lines 21-308 (author target was about 7,500, D5 2026-09-23); Appendix B 3,423; Nomenclature 1,454. Author question: move Appendix B to the SI or not. |
+| 5 | (INE, 2011) and (ISTAT, 2016) do not match reference entries that start with the full name | HOLDS (minor) | Reference entries now start with the acronym: "INE (Instituto Nacional de Estadistica). (2011)" and "ISTAT (Istituto Nazionale di Statistica). (2016)". |
+| 6 | Pflugradt (2016) is a doctoral dissertation at TU Chemnitz | NOT YET CHECKED | Passed to the equation-source check (`DeepResearchPrompts/VETTING_RL36_equation_sources.md`); not changed from Gemini's word. |
+| 7 | SI contains internal dates 2026-09-13 and 2026-08-26 | WRONG | `grep 2026` on the SI returns nothing. Not changed. |
+| 8 | SI "method record" / "earlier layout" is report-style process history | HOLDS | Table S4 row, S7.6 heading and S9 paragraph reworded to "exploratory layout ... not used in the paper"; "method record" now absent (grep). |
+| 9 | "fold" used at line 87 before Section 2.4 defines it; "a null on both channels" is jargon | HOLDS | Line 87: "Training for one held-out country (one fold, Section 2.4) takes ..."; line 273: "Occupancy has no resolvable effect on either peak or annual heating." |
+| 10 | Eq. (1) never referenced in text | HOLDS | Line 79: "Each diary becomes one line of text (Eq. (1)): ..." |
+| 11 | Line 125 sentence is 32 words | HOLDS (minor) | Split in two. |
+
+Backups: `writing/submission/previous/4J_manuscript_submission.md.pre_gemini02_20260924`,
+`previous/4J_supplementary_material.md.pre_gemini02_20260924`, old upload docx files in
+`previous/EB_upload_pre_20260924b/`.
+
+Rebuilt: manuscript docx through `tools/4thJ_build_submission_docx.sh` (both PATCH lines printed); SI docx
+with the same pandoc flags plus `4thJ_docx_eb_layout.py` (both PATCH lines printed); cover letter docx with
+plain pandoc and the same reference doc. All three copied to `EB_upload/` at 16:00. Spot-checked in the
+uploaded XML: new Jutras-Dubé sentence present, "Supplementary Table S5" present, "Suggested reviewers" 0,
+"method record" 0.

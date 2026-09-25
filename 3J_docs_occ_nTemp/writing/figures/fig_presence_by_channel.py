@@ -15,7 +15,9 @@ One panel per channel; one line per scenario = median across the four building-c
 weekday people per 100 m2. Hotel carries no survey-driven product in 2005, 2010 and 2015 (its
 schedule there is the code schedule), so only 2022 and 2030 central are drawn for hotel.
 
-Run:  py -3 writing/figures/fig_presence_by_channel.py
+Run:  py -3 writing/figures/fig_presence_by_channel.py [--arm P10R|deliverable]
+      --arm P10R (default since the P9 second pass, 2026-09-25) reads _P10R_figdata/ (written by
+      p3_code_schedule_comparison.py --arm P10R); --arm deliverable reads the frozen-arm CSVs in this folder.
 Output: writing/figures/fig_presence_by_channel.pdf / .png (600 dpi)
 """
 import os
@@ -30,7 +32,9 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "fig_presence_by_channel")
-DATA = os.path.join(HERE, "fig_presence_by_channel_data.csv")
+ARM = sys.argv[sys.argv.index("--arm") + 1] if "--arm" in sys.argv else "P10R"
+assert ARM in ("P10R", "deliverable"), ARM
+DATA = os.path.join(HERE, "_P10R_figdata" if ARM == "P10R" else "", "fig_presence_by_channel_data.csv")
 
 SCEN = [("Default_NECB", "Code schedules", GREY, (0, (4, 2)), 1.2),
         ("Y2005", "2005", "#A9BFCB", "solid", 1.0),
@@ -43,6 +47,7 @@ PANELS = [("office", "(a) Office"), ("retail", "(b) Retail"), ("hotel", "(c) Hot
 
 
 def main():
+    print(f"[arm] {ARM}: {DATA}")
     d = pd.read_csv(DATA)
     d = d[d.daytype == "WD"]
     if len(d) != 6 * 4 * 4 * 24:

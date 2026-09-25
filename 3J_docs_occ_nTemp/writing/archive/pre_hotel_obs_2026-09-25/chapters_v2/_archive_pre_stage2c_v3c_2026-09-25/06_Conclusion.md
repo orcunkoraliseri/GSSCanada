@@ -1,0 +1,9 @@
+# 6. Conclusion
+
+This paper gave each use of a mixed-use tower its own occupancy schedule. One jointly trained Transformer generated residential, office and retail presence from four Canadian time-use survey cycles. A seasonal time-series model of provincial statistics generated hotel presence. The four schedules were routed into two prototype towers in two cities and compared with the same towers on code schedules.
+
+Three conclusions follow. First, survey-based schedules change who is in the tower and when. Residents and hotel guests are present at night, and office presence is lower than the code schedule assumes. Second, these changes reach energy only where lighting and plug loads follow occupancy. Office and retail intensity change by -7 to -10 % and about -9 % against code schedules, and their day-to-night contrast becomes smaller. Residential and hotel energy change by about 2 % or less. Third, whole-building timing does not follow occupancy. The load centroid shifts by a fraction of an hour, the coincidence factor rises slightly, and the annual peak remains a winter-morning plant start-up under both schedule sets.
+
+Reference intensity ranges built for single-use buildings cannot judge the uses of a stacked tower. The office floor is missed even by the code-schedule tower, the hotel verdict follows the tower prototype, and retail meets its range on the median but not in every simulation. These verdicts stand as scored.
+
+For practice, occupancy detail matters for tenant energy, sub-metering and benchmarking. For plant sizing and peak studies, the start-up strategy and equipment schedules matter more. Future work should link apartment lighting and appliances to household activity, compare against a dwelling-shaped code control, and build reference ranges from measured mixed-use towers.

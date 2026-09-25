@@ -1,0 +1,17 @@
+{
+  "BEM_Schedules_4split_2022.csv": "bdb9b506911922646bca6f06f065b516",
+  "BEM_Schedules_4split_2030_central.csv": "65a078b798862f42c4e32f2656d28e48",
+  "BEM_Schedules_4split_2030_cons.csv": "21bbd08b48fce30a7d5a0d6d251ad6b2",
+  "BEM_Schedules_4split_2030_opt.csv": "6d5681a82fc1cd6c08c50cbfedaf540a",
+  "hotel_schedule_multiplier_2022.csv": "7b62a8854381fd93859d988f3852e2af",
+  "hotel_schedule_multiplier_2030_central.csv": "4b3d3a4603cc0cccc6a1bf42139d69ee",
+  "hotel_schedule_multiplier_2030_cons.csv": "d6e834bab96d26c1830617064dec707d",
+  "hotel_schedule_multiplier_2030_opt.csv": "e0ab6c86fbe3c0ea2475f8cada6d1bd6",
+  "office_presence_multiplier_2022.csv": "d94d86554bd2c3713128dbb074da4265",
+  "office_presence_multiplier_2030.csv": "d78650c0922b48978f3ff736adbb0e5b",
+  "office_presence_multiplier_2030_BAK_2026-09-22.csv": "d78650c0922b48978f3ff736adbb0e5b",
+  "retail_presence_multiplier_2022.csv": "33708341dacabf4d32e786a2bdd6d9ee",
+  "retail_presence_multiplier_2030_central.csv": "0ec541ae0d0e9da206db486086df79a2",
+  "retail_presence_multiplier_2030_cons.csv": "3f9d038789f9c86171727219c809f034",
+  "retail_presence_multiplier_2030_opt.csv": "756f5bf1fd021d59efbd6caf90173ae7"
+}

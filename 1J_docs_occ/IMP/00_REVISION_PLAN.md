@@ -467,3 +467,17 @@ Following the usual rule, no citation enters the text until its DOI resolves and
   - Estimate, not a result: all 30 draws about 2026-09-26 (was ~09-30 at `%2`/`%4`). Rule: when HEAVY has no pending tasks left, raise LIGHT's throttle so 1J keeps 11 tasks running (never above 11 = 55 CPUs).
   - Offered and declined: running tasks on the local Windows machine (April reference was made on Speed with April code; only RC1 fits one night; saves ~3 h). Skipping each task's default re-run was mentioned, not taken (it is the E4 check).
   - Next: `sacct` first-action list; confirm the running 1J count rises toward 11; read `logs/wp11_scorer_1342408.out` when block 1 lands (~2026-09-24 midday).
+- 2026-09-24 (ba): **CPU budget raised again by the author: `histnu` finished on Speed, 1J may use all 64 CPUs (author: "histnu is done on the speed, we have 64 cpu resources to be used for 1st journal occupancy runs"). LIGHT throttle raised to 6; nothing else changed.**
+  - Read at 13:37 EDT: account `chachemv` cap `cpu=64,gres/gpu=4` (`sacctmgr`); `squeue -A chachemv -t R` shows only o_iseri's 11 x 5 = 55 CPUs (no `histnu` left).
+  - `sacct`: **9 of 36 draw tasks COMPLETED exit 0:0** — LIGHT `_0`,`_1`,`_2`,`_3`,`_4`,`_6`,`_8`; HEAVY `_1`,`_3`. Newly done since the 07:00 check: LIGHT `_3` (RC4 b1), `_6` (RC3 b2), `_8` (RC1 b3); each log shows `WP11 EXTRACT VERDICT: VERIFIED` and E5 PASS (`WP11 DRAW START: 1` / `6` / `11`).
+  - Block 1's last two tasks, HEAVY `_0` (RC5 b1) and `_2` (RC5 b2), both at 1-19:43 h: their logs already end in `WP11 EXTRACT VERDICT: VERIFIED` (E1-E5 PASS, E4 Heating/Cooling diff 0.000000), still shown RUNNING while the task closes. Scorer 1342408 still PENDING (Dependency).
+  - Manager ran `scontrol update JobId=1342400 ArrayTaskThrottle=6` (was 5); read back `ArrayTaskThrottle=6`; LIGHT `_12` (RC1 b4) started at once. **1J now 12 tasks x 5 = 60 CPUs**, 4 left for scorers (1 CPU each). HEAVY stays `%6`. New rule replaces (az)'s: 1J running tasks <= 12 (60 CPUs); when HEAVY has no pending tasks left, raise LIGHT to `12 - running HEAVY`.
+  - Progress page db 54 -> 55 (sim 9/36, log line).
+  - Next: read `logs/wp11_scorer_1342408.out` for `STOPRULE SUMMARY: block=1` once HEAVY `_0`/`_2` close; `sacct` no more than every 30 min.
+- 2026-09-24 (bb): **Block 1 SCORED: `STOPRULE SUMMARY: block=1 n=5 cells_met=29/60 VERDICT=CONTINUE`. C1 control OK. Nothing changed on the cluster.**
+  - `sacct` (evening, read by the manager): **13 of 36 draw tasks COMPLETED exit 0:0** (LIGHT `_0`-`_6`,`_8`,`_12`; HEAVY `_0`-`_3`). Scorer 1342408 COMPLETED 0:0 (50 s); scorers 1342409-1342413 PENDING (Dependency).
+  - `logs/wp11_scorer_1342408.out`: `STOPRULE C1: OK -- draw 1 matches default/draw_1 for all 60 cells within 0.00051` (no nondeterminism); wrote `stage4/draws/stoprule_block_1.csv`. Target (1 % half-width) met in 29 of 60 cells at n=5, so CONTINUE by the pre-registered rule; no threshold touched.
+  - Newly done logs LIGHT `_5`, `_12`, HEAVY `_0`, `_2` grepped: each `WP11 EXTRACT VERDICT: VERIFIED` once, E5 PASS (`DRAW START` 6 / 16 / 1 / 6).
+  - Running: 12 tasks x 5 = 60 CPUs (LIGHT 6, HEAVY 6); throttles read back `%6` / `%6`; pending only JobArrayTaskLimit (LIGHT `_15`-`_23`, HEAVY `_10`,`_11`) and scorer Dependency. Nothing FAILED/CANCELLED.
+  - Progress page db 55 -> 56 (sim 13/36, log line). Per-cell CSV not yet read cell by cell.
+  - Next: `sacct` no more than every 30 min; scorer 1342409 (block 2) when its tasks land; when HEAVY has no pending tasks, raise LIGHT to `12 - running HEAVY`.

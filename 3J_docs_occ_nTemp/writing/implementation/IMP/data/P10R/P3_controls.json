@@ -1,0 +1,387 @@
+{
+ "controls": [
+  {
+   "check": "max |reader - step9 wd_peak_hour_circular| over 224 rows",
+   "got": 0.0,
+   "want": 0.0,
+   "tol": 1e-09,
+   "verdict": "PASS"
+  },
+  {
+   "check": "max |CF6 reconstructed - agg_peak| (12 cells)",
+   "got": 0.0,
+   "want": 0.0,
+   "tol": 1e-09,
+   "verdict": "PASS"
+  },
+  {
+   "check": "max rel |building peak reconstructed - agg_peak| (12 cells)",
+   "got": 0.0,
+   "want": 0.0,
+   "tol": 1e-09,
+   "verdict": "PASS"
+  }
+ ],
+ "negative_controls": [
+  {
+   "check": "N1 office peak hour read from metric=='people' (filter wrong)",
+   "got": 11.808691,
+   "want": 11.951151195714687,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "N2 hotel peak hour from Y2022 rows instead of B_central",
+   "got": 18.877498,
+   "want": 18.883114731992194,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "N3 retail profile rotated +3 h",
+   "got": 15.64128,
+   "want": 12.641279886860886,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "N4 CF median from wrong aggregate agg_deliverable",
+   "got": 0.935526,
+   "want": 0.9374251645648144,
+   "tol": 0.0005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "N4b retail B_central WD peak hour from wrong aggregate agg_deliverable",
+   "got": 12.373961,
+   "want": 12.641279886860886,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "N5 |CF - published| with cool/heat allocation bases swapped, Default_NECB Tall CLG",
+   "got": 0.034315,
+   "want": 0.0,
+   "tol": 1e-09,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "N6 4-tenant-channel CF vs published 6-channel CF, B_central Tall CLG",
+   "got": 0.858133,
+   "want": 0.848,
+   "tol": 0.0005,
+   "verdict": "FAIL"
+  }
+ ],
+ "published_vs_new": [
+  {
+   "check": "B_central office WD peak hour median",
+   "got": 11.951151,
+   "want": 11.9,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central office WD peak hour min",
+   "got": 11.932565,
+   "want": 11.82,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central office WD peak hour max",
+   "got": 11.973897,
+   "want": 11.93,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central residential WD peak hour median",
+   "got": 12.044482,
+   "want": 12.04,
+   "tol": 0.005,
+   "verdict": "PASS"
+  },
+  {
+   "check": "B_central residential WD peak hour min",
+   "got": 12.026917,
+   "want": 12.01,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central residential WD peak hour max",
+   "got": 12.097265,
+   "want": 12.1,
+   "tol": 0.005,
+   "verdict": "PASS"
+  },
+  {
+   "check": "B_central retail WD peak hour median",
+   "got": 12.64128,
+   "want": 12.37,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central retail WD peak hour min",
+   "got": 12.264838,
+   "want": 12.11,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central retail WD peak hour max",
+   "got": 12.973041,
+   "want": 12.62,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central hotel WD peak hour median",
+   "got": 18.883115,
+   "want": 18.91,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central hotel WD peak hour min",
+   "got": 18.783876,
+   "want": 18.84,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central hotel WD peak hour max",
+   "got": 18.889437,
+   "want": 18.94,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central building peak hour median",
+   "got": 15.078218,
+   "want": 14.95,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central building peak hour min",
+   "got": 14.227232,
+   "want": 14.11,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central building peak hour max",
+   "got": 15.813052,
+   "want": 15.7,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central retail WD midday kW median",
+   "got": 64.234581,
+   "want": 72.03,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central retail WD night kW median",
+   "got": 8.80207,
+   "want": 2.11,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central office WD midday kW median",
+   "got": 607.887816,
+   "want": 569.33,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central office WD night kW median",
+   "got": 110.869781,
+   "want": 48.1,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central residential WD midday kW median",
+   "got": 349.630841,
+   "want": 347.82,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central residential WD night kW median",
+   "got": 90.044411,
+   "want": 89.53,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central hotel WD midday kW median",
+   "got": 350.72131,
+   "want": 335.93,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central hotel WD night kW median",
+   "got": 440.666018,
+   "want": 434.47,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "CF median (B_central, 4 cells -- the scope of manuscript 5.3)",
+   "got": 0.937425,
+   "want": 0.941,
+   "tol": 0.0005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "CF min (B_central, Tall CLG)",
+   "got": 0.848415,
+   "want": 0.851,
+   "tol": 0.0005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central building peak hour min, double-rounded 3dp->2dp",
+   "got": 14.23,
+   "want": 14.11,
+   "tol": 1e-09,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central building peak hour max, double-rounded 3dp->2dp",
+   "got": 15.81,
+   "want": 15.7,
+   "tol": 1e-09,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central retail WD night kW median, double-rounded",
+   "got": 8.8,
+   "want": 2.11,
+   "tol": 1e-09,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "B_central office ALL-DAYS peak hour min (explains published 11.82)",
+   "got": 11.868808,
+   "want": 11.82,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 office CFA median (56 cells)",
+   "got": 79.471817,
+   "want": 71.02,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 office CFA min",
+   "got": 70.858391,
+   "want": 61.72,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 office CFA max",
+   "got": 90.212515,
+   "want": 90.21,
+   "tol": 0.005,
+   "verdict": "PASS"
+  },
+  {
+   "check": "Table 5 retail CFA median (56 cells)",
+   "got": 84.819415,
+   "want": 75.63,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 retail CFA min",
+   "got": 73.453762,
+   "want": 63.63,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 retail CFA max",
+   "got": 96.844785,
+   "want": 96.84,
+   "tol": 0.005,
+   "verdict": "PASS"
+  },
+  {
+   "check": "Table 5 hotel CFA median (56 cells)",
+   "got": 262.859202,
+   "want": 260.54,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 hotel CFA min",
+   "got": 204.829101,
+   "want": 203.33,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 hotel CFA max",
+   "got": 321.552534,
+   "want": 318.42,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 residential CFA median (56 cells)",
+   "got": 119.20971,
+   "want": 119.1,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 residential CFA min",
+   "got": 111.70117,
+   "want": 111.57,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  },
+  {
+   "check": "Table 5 residential CFA max",
+   "got": 128.765991,
+   "want": 128.77,
+   "tol": 0.005,
+   "verdict": "PASS"
+  },
+  {
+   "check": "Default_NECB office CFA median (published 85.45)",
+   "got": 85.359853,
+   "want": 85.45,
+   "tol": 0.005,
+   "verdict": "FAIL"
+  }
+ ],
+ "cf_scope_probe": {
+  "bcentral_median": 0.9374251645648144,
+  "bcentral_min": 0.8484148138955824,
+  "bcentral_argmin": "B_central__Tall__CLG",
+  "all56_median": 0.9362627395674692,
+  "all56_min": 0.8214572801411449,
+  "all56_argmin": "Y2005__Tall__CLG"
+ },
+ "negative_control_truth": {
+  "office_h": 11.951151195714687,
+  "hotel_h": 18.883114731992194,
+  "retail_h": 12.641279886860886,
+  "cf": 0.9374251645648144
+ },
+ "N5b_fallback_insensitive_absdiff": 2.220446049250313e-16
+}

@@ -1,0 +1,609 @@
+{
+  "cell_index": 53,
+  "cell_tag": "sens_retail_opt__SuperTall__CLG",
+  "scenario_label": "sens_retail_opt__SuperTall__CLG",
+  "scenario": "sens_retail_opt",
+  "building": "SuperTall",
+  "city": "CLG",
+  "cz": "Z7A",
+  "INJ_HASH": "233932d7",
+  "INPUTS_HASH": "9532d73a",
+  "INPUTS_HASH_DETAIL": [
+    {
+      "channel": "hotel",
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\hotel_schedule_multiplier_2030_central.csv",
+      "csv_md5": "4b3d3a4603cc0cccc6a1bf42139d69ee"
+    },
+    {
+      "channel": "office",
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\office_presence_multiplier_2030.csv",
+      "csv_md5": "d78650c0922b48978f3ff736adbb0e5b"
+    },
+    {
+      "channel": "residential",
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\BEM_Schedules_4split_2030_central.csv",
+      "csv_md5": "65a078b798862f42c4e32f2656d28e48"
+    },
+    {
+      "channel": "retail",
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\retail_presence_multiplier_2030_opt.csv",
+      "csv_md5": "756f5bf1fd021d59efbd6caf90173ae7"
+    }
+  ],
+  "campaign_driver": "3rdJ_08D_campaign_cell_P10R.py",
+  "outdir": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step8_docs\\campaign_local_P10R\\sens_retail_opt__SuperTall__CLG",
+  "channels_requested": {
+    "office": {
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\office_presence_multiplier_2030.csv",
+      "csv_md5": "d78650c0922b48978f3ff736adbb0e5b",
+      "exists": true,
+      "archetype": "Office_Knowledge",
+      "band": "hybrid"
+    },
+    "retail": {
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\retail_presence_multiplier_2030_opt.csv",
+      "csv_md5": "756f5bf1fd021d59efbd6caf90173ae7",
+      "exists": true,
+      "pr": "AB"
+    },
+    "hotel": {
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\hotel_schedule_multiplier_2030_central.csv",
+      "csv_md5": "4b3d3a4603cc0cccc6a1bf42139d69ee",
+      "exists": true,
+      "pr": "AB"
+    },
+    "residential": {
+      "csv_path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R\\BEM_Schedules_4split_2030_central.csv",
+      "csv_md5": "65a078b798862f42c4e32f2656d28e48",
+      "exists": true,
+      "seed": 42
+    }
+  },
+  "smoke_days": null,
+  "expected_rows": 8760,
+  "arm": {
+    "preserve_load_standby_floor": true,
+    "lighting_model": null,
+    "dhw_model": null
+  },
+  "inject_mixed_use_result": {
+    "office": {
+      "n_spaces": 6,
+      "n_lights": 6,
+      "n_equip": 6
+    },
+    "retail": {
+      "n_spaces": 3,
+      "n_lights": 4,
+      "n_equip": 3
+    },
+    "hotel": {
+      "n_spaces": 3,
+      "n_lights": 3,
+      "n_equip": 3
+    },
+    "residential": {
+      "n_spaces": 41,
+      "n_households_drawn": 41,
+      "n_carriers_neutralized": 1,
+      "assignment": {
+        "F38 Resi_bot_E_Apartment": "9477",
+        "F38 Resi_bot_NE_Apartment": "85827",
+        "F38 Resi_bot_NW_Apartment": "68036",
+        "F38 Resi_bot_N_Apartment_1": "45873",
+        "F38 Resi_bot_N_Apartment_2": "54587",
+        "F38 Resi_bot_N_Apartment_3": "21513",
+        "F38 Resi_bot_N_Apartment_4": "79515",
+        "F38 Resi_bot_SE_Apartment": "40952",
+        "F38 Resi_bot_SW_Apartment": "74716",
+        "F38 Resi_bot_S_Apartment_1": "44916",
+        "F38 Resi_bot_S_Apartment_2": "75228",
+        "F38 Resi_bot_S_Apartment_3": "9870",
+        "F38 Resi_bot_S_Apartment_4": "46341",
+        "F39-F46 Resi_mid_E_Apartment": "43024",
+        "F39-F46 Resi_mid_NE_Apartment": "77616",
+        "F39-F46 Resi_mid_NW_Apartment": "9689",
+        "F39-F46 Resi_mid_N_Apartment_1": "77360",
+        "F39-F46 Resi_mid_N_Apartment_2": "46320",
+        "F39-F46 Resi_mid_N_Apartment_3": "76070",
+        "F39-F46 Resi_mid_N_Apartment_4": "65124",
+        "F39-F46 Resi_mid_SE_Apartment": "19499",
+        "F39-F46 Resi_mid_SW_Apartment": "50418",
+        "F39-F46 Resi_mid_S_Apartment_1": "71952",
+        "F39-F46 Resi_mid_S_Apartment_2": "13402",
+        "F39-F46 Resi_mid_S_Apartment_3": "45281",
+        "F39-F46 Resi_mid_S_Apartment_4": "66745",
+        "F39-F46 Resi_mid_W_Apartment": "70930",
+        "F47-F54 Resi_mid_E_Apartment": "60377",
+        "F47-F54 Resi_mid_NE_Apartment": "30344",
+        "F47-F54 Resi_mid_NW_Apartment": "52317",
+        "F47-F54 Resi_mid_N_Apartment_1": "9171",
+        "F47-F54 Resi_mid_N_Apartment_2": "71766",
+        "F47-F54 Resi_mid_N_Apartment_3": "61189",
+        "F47-F54 Resi_mid_N_Apartment_4": "82149",
+        "F47-F54 Resi_mid_SE_Apartment": "17507",
+        "F47-F54 Resi_mid_SW_Apartment": "51459",
+        "F47-F54 Resi_mid_S_Apartment_1": "6661",
+        "F47-F54 Resi_mid_S_Apartment_2": "61856",
+        "F47-F54 Resi_mid_S_Apartment_3": "69931",
+        "F47-F54 Resi_mid_S_Apartment_4": "53969",
+        "F47-F54 Resi_mid_W_Apartment": "24162"
+      },
+      "schedule_names": [
+        "MXU_Residential_Occ_HH9477",
+        "MXU_Residential_Met_HH9477",
+        "MXU_Residential_Occ_HH85827",
+        "MXU_Residential_Met_HH85827",
+        "MXU_Residential_Occ_HH68036",
+        "MXU_Residential_Met_HH68036",
+        "MXU_Residential_Occ_HH45873",
+        "MXU_Residential_Met_HH45873",
+        "MXU_Residential_Occ_HH54587",
+        "MXU_Residential_Met_HH54587",
+        "MXU_Residential_Occ_HH21513",
+        "MXU_Residential_Met_HH21513",
+        "MXU_Residential_Occ_HH79515",
+        "MXU_Residential_Met_HH79515",
+        "MXU_Residential_Occ_HH40952",
+        "MXU_Residential_Met_HH40952",
+        "MXU_Residential_Occ_HH74716",
+        "MXU_Residential_Met_HH74716",
+        "MXU_Residential_Occ_HH44916",
+        "MXU_Residential_Met_HH44916",
+        "MXU_Residential_Occ_HH75228",
+        "MXU_Residential_Met_HH75228",
+        "MXU_Residential_Occ_HH9870",
+        "MXU_Residential_Met_HH9870",
+        "MXU_Residential_Occ_HH46341",
+        "MXU_Residential_Met_HH46341",
+        "MXU_Residential_Occ_HH43024",
+        "MXU_Residential_Met_HH43024",
+        "MXU_Residential_Occ_HH77616",
+        "MXU_Residential_Met_HH77616",
+        "MXU_Residential_Occ_HH9689",
+        "MXU_Residential_Met_HH9689",
+        "MXU_Residential_Occ_HH77360",
+        "MXU_Residential_Met_HH77360",
+        "MXU_Residential_Occ_HH46320",
+        "MXU_Residential_Met_HH46320",
+        "MXU_Residential_Occ_HH76070",
+        "MXU_Residential_Met_HH76070",
+        "MXU_Residential_Occ_HH65124",
+        "MXU_Residential_Met_HH65124",
+        "MXU_Residential_Occ_HH19499",
+        "MXU_Residential_Met_HH19499",
+        "MXU_Residential_Occ_HH50418",
+        "MXU_Residential_Met_HH50418",
+        "MXU_Residential_Occ_HH71952",
+        "MXU_Residential_Met_HH71952",
+        "MXU_Residential_Occ_HH13402",
+        "MXU_Residential_Met_HH13402",
+        "MXU_Residential_Occ_HH45281",
+        "MXU_Residential_Met_HH45281",
+        "MXU_Residential_Occ_HH66745",
+        "MXU_Residential_Met_HH66745",
+        "MXU_Residential_Occ_HH70930",
+        "MXU_Residential_Met_HH70930",
+        "MXU_Residential_Occ_HH60377",
+        "MXU_Residential_Met_HH60377",
+        "MXU_Residential_Occ_HH30344",
+        "MXU_Residential_Met_HH30344",
+        "MXU_Residential_Occ_HH52317",
+        "MXU_Residential_Met_HH52317",
+        "MXU_Residential_Occ_HH9171",
+        "MXU_Residential_Met_HH9171",
+        "MXU_Residential_Occ_HH71766",
+        "MXU_Residential_Met_HH71766",
+        "MXU_Residential_Occ_HH61189",
+        "MXU_Residential_Met_HH61189",
+        "MXU_Residential_Occ_HH82149",
+        "MXU_Residential_Met_HH82149",
+        "MXU_Residential_Occ_HH17507",
+        "MXU_Residential_Met_HH17507",
+        "MXU_Residential_Occ_HH51459",
+        "MXU_Residential_Met_HH51459",
+        "MXU_Residential_Occ_HH6661",
+        "MXU_Residential_Met_HH6661",
+        "MXU_Residential_Occ_HH61856",
+        "MXU_Residential_Met_HH61856",
+        "MXU_Residential_Occ_HH69931",
+        "MXU_Residential_Met_HH69931",
+        "MXU_Residential_Occ_HH53969",
+        "MXU_Residential_Met_HH53969",
+        "MXU_Residential_Occ_HH24162",
+        "MXU_Residential_Met_HH24162"
+      ],
+      "dhw_applied": [],
+      "dhw_unresolved": [],
+      "dhw_excluded": []
+    },
+    "fallback": [],
+    "ambiguous": [],
+    "modulated_schedule_names": [
+      "MXU_Office_People_sens_retail_opt__SuperTall__CLG",
+      "MXU_Retail_People_sens_retail_opt__SuperTall__CLG",
+      "MXU_Hotel_GuestRoom_sens_retail_opt__SuperTall__CLG",
+      "MXU_Office_Load_f045_sens_retail_opt__SuperTall__CLG",
+      "MXU_Retail_Load_f050_sens_retail_opt__SuperTall__CLG",
+      "MXU_Hotel_Load_f050_sens_retail_opt__SuperTall__CLG",
+      "MXU_Office_Load_f200_sens_retail_opt__SuperTall__CLG",
+      "MXU_Retail_Load_f200_sens_retail_opt__SuperTall__CLG",
+      "MXU_Hotel_Load_f200_sens_retail_opt__SuperTall__CLG"
+    ],
+    "preserve_load_standby_floor": true,
+    "floor_applied": [
+      {
+        "channel": "office",
+        "tag2": "OpenOffice",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "OfficeLarge BLDG_LIGHT_SCH_2013",
+        "floor": 0.04528,
+        "derived_schedule": "MXU_Office_Load_f045_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "retail",
+        "tag2": "Retail Back_Space",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "RetailStandalone BLDG_LIGHT_BACK_SCH_2013",
+        "floor": 0.05,
+        "derived_schedule": "MXU_Retail_Load_f050_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "retail",
+        "tag2": "Retail Entry",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "RetailStandalone BLDG_LIGHT_ENTRY_SCH_2013",
+        "floor": 0.05,
+        "derived_schedule": "MXU_Retail_Load_f050_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "retail",
+        "tag2": "Retail Retail",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "RetailStandalone BLDG_LIGHT_SCH_2013",
+        "floor": 0.05,
+        "derived_schedule": "MXU_Retail_Load_f050_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "retail",
+        "tag2": "Retail Point_of_Sale",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "RetailStandalone BLDG_LIGHT_SCH_2013",
+        "floor": 0.05,
+        "derived_schedule": "MXU_Retail_Load_f050_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Classroom",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "OfficeLarge BLDG_LIGHT_SCH_2013",
+        "floor": 0.04528,
+        "derived_schedule": "MXU_Office_Load_f045_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Conference",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "OfficeLarge BLDG_LIGHT_SCH_2013",
+        "floor": 0.04528,
+        "derived_schedule": "MXU_Office_Load_f045_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Dining",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "OfficeLarge BLDG_LIGHT_SCH_2013",
+        "floor": 0.04528,
+        "derived_schedule": "MXU_Office_Load_f045_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "ClosedOffice",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "OfficeLarge BLDG_LIGHT_SCH_2013",
+        "floor": 0.04528,
+        "derived_schedule": "MXU_Office_Load_f045_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Restroom",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "OfficeLarge BLDG_LIGHT_SCH_2013",
+        "floor": 0.04528,
+        "derived_schedule": "MXU_Office_Load_f045_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "hotel",
+        "tag2": "LargeHotel GuestRoom5",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "HotelLarge BLDG_LIGHT_GUESTROOM_SCH_2013",
+        "floor": 0.05,
+        "derived_schedule": "MXU_Hotel_Load_f050_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "hotel",
+        "tag2": "LargeHotel GuestRoom6",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "HotelLarge BLDG_LIGHT_GUESTROOM_SCH_2013",
+        "floor": 0.05,
+        "derived_schedule": "MXU_Hotel_Load_f050_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "hotel",
+        "tag2": "LargeHotel GuestRoom7",
+        "obj_class": "LIGHTS",
+        "prototype_schedule": "HotelLarge BLDG_LIGHT_GUESTROOM_SCH_2013",
+        "floor": 0.05,
+        "derived_schedule": "MXU_Hotel_Load_f050_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:year -> schedule:week:daily (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "OpenOffice",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Office_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "retail",
+        "tag2": "Retail Back_Space",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Retail_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "retail",
+        "tag2": "Retail Retail",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Retail_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "retail",
+        "tag2": "Retail Point_of_Sale",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Retail_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Classroom",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Office_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Conference",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Office_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Dining",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Office_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "ClosedOffice",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Office_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "office",
+        "tag2": "Restroom",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Office_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "hotel",
+        "tag2": "LargeHotel GuestRoom5",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Hotel_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "hotel",
+        "tag2": "LargeHotel GuestRoom6",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Hotel_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      },
+      {
+        "channel": "hotel",
+        "tag2": "LargeHotel GuestRoom7",
+        "obj_class": "ELECTRICEQUIPMENT",
+        "prototype_schedule": "NECB-A-Electric-Equipment",
+        "floor": 0.2,
+        "derived_schedule": "MXU_Hotel_Load_f200_sens_retail_opt__SuperTall__CLG",
+        "provenance": "schedule:compact (design days excluded)"
+      }
+    ],
+    "floor_unresolved": [],
+    "lighting_model": null,
+    "light_diversity_applied": [],
+    "dhw_model": null,
+    "dhw_applied": [],
+    "dhw_unresolved": [],
+    "dhw_excluded": []
+  },
+  "FALLBACK_LOUD": [],
+  "injected_idf_md5": "47fed792982dc84a8b32c7e50fb0897a",
+  "D9_schedule_swaps": 1,
+  "RESIZE_K": 1.0,
+  "PLANT_KW_BASE": 887.2131715191582,
+  "PLANT_KW_RESIZED": 1546.6230794066585,
+  "PLANT_N_HEATERS": 11,
+  "RESIZE_MODE": "per_object",
+  "RESIZE_EQUIP_SPEC": "Laundry Service Water Use 30.6gpm 180F=8.5",
+  "RESIZE_PER_OBJECT": {
+    "300gal Natural Gas Water Heater - 300kBtu/hr 9 0.804 Therm Eff": 8.5
+  },
+  "RESIZE_SPEC_RESOLUTION": [
+    {
+      "equipment": "Laundry Service Water Use 30.6gpm 180F",
+      "loop": "Laundry Service Water Loop",
+      "heaters": [
+        "300gal Natural Gas Water Heater - 300kBtu/hr 9 0.804 Therm Eff"
+      ],
+      "factor": 8.5
+    }
+  ],
+  "injected_resized_idf_md5": "e3db353ee0d002d8dd39fefe7cacbff8",
+  "P10R_CODE_MD5": {
+    "commercial_integration.py": "233932d7b043dc54d3ad5a76cf2432bf",
+    "3rdJ_08P_probe_driver.py": "b42dc4ba0e56335f3194eda74617ec4d",
+    "3rdJ_08D_campaign_cells.py": "ea71d76e812ca562c258f3ba2e996aef",
+    "3rdJ_08D_campaign_cell_P10R.py": "f8916ef6282cf51006bd2bb03977bb94",
+    "3rdJ_09J_retail_necb_c.py": "fca94812b7064fc648e4b3050a49e6dc",
+    "3rdJ_09H_plant_resize_probe.py": "94d28d1e20644a7b6a4e7ec4045f1e24",
+    "3rdJ_09H_resize_campaign_cell.py": "8a4530b6de697566dc25b5e0a35e1dce",
+    "3rdJ_09H_dhw_plant_topology.py": "e8ecf67b03d58627305b8ca5db6d9a9f"
+  },
+  "P10R_STEP7_OUT": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step7_docs\\outputs_step7_P10R",
+  "P10R_NOTE": "P10R sibling arm (writing/implementation/IMP/P10R_fix.md): frame-fixed products + T9-9 standby floor; chain = inject -> ensure outputs -> D9 -> D10 -> ONE EnergyPlus run.",
+  "PLATFORM": "win32",
+  "engine": "local",
+  "energyplus_version": "24.2.0",
+  "energyplus_build": "94a887817b",
+  "energyplus_exe_used": "C:\\EnergyPlusV24-2-0\\energyplus.exe",
+  "energyplus_version_raw": "EnergyPlus, Version 24.2.0-94a887817b",
+  "ep_return_code": 0,
+  "OUTPUT_SCHEMA_HASH": "93dd5129",
+  "fuel_closure": {
+    "Electricity": {
+      "facility_total_J": 24302389532293.312,
+      "sum_end_uses_J": 24302389532293.316,
+      "residual_J": 0.00390625,
+      "residual_rel": 1.6073522296271842e-16,
+      "facility_meter_absent": false,
+      "closed": true,
+      "end_use_meters": [
+        "InteriorLights:Electricity",
+        "ExteriorLights:Electricity",
+        "InteriorEquipment:Electricity",
+        "Fans:Electricity",
+        "Pumps:Electricity",
+        "Cooling:Electricity",
+        "Heating:Electricity",
+        "HeatRejection:Electricity",
+        "HeatRecovery:Electricity",
+        "WaterSystems:Electricity"
+      ]
+    },
+    "NaturalGas": {
+      "facility_total_J": 28041115843892.453,
+      "sum_end_uses_J": 28041115843892.457,
+      "residual_J": 0.00390625,
+      "residual_rel": 1.3930437082983658e-16,
+      "facility_meter_absent": false,
+      "closed": true,
+      "end_use_meters": [
+        "InteriorEquipment:NaturalGas",
+        "Heating:NaturalGas",
+        "WaterSystems:NaturalGas"
+      ]
+    },
+    "absent_meters": []
+  },
+  "dhw_unresolved_equipment": [],
+  "dhw_volume_unresolved_equipment": [],
+  "hourly_meters_csv": {
+    "path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step8_docs\\campaign_local_P10R\\sens_retail_opt__SuperTall__CLG\\hourly_meters.csv",
+    "rows": 8760,
+    "md5": "51d0a5d946264066ce19e97d8ce9723c"
+  },
+  "channel_hourly_csv": {
+    "path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step8_docs\\campaign_local_P10R\\sens_retail_opt__SuperTall__CLG\\channel_hourly.csv",
+    "rows": 8760,
+    "md5": "7fdc2c8ebc91b3063c951ffdfaa43cb7"
+  },
+  "dhw_hourly_csv": {
+    "path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step8_docs\\campaign_local_P10R\\sens_retail_opt__SuperTall__CLG\\dhw_hourly.csv",
+    "rows": 8760,
+    "md5": "b6c85cf1a5fba27fb99a4a8e2eef679a"
+  },
+  "dhw_volume_hourly_csv": {
+    "path": "C:\\Users\\o_iseri\\Desktop\\GSSCanada\\GSSCanada-main\\3J_docs_occ_nTemp\\Leg3_4-split\\Step8_docs\\campaign_local_P10R\\sens_retail_opt__SuperTall__CLG\\dhw_volume_hourly.csv",
+    "rows": 8760,
+    "md5": "fb77ef8fad1847915f928a21dd3cc98a",
+    "variable": "Water Use Equipment Total Volume",
+    "units": "m3"
+  },
+  "channel_hourly_convention": "per-zone Output:Variable values MULTIPLIED by Zones.Multiplier before channel aggregation (fixed 2026-07-31, Defaut 6). Sigma(channels) therefore closes against the matching facility meter -- verified per run by channel_closure. Files written BEFORE 2026-07-31 are UNMULTIPLIED and not comparable in magnitude.",
+  "channel_closure": {
+    "lights": {
+      "sum_channels_J": 4728628824378.041,
+      "facility_meter_J": 4728628824378.039,
+      "residual_rel": 4.130425695353444e-16,
+      "closed": true,
+      "meter": "InteriorLights:Electricity"
+    },
+    "equip": {
+      "sum_channels_J": 11222731356704.732,
+      "facility_meter_J": 11222731356704.734,
+      "residual_rel": 1.740329459845045e-16,
+      "closed": true,
+      "meter": "InteriorEquipment:Electricity"
+    },
+    "gasequip": {
+      "sum_channels_J": 2076080017808.935,
+      "facility_meter_J": 2076080017808.935,
+      "residual_rel": 0.0,
+      "closed": true,
+      "meter": "InteriorEquipment:NaturalGas"
+    }
+  },
+  "HOTEL_DT_BY_TYPE": {
+    "n_types": 16,
+    "hotel_volume_m3": 29041.7873762628,
+    "hotel_dT_K": 63.24116548866838
+  },
+  "timestamp_utc": "2026-09-25T01:53:37.651632+00:00",
+  "sql_extraction_method": "reimplemented locally in this driver, porting the query shape of Leg2_2-split/Step8_docs/eSim_bem_utils_3J/plotting.py::get_hourly_meter_data (ReportData/ReportDataDictionary join, EnvironmentType=3, Hourly), restricted to the requested meters/variables and pivoted to one column per series/channel",
+  "P10R_TIMING_S": {
+    "build": 34.7,
+    "energyplus": 1175.5,
+    "total": 1252.6
+  },
+  "P10R_STATUS": "ok"
+}

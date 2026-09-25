@@ -1,26 +1,26 @@
 # Table 7 - Limitations (transcribed from the consolidated section)
 
 The Discussion carries the deciding statements in full; the wording here is condensed to fit a cell.
-No verdict is paraphrased and every number is the source's own.
+No verdict is paraphrased. Rows L5 and L7 carry the numbers of the reported runs; the other rows carry the source's own numbers.
 
 | ID | Group | Statement | Bounding measurement |
 |---|---|---|---|
 | L1 | Frame | Hotel guests are outside the survey frame; the channel is driven by a tourism series. | The survey observes 0 % of hotel occupancy: 3 of 4 channels time-use-driven, 1 series-driven. |
 | L2 | Frame | Retail sees customers only; staff are logged as at work. | 0 % of retail staff presence enters the signal, and 0 % of retail plug load is modulated by it. |
 | L3 | Frame | Residential intra-household diversity is partial; the stronger claim of exactly zero is falsified. | 3,499 of 16,367 multi-person households, 21.38 %, carry a slot value outside 0, 0.5 and 1. |
-| L4 | Reference bands | The office floor is contested and unsourced; the gate is a band-applicability finding. | The uninjected control scores 85.45 against a floor of 100. Two mechanisms refuted; the source gives three floors for itself. |
-| L5 | Reference bands | The hotel band is archetype- and city-mismatched. | Reference 284.44 and 299.28 kWh/m2/yr. FAIL on 28 of 56 cells, all Tall, all over the 300 ceiling; range 203.33-318.42. |
-| L6 | Reference bands | The stacked-channel explanation for low hotel EUI was tested and refuted; it is cited nowhere. | Wrong in sign and order in 56 of 56 cells. Exposure takes 2 values across the campaign, not 56. |
-| L7 | Reference bands | Retail is validated on shape, not level; no time-of-day in-store reference exists. | Median 75.63 against a floor of 80, 5.47 % below, 44 of 56 cells under. The rate gate is informational. |
-| L8 | Reference bands | Residential has no as-modelled band; the survey high-rise figure is context only. | 130.6 kWh/m2/yr over 113.9-147.2, never a pass criterion. |
+| L4 | Reference ranges | The office floor is contested and unsourced; the check result reflects the fit of the range to this tower, not a model defect. | The code-schedule control scores 85.45 against a floor of 100. Two candidate explanations were ruled out; the reference source gives three different floors. |
+| L5 | Reference ranges | The hotel reference range comes from a different building archetype and different cities. | Reference 284.44 and 299.28 kWh/m2/yr. Outside the range in 28 of 56 simulations, all in the Tall tower and all over the 300 ceiling; simulated values 204.83-321.55. |
+| L6 | Reference ranges | The stacked-channel explanation for low hotel EUI is not used in this paper. | Wrong in sign and order in 56 of 56 cells. Exposure takes 2 values across the campaign, not 56. |
+| L7 | Reference ranges | Retail is validated on shape, not level; no time-of-day in-store reference exists. | Median 84.82 against a floor of 80, inside the range; 19 of 56 simulations under the floor. The retail rate check is reported for information only. |
+| L8 | Reference ranges | Residential has no reference range that matches the modelled building; the survey high-rise figure is context only. | 130.6 kWh/m2/yr over 113.9-147.2, never a pass criterion. |
 | L9 | Internal gains | Retail runs on the code's office occupant density, not its retail figure. | 24.97 against 29.97 m2/person, so retail is roughly 20 % over-crowded. |
 | L10 | Internal gains | Equipment power density is one blanket value; lighting is differentiated. | 7.5028 W/m2 on every space type in both towers. |
-| L11 | Internal gains | The retail peak of 0.95 has no source, and the code's retail schedule was never loaded. | The tower carries the office curve, peak 0.90 with a 0.50 lunch dip, times 0.95: 18.75 % hot on the wrong shape. |
-| L12 | Method conventions | The minimum pool size of 15 is an analyst judgement, presented as one. | The anchor previously cited gives 5. The gate is non-monotonic: fails at 10, passes at 11-20, fails at 30. |
-| L13 | Method conventions | Household aggregation is the mean, a decision rather than an inheritance. | Three construction stages, three implementations; this one verified against its own code. |
-| L14 | Method conventions | The retail episode-time share declines across cycles; the earlier stable claim was a documentation defect. | 2.00 %, 2.14 %, 1.66 %, 1.50 %, a 25 % decline that three other national series confirm as normal. |
+| L11 | Internal gains | The retail peak of 0.95 has no source, and the code's retail schedule was never loaded. | The tower carries the office curve, peak 0.90 with a 0.50 lunch dip, times 0.95: 18.75 % too high, on the wrong shape. |
+| L12 | Method conventions | The minimum pool size of 15 is an analyst judgement, presented as one. | The nearest literature value is 5, a study design rather than a recommendation. The check is non-monotonic: it does not pass at 10, passes at 11-20 and does not pass at 30. |
+| L13 | Method conventions | Household aggregation is the mean, a decision rather than an inheritance. | The three model versions aggregate households in three different ways; this version was checked against its own code. |
+| L14 | Method conventions | The retail episode-time share declines across cycles; it is not stable. | 2.00 %, 2.14 %, 1.66 %, 1.50 %, a 25 % decline that three other national series confirm as normal. |
 | L15 | Physical model | Ground-level weather on a supertall tower; the one item with no bounding measurement. | Not quantified. No altitudinal temperature or wind-speed gradient is represented. |
-| L16 | Physical model | The hotel hot-water plant is capacity-pinned on one object, and a global fix does not correct it. | Slope -0.98 against draw volume. A global factor of 6 moved that object's share from 26.7 % to 65.4 % by reweighting alone. |
+| L16 | Physical model | The hotel hot-water plant is limited by the capacity of one water heater, and a global resize does not correct it. | Slope -0.98 against draw volume. A global factor of 6 moved that heater's share from 26.7 % to 65.4 % by reweighting alone. |
 
 ## Sources
 
@@ -167,3 +167,11 @@ invented figure.
 *Reopen trigger:* if SHEU-2019 is opened and reports a central value, record it with its source and
 this note closes. If it reports only a range, 130.6 must be struck from L8 and the cell brought
 into line with Table 5.
+
+### 6. P9 second pass, 2026-09-25 (additive)
+
+Rows L5 (hotel range) and L7 (retail median, distance to the floor, count under the floor) now carry the
+P10R arm values (`IMP/scripts/p9_second_pass.py`, table `IMP/data/P10R/P9_second_pass_table.csv`); the
+frozen-arm values quoted in notes 2 to 4 above are history. L4 (85.45), L6 and L16 were left as printed
+because they do not reproduce on the frozen arm; see `IMP/rewrite_log.md`, section "P9 second pass".
+Backup: `tables/_archive_pre_P9_2026-09-25/Table_07_limitations.md`.

@@ -139,7 +139,9 @@ HOTEL_ST       = BASE / "0_Occupancy" / "processed" / "hotel_diurnal_shape_st.cs
 
 OUT_DIR = HERE / "outputs_step7_P10R"          # [P10R] sibling; frozen outputs_step7/ never written
 FROZEN_S7 = HERE / "outputs_step7"              # [P10R] read-only source of the unchanged hotel files
-# [P10R] hotel products are unchanged by P10R: byte-copied, md5 asserted (p10_01_manifests.out)
+# [P10R] hotel products are unchanged by P10R: byte-copied, md5 asserted (p10_01_manifests.out).
+# [hotel_obs 2026-09-25] only the 2022 entry is still copied; the three 2030 entries are the PRE-switch
+# md5s, kept for the record (archive: Leg3_4-split/_archive_pre_hotel_obs_2026-09-25/).
 FROZEN_HOTEL_MD5 = {
     "hotel_schedule_multiplier_2022.csv":         "7b62a8854381fd93859d988f3852e2af",
     "hotel_schedule_multiplier_2030_cons.csv":    "d6e834bab96d26c1830617064dec707d",
@@ -1238,10 +1240,16 @@ def cmd_year_2030(bundle, sens=None, deliverable=None):
     # ---- Hotel ----
     if "hotel" in chans:
         for blabel, hotel_band in hotel_states:
-            print(f"\n[Hotel] [P10R] bundle={blabel} unchanged -- byte copy of the frozen product", flush=True)
-            out_hot = _copy_frozen_hotel(f"hotel_schedule_multiplier_2030_{blabel}.csv")
-            run_hotel_gates(pd.read_csv(out_hot), label=f"2030/{blabel} (frozen copy)")
-            written.append(out_hot)
+            # [hotel_obs 2026-09-25] author approved observed 2023-2025 recovery levels (AB 0.597, QC 0.610):
+            # the 2030 hotel products are BUILT from the re-run forecast, no longer byte-copied from outputs_step7.
+            # Same builder as writing/implementation/IMP/scripts/hotel_obs_rebuild.py (control: the old forecast
+            # reproduced the frozen md5s byte for byte). 2022 stays a frozen copy (observed rates unchanged).
+            print(f"\n[Hotel] [hotel_obs] bundle={blabel} hotel_band={hotel_band} built from the observed-anchor forecast",
+                  flush=True)
+            hotel_out = build_hotel_product(_resolve_hotel_2030_rates(hotel_band), f"2030/{blabel}")
+            run_hotel_gates(hotel_out, label=f"2030/{blabel} (hotel_obs)")
+            out_hot = OUT_DIR / f"hotel_schedule_multiplier_2030_{blabel}.csv"
+            atomic_write(hotel_out, out_hot, "%.6f"); written.append(out_hot)
 
     # ---- H5 band-monotonicity cross-check (only meaningful once all 3 bundle files exist) ----
     _check_h5_monotonicity()

@@ -59,7 +59,8 @@ CENTRAL-PATH METHODOLOGY NOTE (read before trusting a raw 96-step SARIMA point f
       central_2030(month, PR) = normalized_2019_monthly_shape(month, PR) x ANCHOR[PR]
   i.e. the last full pre-COVID year's seasonal SHAPE (2019, stable per dr_L3-05/dr_L3-09
   literature), rescaled so its annual mean equals the real 2023-2025 CBRE/STR-reported
-  recovery anchor already supplied in the builder prompt (QC ~0.635, AB ~0.615). This is
+  recovery anchor (originally QC ~0.635, AB ~0.615 from the builder prompt; since 2026-09-25 the observed
+  2023-2025 means QC 0.610, AB 0.597, see ANCHORS_2023_2025). This is
   the literal "Central/Default = 100% of [recovered] baseline" definition from dr_L3-09
   Table 5, just anchored to the observed post-COVID recovery level rather than the raw
   2019 level (AB's raw 2019 mean in this ingested series is 0.541, ~7pp below its own
@@ -108,7 +109,12 @@ BACKCAST_MAE_GATE = 0.05
 
 BAND_DEFAULT = {"low": 0.92, "central": 1.00, "high": 1.05}
 BAND_TILT = {("AB", "low"): 0.90, ("QC", "high"): 1.07}
-ANCHORS_2023_2025 = {"QC": 0.635, "AB": 0.615}
+# 2026-09-25, author approved: observed 2023-2025 annual means replace the unsourced 0.635/0.615
+# (builder-prompt values). AB = Government of Alberta economic dashboard, CBRE "Alberta (excluding
+# resorts)" 58.80/59.99/60.27 %; QC = ISQ province total 61.4/60.9/60.8 %. Evidence and API extract:
+# writing/implementation/IMP/author_checks_2026-09-25/item2_hotel_recovery_levels.md section 8.
+# Old values archived with the pre-switch outputs in Leg3_4-split/_archive_pre_hotel_obs_2026-09-25/.
+ANCHORS_2023_2025 = {"QC": 0.610, "AB": 0.597}
 
 # --------------------------------------------------------------------------- dr_L3-05 s(t) table
 # 48 slots, 30-min resolution, 00:00 .. 23:30. Unit-normalized (peak = 1.0), from the
