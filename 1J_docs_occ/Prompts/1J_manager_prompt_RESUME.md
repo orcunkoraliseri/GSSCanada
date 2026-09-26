@@ -3,9 +3,45 @@
 First written 2026-09-19 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6,
 §7 and §8 change only when a rule or a design changes.
-Last updated: **2026-09-24 evening (block 1 scored: CONTINUE, 29/60 cells met, C1 OK; 13/36 draw tasks done; 12 running = 60 CPUs; plan log (bb), progress page db 56; session closed, nobody polling; see first bullet). Before that 2026-09-24 ~13:45 EDT (CPU budget raised to 64 — `histnu` done; LIGHT throttle 6; 9/36 draws done). Before that 2026-09-24 ~07:10 (status check) and 2026-09-23 ~19:15 (CPU budget 56); last plan log entry (ba), next (bb). Gate 4 PASS (all six baselines equal April,
+Last updated: **2026-09-25 ~19:50 EDT (plan log (bd) WRITTEN, next letter (be): scratch cleanup DONE within the author's pre-approval, ~350 G freed, 9.3T/10T used; LIGHT `_23` requeued in 1342400, `_22` resubmitted as 1349360 (after scan 1349357); scorer 1342413 dependency now includes both; progress page db 58; see first bullet). Before that 2026-09-25 evening (plan log (bc) WRITTEN, next letter (bd): 24/36 draw tasks done, 10 running = 50 CPUs, blocks 1-3 CONTINUE, LIGHT `_22`/`_23` = RC3/RC4 block 6 still FAILED on the disk pre-flight, du_scan 1349352 RUNNING with empty output; progress page db 57; waiting on the author's cleanup, then rerun `_22`/`_23` only). Before that 2026-09-25 (status check: 23/36 draw tasks done, 11 running, blocks 1-3 scored CONTINUE, LIGHT tasks `_22`/`_23` STOPPED by the disk pre-flight (scratch free 307 G < 400 G); author is handling the disk problem with an Opus session; see the first bullet). Before that 2026-09-24 evening (block 1 scored: CONTINUE, 29/60 cells met, C1 OK; 13/36 draw tasks done; 12 running = 60 CPUs; plan log (bb), progress page db 56; session closed, nobody polling; see first bullet). Before that 2026-09-24 ~13:45 EDT (CPU budget raised to 64 — `histnu` done; LIGHT throttle 6; 9/36 draws done). Before that 2026-09-24 ~07:10 (status check) and 2026-09-23 ~19:15 (CPU budget 56); last plan log entry (ba), next (bb). Gate 4 PASS (all six baselines equal April,
 diff 0), workers check PASS (5 workers = 1 worker, 3.3x faster), swap+probe PASS. Step 4d draws SUBMITTED and
 RUNNING. Session closed after this; nobody is polling — the next session starts from the "first action" list below.**
+- **🔴 2026-09-25 ~19:50 EDT, plan log (bd) written (next is (be)); progress page db 58. DISK STOP RESOLVED.** Author pre-approved
+  deleting caches + `*.prev.*`/`*.rc.*`/`*_BUGGY_*` copies only; cleanup job 1349359 freed ~351 G (`step9_run_BUGGY_20260608` alone 270 G);
+  scratch 9.3T/10T. `_23` requeued in array 1342400 (same 56G, `%6`); `_22` purged, resubmitted as **1349360** (`--array=22`, waits on
+  read-only scan 1349357 so CPUs stay <= 64), recorded in `stage4/draws/job_ids.txt` as `LIGHT_RERUN`. **Scorer 1342413 dependency
+  rewritten** to include `1342400_23` and `1349360_22` (otherwise it would have scored block 6 without RC3/RC4). Both reruns RUNNING,
+  both logs `WP11 PREFLIGHT DISK: PASS -- free=716.8 G`; scan 1349357 COMPLETED; 1J = 12 tasks = 60 CPUs. **Next session:** grep both
+  rerun logs (`wp11_draw_1342400_23.out`, `wp11_draw_1349360_22.out`) for `EXTRACT VERDICT` when done; read scorers 1342411-13 as they
+  land. Never delete anything else on scratch without a new approval.
+- **2026-09-25 evening, plan log (bc) written (next is (bd)); progress page db 57. (Superseded by the bullet above.)** 24/36 done (new: HEAVY `_7`, VERIFIED, E5 PASS);
+  10 RUNNING (LIGHT `_15`,`_17`-`_19`,`_21`; HEAVY `_6`,`_8`-`_11`); no draw task PENDING, so no throttle shift. Blocks 2/3 scorer lines
+  re-read: CONTINUE 31/60 and 32/60, C1 OK. `_22` header confirms RC3 block 6 (draw_start 26), `_23` = RC4 block 6. du_scan 1349352 RUNNING,
+  output still empty. Nothing deleted or resubmitted. **Next session: ask the author what was freed; then the rerun steps in the bullet below.**
+- **STATUS CHECK 2026-09-25 (read by `sacct` + log greps; plan-log entry now written as (bc)): DISK PRE-FLIGHT STOPPED TWO TASKS.**
+  - **Progress:** of 36 draw tasks, **23** COMPLETED exit 0:0 (LIGHT 1342400: `_0`-`_14`, `_16`, `_20` = 17; HEAVY 1342401: `_0`-`_5` = 6),
+    11 RUNNING = 55 CPUs (LIGHT `_15`,`_17`,`_18`,`_19`,`_21`; HEAVY `_6`-`_11`), 2 FAILED (`_22`,`_23`). 23+11+2 = 36.
+    (The chat reply of this session said "25 of 36"; that was a miscount, the right number is 23.) Progress page `sim` = 23/36.
+    Nothing is PENDING among draw tasks.
+  - **Scorers:** 1342408 (block 1) = `n=5 cells_met=29/60 CONTINUE`; 1342409 (block 2) = `n=10 31/60 CONTINUE`; 1342410 (block 3) =
+    `n=15 32/60 CONTINUE`. 1342411-13 (blocks 4-6) PENDING. Blocks 2 and 3 were scored but their plan-log entries are NOT written.
+  - **FAILURE:** LIGHT `_22` (11 s) and `_23` (3 s) FAILED **exit 3:0** = the disk/md5 pre-flight stop (not a simulation error). Logs
+    `logs/wp11_draw_1342400_22.out` / `_23.out` end with `USED_GB=9932.8 LIMIT_GB=10240.0 FREE_GB=307.2` and
+    `WP11 PREFLIGHT DISK: FAIL -- free=307.2 G < 400 G`. `/speed-scratch` quota for o_iseri = 9.7T used of 10T (6M files). They
+    are the last two LIGHT tasks; by the layout (`_0`-`_3` = RC1-RC4 block 1) they should be RC3/RC4 of block 6 (confirm from the first line of a
+    log or `stage4/draws/job_ids.txt`). Only the block-6 scorer (1342413) depends on them; scorers for blocks 4 and 5 wait on the still-running tasks. **Do NOT lower the 400 G limit; free space, then rerun only those two tasks.** Also expect the 11 running tasks
+    to hit the same limit at their own pre-flight/final steps only if scratch fills further; check free space before every new submit.
+  - **What I did:** nothing was deleted, changed or cancelled. I submitted ONE read-only disk-usage scan, job **1349352** (`du_scan`,
+    1 CPU, script `/speed-scratch/o_iseri/du_scan.sh`, output `/speed-scratch/o_iseri/du_scan_1J.txt`), still PENDING (Priority) when the
+    session stopped. It lists the biggest folders under `/speed-scratch/o_iseri` and under `1J_rerun/`. It is not a 1J plan job;
+    it is safe to let it run or to `scancel` it. It adds 1 CPU while running (55 + 1 <= 64).
+  - **Author's decision:** the author asked "will we not lose any data?" — the answer given was NOT YET KNOWN; **nothing may be deleted
+    until the author has seen the list of candidates and approved it.** The author then said "stop", and will handle the disk cleanup
+    with an Opus session. **The next manager session: ask the author what was freed, read `FREE_GB` again (`quota`-style header in a task log, or a
+    small `sbatch` that prints it), then resubmit LIGHT `_22` and `_23` only** (`scontrol requeue 1342400_22` or the resubmit recipe in the plan;
+    verify with `squeue`), keep total CPUs <= 64, write plan-log entry (bc) covering: blocks 2-3 scored, the disk stop, the cleanup
+    and the reruns; update the progress page (db 56 -> 57, `sim` 23/36 or the re-counted number).
+  - **Unrelated:** `histnu` (author's other project) may share the same scratch quota; never delete its files.
 - **Status check 2026-09-24 evening (plan log (bb)): BLOCK 1 SCORED, `block=1 n=5 cells_met=29/60 VERDICT=CONTINUE`, C1 control OK.**
   13 of 36 draw tasks DONE exit 0:0 (new: LIGHT `_5`,`_12`, HEAVY `_0`,`_2`, all VERIFIED + E5 PASS); 12 tasks RUNNING = 60 CPUs,
   throttles `%6`/`%6`. Scorer 1342408 done; 1342409-13 PENDING. Progress page db **56**. Last plan entry now **(bb)**, next **(bc)**.
@@ -110,9 +146,9 @@ count: it should have risen from 6 toward 11 as `histnu`'s old tasks ended (if s
 
 1. Read the **last three entries of §7 (Progress log)** in `1J_docs_occ/IMP/00_REVISION_PLAN.md`
    (`tail -60 00_REVISION_PLAN.md`). **The log is the state. This file is only a pointer; where the two
-   disagree, the plan wins.** The last entry written is **(bb)**; the next letter you write is **(bc)**.
+   disagree, the plan wins.** The last entry written is **(bc)**; the next letter you write is **(bd)**.
 2. Read the progress page's database (`ArtifactData` `get`, url `https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn`,
-   collection `revision`, doc `progress`) and note its `version`. It was **56** when this file was last updated (2026-09-24 evening, block-1 log line + sim 13/36; 51 at first writing)
+   collection `revision`, doc `progress`) and note its `version`. It was **58** when this file was last updated (2026-09-25 ~19:50 EDT, cleanup + reruns log line, sim 24/36; 57 after blocks 2-3 + disk stop; 51 at first writing)
    (the document now also carries a `sim` field: `{done, total, label, note, updated}`, read by the page's
    new tracker box — keep it when you next write the whole document, or update `done`/`total`/`note` if a
    different job's simulation count becomes the one worth showing).
