@@ -191,8 +191,8 @@ perturbation breaks exactly one gate) is written with the freeze.
 * **O-1** Canadian envelope values by vintage for Montreal houses and plexes (U-values, air-tightness).
   Route: one external deep research prompt, or NRCan housing archetype data if WP0 finds it open.
 * **O-2** Toronto licence (WP0). CLOSED 2026-09-22: Open Data Licence - City of Toronto (portal page).
-* **O-3** EnerGuide file contents and Montreal FSA counts (WP0); G5J.6 may shrink if few FSAs pass the
-  30-home floor.
+* **O-3** EnerGuide file contents and Montreal FSA counts (WP0). CLOSED 2026-09-26 (B2 redo, reviewed):
+  109 Montreal-area H-FSAs and 91 M-FSAs have >= 30 houses, so G5J.6 keeps its 30-home floor.
 * **O-4** Which heating systems the 2J models carry and whether a cold-climate heat pump can be
   swapped in cleanly (WP0 inventory). MOSTLY CLOSED 2026-09-22: gas furnace + DX cooling in all
   models; baseboard and heat pump variants to be built; one test run per variant owed (WP5).
@@ -207,6 +207,9 @@ perturbation breaks exactly one gate) is written with the freeze.
 cannot come from a language model. **Recommend (a): the author labels, a colleague reads the 400
 agreement texts blind.** (b) Two paid research assistants. (c) The author alone, agreement measured
 by the author re-labelling 400 texts two weeks later (weaker).
+
+**RULED 2026-09-26: (a).** The author labels about 2,600 texts; a colleague reads the 400 agreement
+texts blind. Author's words: "continue based on your recommendation". The colleague is not yet named.
 
 ## 10. Order of work
 
@@ -263,3 +266,47 @@ freeze section 7 → WP2 and WP3 → WP4 → O-1 closed → WP5 → WP6 → writ
   Status is not DONE on resume, launch a fresh B2.
 - 2026-09-22 (manager): author leaves until tomorrow. Handover written as the "START HERE" box at the
   top of `5J_docs_occ/PROMPTS/New_ideas_Manager_Prompt.md` (B2 check, D-5J-3 in plain words, then WP1).
+- 2026-09-26 (manager): author asked for an artifact of the paper idea plus checklist docs in the 4J/3J
+  style. Written: `5thJ_00_Permit_Reading_Pipeline_Overview.md` and `5thJ_00_Permit_Reading_Pipeline.md`
+  (checklist); artifact https://claude.ai/artifact/Pnj4VybqmVswAAiEkSQucz. State found: B2 never wrote
+  its section and no process was left; relaunched one fresh sonnet B2 (background). **D-5J-3 RULED (a)**
+  (author labels ~2,600 texts, colleague labels 400 blind; colleague not yet named). Next: manager
+  writes `5thJ_02_Label_Spec.md`; sampling-frame employee after B2 is reviewed.
+- 2026-09-26 (manager): **Label spec v1 written** (`5thJ_02_Label_Spec.md`). A counts-only keyword pass
+  over all 560,309 Montreal texts (accent-insensitive) found W 75,573, I 5,372, HP 2,583, AC 1,057, F 864
+  hits (not yet residential-only). **Correction to WP4:** "d near zero by rule for HP and AC" holds for
+  retrofits in existing homes but not for new builds and contractor add-ons, where permits do name a
+  heat pump or a climatiseur ("RANGEE + THERMOPOMPE"). WP4 estimates d for HP and AC from data and
+  labels HP/AC in a new build together with N. Also: the Montreal file has broken accents ("�"), so
+  readers and labellers must cope with that. Next: sampling-frame employee (after B2 is reviewed).
+- 2026-09-26 (manager): **B2 EnerGuide redo reviewed, DONE, O-3 CLOSED.** Re-derived by the manager
+  (scratchpad `chkB2.py`): file sizes for 2010 and 2019 equal the log; the shares file has 204 rows =
+  200 FSAs + 4 pooled rows (109 H + 91 M FSAs with >= 30 houses, minimum 37); one FSA (H1A) recomputed
+  from the parquet copy: 1,432 houses in all evaluation types, 955 in the file, and the difference is the
+  employee's rule (only D and E evaluations, latest per house, 1998 to 2022), so the units differ, not the
+  numbers. Traps found by B2 and accepted: "no heat pump" is written `N/A {no Heat Pump}` (a naive
+  "not empty, not N/A" test counts every house); CCASHP holds T/t/F/f and is empty before about 2020;
+  ENTRYDATE has placeholder years (0002, 0026, 1970, 1980), dates before 1998 dropped (224 rows; the
+  employee's choice, 2000 is the alternative, not decided). **Caution for G5J.6:** pooled heat-pump share
+  is 0.587 for H and 0.012 for M; these are audited program clients, not the stock, so they are an area
+  check only (already written in section 4). The 2004-2006 file has no log line, so its completeness is
+  unchecked. Next: sampling-frame employee (WP1) once the author has read the label spec.
+- 2026-09-26 (manager): **WP1 sampling frame built and reviewed, DONE** (`impl/2026-09-26_wp1_sampling_frame.md`,
+  data `_5J_data\wp1\`, seed 20260926). Re-derived by the manager from the files (scratchpad `chkWP1.py`):
+  2,600 rows = Montreal test 800 / cal 800 / dev 400, Toronto test 300 / cal 300; no repeated permit, row id
+  or normalised text; every group share equals its quota in all 40 cells; per stratum and split the weights
+  sum to the stratum population (gap 5e-13); the author sheet has 2,600 rows, 10 columns, empty answers, text
+  equal to the raw text, and no group or stratum word anywhere; colleague sheet = exactly the 400 double-label
+  ids; file hashes equal the doc. Employee saw each check fail on a deliberate break. Universe: Montreal
+  420,572, Toronto 729,724 (729,339 + 2,386 extra rows; the task's 2,394 double-counted 8
+  "Window Replacements (except SFD)" rows). Redraws for repeated texts: Montreal 512, Toronto 5.
+  **Cautions:** (1) 8 Montreal strata (834 permits, 0.2 %) and 34 Toronto strata (9,993 permits, 1.4 %,
+  mostly demolition, new-build and NONE) received no draw, so they have no weight; totals built from the
+  weights undercount by that much and prevalence estimates ignore those strata. (2) The Toronto new-build
+  pattern misses "new single family dwelling" style texts, so some Toronto new builds sit in NONE; the N
+  quota is met but N is estimated from a thinner sample. Not re-run; both go in the limitations. (3) About
+  5 of 40 group hits look wrong as events (fuel-tank fire wall, a contractor name, low-wall demolition);
+  expected, the regex only builds strata. (4) Sealed test file sha256 d5f66eb3...; nothing opens it before
+  the gates are frozen. Toronto examples in the label spec can now be replaced with real rows from the
+  author sheet. Next: author reads the label spec, names the colleague, labels; then freeze the gates.
+- 2026-09-26 (manager, later): **Label spec v1.1: Toronto examples now real rows** (none in the sample). Fixed a wrong line: the "HVAC -" prefix is NOT stripped in the author sheet (87 of 2,600 texts start with HVAC). N = NO for a lone garage or shed added. Details in the spec's Progress Log. Next: author reads the spec, names the colleague, labels.

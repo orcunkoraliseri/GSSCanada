@@ -500,3 +500,11 @@ Following the usual rule, no citation enters the text until its DOI resolves and
   - Progress page db 57 -> 58 (log line, sim note). REVISION_STEPS STEP 6A line updated.
   - Scan 1349357 COMPLETED (00:49:31); 1349360_22 then started (speed-22), log `WP11 PREFLIGHT DISK: PASS -- free=716.8 G >= 400 G`. 1J now 12 tasks = 60 CPUs, nothing else running.
   - Next: grep both rerun logs for `EXTRACT VERDICT` when done; read scorers 1342411-13 as they land.
+- 2026-09-26 (be): **Block 4 SCORED: `STOPRULE SUMMARY: block=4 n=20 cells_met=34/60 VERDICT=CONTINUE`, C1 OK. 31 of 36 draw tasks done; rerun `_22` already VERIFIED.**
+  - `sacct` 2026-09-26 09:49 EDT: **31 COMPLETED exit 0:0** (LIGHT `_0`-`_18`,`_20`,`_21`; HEAVY `_0`-`_7`,`_9`,`_11`). RUNNING 5 = 25 CPUs: LIGHT `_19` (1-00:25 h), `_23` (14:02 h), **1349360_22** (13:30 h); HEAVY `_8` (1-19:37 h), `_10` (1-01:54 h). The old `1342400_22` FAILED 3:0 line stays in sacct (superseded by 1349360_22). Scorers 1342408-11 COMPLETED; 1342412/13 PENDING (Dependency).
+  - `logs/wp11_scorer_1342411.out`: `STOPRULE C1: OK -- ... within 0.00051`; wrote `stage4/draws/stoprule_block_4.csv`; block 4 n=20, 34/60 cells met -> CONTINUE by the pre-registered rule. Rule untouched. Cells met so far: 29, 31, 32, 34 (blocks 1-4).
+  - Newly done logs grepped: LIGHT `_15`,`_17`,`_18`,`_21`, HEAVY `_6`,`_9`,`_11` each `WP11 EXTRACT VERDICT: VERIFIED` once, E5 PASS (DRAW START 16/21/21/26/16/21/26). Rerun `wp11_draw_1349360_22.out` ends `E5: PASS -- 'WP11 DRAW START: 26'` / `WP11 EXTRACT VERDICT: VERIFIED` (task still closing). `_23` mid-simulation (`[SIM] Running... [0/5 complete]`).
+  - Quota: `/speed-scratch` 9.2T used / 10.0T. No throttle change possible (nothing PENDING among draw tasks).
+  - Progress page db 58 -> 59 (sim 31/36, log line).
+  - Next: scorer 1342412 (block 5) after LIGHT `_19` + HEAVY `_8`; scorer 1342413 (block 6) after `_23`, 1349360_22, HEAVY `_10`; grep their logs for `EXTRACT VERDICT` when done.
+  - Addendum (be): progress page then db 59 -> 60 (sim note + updated_at refreshed at the author's request; author told 1J uses 25/64 CPUs because nothing is pending). RESUME top bullet rewritten.

@@ -5,7 +5,53 @@ Written 2026-09-07. Edit in place as the series advances; do not fork copies.
 
 ---
 
-## START HERE (updated 2026-09-22, night): 5J is now in METHODS DESIGN
+## START HERE, NEWEST (updated 2026-09-26, evening handoff): read this box first, the older box below is history
+
+* **STATE AT HANDOFF: nothing is running and no agent is live. The manager owes nothing until the author
+  returns.** The author paused after the label spec v1.1 was finished and said they will come back later.
+* **On return, the first reply asks only this** (plain words, one decision): "Who is the colleague who
+  will label 400 texts blind? (D-5J-4). Have you read the label spec? Start with
+  `5J_docs_occ/5thJ_02_Label_Spec.md`, then label `_5J_data\wp1\labelling_sheet_author.csv`: for each of
+  W, I, HP, AC, F, N, D put Y, N or T (T = can't tell); BAD = cannot read." Do not summarise the series.
+* **If the author reports a rule question or overrules a spec answer**: edit the spec in place, add a dated
+  line to its Progress Log, and note it in the design Progress Log. Never re-draw the sample and never open
+  `sealed\test_manifest_SEALED.csv` (sha256 d5f66eb3...) before the gates are frozen.
+* **When the colleague is named**: give them only `labelling_sheet_colleague.csv` (400 texts) plus the spec;
+  they must never see the author's answers. Then kappa per label (gate G5J.1, kappa >= 0.6), then freeze
+  the gates (design section 7) and record checksums, then WP2 readers.
+* **Known small items, none blocking**: 1998 vs 2000 cut for EnerGuide placeholder dates; 2004-2006
+  EnerGuide file completeness unchecked; O-1 (envelope values by vintage) waits for the author to agree to
+  run an external research prompt; the Toronto new-build pattern is thin and 42 small strata have no
+  weight (both are limitations to write up, not fixes).
+* **Board**: the paper-idea page https://claude.ai/artifact/Pnj4VybqmVswAAiEkSQucz was NOT republished after
+  the spec v1.1 change. Before any republish, read the live page and diff it (the live page is master).
+
+* **D-5J-3 RULED (a)**: the author labels about 2,600 permit texts; a colleague labels 400 blind
+  (colleague not yet named). Recorded in design doc section 9.
+* **Written today**: `5thJ_00_Permit_Reading_Pipeline_Overview.md` (one-page picture),
+  `5thJ_00_Permit_Reading_Pipeline.md` (the build checklist; tick a box only after the manager re-derives
+  it), `5thJ_02_Label_Spec.md` (v1 draft), and the paper-idea artifact
+  https://claude.ai/artifact/Pnj4VybqmVswAAiEkSQucz (author page; republish after every step).
+* **WP0 is COMPLETE.** B2 (EnerGuide redo) finished 2026-09-26 and the manager reviewed it: 109 H-FSAs and
+  91 M-FSAs have at least 30 audited houses, O-3 closed. Shares file `_5J_data\energuide_fsa_shares_2022.csv`.
+  Still open from B2: 1998 vs 2000 cut for placeholder dates (small), 2004-2006 file completeness unchecked.
+* **New finding**: HP and AC do appear in Montreal permit text (HP 2,583, AC 1,057 hits), mostly new
+  builds and contractor add-ons. WP4's "d near zero" is limited to retrofits in existing homes and d is
+  estimated from data. Logged in the design Progress Log.
+* **WP1 sampling frame is DONE (2026-09-26, reviewed by the manager).** 2,600 texts drawn (Montreal test 800,
+  cal 800, dev 400; Toronto test 300, cal 300), 400 marked for double labelling, no quota shortfall. Files in
+  `_5J_data\wp1\` (`labelling_sheet_author.csv`, `labelling_sheet_colleague.csv`, `sample_manifest.csv`,
+  `sealed\test_manifest_SEALED.csv`), state in `impl/2026-09-26_wp1_sampling_frame.md`. **Nothing opens the
+  sealed test file until the gates are frozen.** Cautions: 42 strata (0.2 % of Montreal, 1.4 % of Toronto
+  permits) got no draw and have no weight; Toronto new builds are under-detected by the pattern (N is a thinner
+  sample). Both are limitations, not fixes.
+* **Next, in order**: (1) author reads the label spec (`5thJ_02`, now v1.1), names the colleague, and labels
+  `labelling_sheet_author.csv` (Y / N / T per label; readme beside it); (2) DONE 2026-09-26: Toronto
+  examples in the label spec are real rows outside the sample; the "HVAC -" prefix is NOT stripped (fixed in spec); (3) colleague labels the 400; kappa per label; (4) freeze the
+  gates (design section 7), record the sealed sha256 (d5f66eb3...); (5) WP2 readers. O-1 (envelope values)
+  waits for the author to agree to run an external research prompt.
+
+## OLDER BOX (2026-09-22, night): 5J is now in METHODS DESIGN
 
 Everything below this box is the finished subject-selection history (read it only if asked). The
 subject is ruled: **5J = a language model reads Montreal building-permit text for retrofit and cooling
