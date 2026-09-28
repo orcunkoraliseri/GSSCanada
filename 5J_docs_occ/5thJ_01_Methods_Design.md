@@ -211,6 +211,15 @@ by the author re-labelling 400 texts two weeks later (weaker).
 **RULED 2026-09-26: (a).** The author labels about 2,600 texts; a colleague reads the 400 agreement
 texts blind. Author's words: "continue based on your recommendation". The colleague is not yet named.
 
+**REVERSED 2026-09-27 by the author: no manual labelling.** Author's words: "you are proposing manual
+evaluation i di not want that, no no no". The 2,600-text hand labelling (author plus colleague) is dropped;
+the sample in `_5J_data/wp1/` is kept unused. New open decision **D-5J-5: where the truth comes from
+without people reading texts.** Recommend (a): check the reader against records that already exist,
+not hand labels: EnerGuide audited upgrades and StatCan heat pump and air-conditioning shares per area
+(the reader's predicted share per area against the recorded share), plus any structured permit field
+that names the work as a per-text check. Consequence if (a): per-text conformal coverage (RQ2, gates
+G5J.1 to G5J.3) must be redesigned at area level before any gate is frozen.
+
 ## 10. Order of work
 
 WP0 (agents, now) → WP1 label spec and sample (manager and agent) → labels (author, D-5J-3) →
@@ -310,3 +319,5 @@ freeze section 7 → WP2 and WP3 → WP4 → O-1 closed → WP5 → WP6 → writ
   the gates are frozen. Toronto examples in the label spec can now be replaced with real rows from the
   author sheet. Next: author reads the label spec, names the colleague, labels; then freeze the gates.
 - 2026-09-26 (manager, later): **Label spec v1.1: Toronto examples now real rows** (none in the sample). Fixed a wrong line: the "HVAC -" prefix is NOT stripped in the author sheet (87 of 2,600 texts start with HVAC). N = NO for a lone garage or shed added. Details in the spec's Progress Log. Next: author reads the spec, names the colleague, labels.
+- 2026-09-27 (manager): **Author reversed D-5J-3: no manual labelling of permit texts.** Hand-label plan dropped; WP1 sample kept on disk but unused; sealed test file still unopened. Open: D-5J-5, truth without people (recommend area-level check against EnerGuide and StatCan plus structured permit fields). RQ2 and gates G5J.1 to G5J.3 need a redesign once D-5J-5 is ruled. Next: author rules D-5J-5.
+- 2026-09-27 (manager, author note): **Paused; author returns later.** Author's condition: If the permit-reading subject cannot work without manual evaluation, the author will choose ANOTHER occupancy idea for 5J. So D-5J-5 is also a go/no-go on the subject: first check whether area-level truth (EnerGuide, StatCan, structured permit fields) is enough for the paper's claims with no hand labels; if not, say so plainly and reopen the subject choice. Nothing running.

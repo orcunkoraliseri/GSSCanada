@@ -5,7 +5,18 @@ Written 2026-09-07. Edit in place as the series advances; do not fork copies.
 
 ---
 
-## START HERE, NEWEST (updated 2026-09-26, evening handoff): read this box first, the older box below is history
+## START HERE, NEWEST (updated 2026-09-27): read this box first, the older box below is history
+
+* **2026-09-27: the author REVERSED D-5J-3: NO manual labelling** ("you are proposing manual evaluation i
+  di not want that, no no no"). Never again ask the author or a colleague to label texts. The bullets
+  below about labelling, the colleague and kappa are VOID. Open: **D-5J-5, where the truth comes from
+  without people** (design doc section 9; recommend area-level check against EnerGuide and StatCan plus
+  structured permit fields). After the ruling: redesign RQ2 and gates G5J.1 to G5J.3, then WP2 readers.
+* **Author condition (2026-09-27): if this subject needs manual evaluation, the author picks ANOTHER
+  occupancy idea for 5J.** So on return, first answer plainly: can the paper stand on existing records
+  alone? If not, reopen the subject choice. Paused; nothing running; author returns later.
+
+## PREVIOUS BOX (2026-09-26, evening handoff; labelling parts VOID since 2026-09-27)
 
 * **STATE AT HANDOFF: nothing is running and no agent is live. The manager owes nothing until the author
   returns.** The author paused after the label spec v1.1 was finished and said they will come back later.
