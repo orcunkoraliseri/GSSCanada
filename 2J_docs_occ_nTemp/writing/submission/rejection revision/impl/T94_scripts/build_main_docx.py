@@ -1,5 +1,6 @@
 """Build the manuscript .docx: scratch copy with Eq. 17/18 tags swapped (Word cannot convert that form),
-pandoc with the submission reference doc, then post.py unchanged. The .md is never modified."""
+pandoc with the submission reference doc, then post.py, then eb_layout.py (Energy and Buildings: double
+spacing and continuous line numbers; added 2026-09-28). The .md is never modified."""
 import os
 import subprocess
 import sys
@@ -10,7 +11,7 @@ SCR = os.environ.get("TEMP", os.path.dirname(os.path.abspath(__file__)))
 BS_ = chr(92)
 
 import re
-src = open(os.path.join(MAN, "2J_manuscript_AE_revised.md"), encoding="utf-8").read()
+src = open(os.path.join(MAN, "2J_manuscript_EB.md"), encoding="utf-8").read()
 # Word cannot convert a \tag in an equation that also holds "\qquad \text{...}" (the two comparison-arm
 # equations, main Eq. 6 and Appendix Eq. B.12 since the 2026-09-22 IMP renumbering). Swap only those.
 n = 0
@@ -31,6 +32,11 @@ r = subprocess.run(["pandoc", tmp_md, "-f", "markdown", "-t", "docx", "--referen
                     os.path.join(BS, "ref_submit.docx"), "--columns=10", "--resource-path=" + MAN,
                     "-o", tmp_docx], capture_output=True, text=True)
 print("pandoc rc", r.returncode, "stderr:", r.stderr.strip() or "(none)")
-r2 = subprocess.run([sys.executable, os.path.join(BS, "post.py"), tmp_docx,
-                     os.path.join(MAN, "2J_manuscript_AE_revised.docx")], capture_output=True, text=True)
+tmp_post = os.path.join(SCR, "main_post.docx")
+r2 = subprocess.run([sys.executable, os.path.join(BS, "post.py"), tmp_docx, tmp_post],
+                    capture_output=True, text=True)
 print(r2.stdout.strip(), r2.stderr.strip())
+r3 = subprocess.run([sys.executable, os.path.join(BS, "eb_layout.py"), tmp_post,
+                     os.path.join(MAN, "2J_manuscript_EB.docx")], capture_output=True, text=True)
+print(r3.stdout.strip(), r3.stderr.strip())
+assert r2.returncode == 0 and r3.returncode == 0

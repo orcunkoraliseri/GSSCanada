@@ -1,0 +1,274 @@
+<title>New Ideas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@87,600;87,700&family=Source+Sans+3:wght@400;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{
+  --ground:#F3F6F7; --paper:#FFFFFF; --ink:#13222A; --muted:#566974; --line:#D6E0E4;
+  --accent:#0E6A72; --accent-soft:#E0F0F1;
+  --go:#2D7A4E; --go-soft:#E3F2E9;
+  --check:#A8680F; --check-soft:#FBF0DC;
+  --out:#A83A3A; --out-soft:#F8E4E2;
+  --park:#6B7A83; --park-soft:#EBEFF1;
+  --dot-off:#C9D4D9;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --ground:#0F171B; --ink:#E4ECEF; --muted:#9AAEB8; --line:#2A3A42;
+    --paper:#162228;
+    --accent:#5CC2C9; --accent-soft:#16363A;
+    --go:#6CCB95; --go-soft:#173226;
+    --check:#E6B15C; --check-soft:#372A14;
+    --out:#EC8A84; --out-soft:#3A1F1E;
+    --park:#A3B2BA; --park-soft:#233036;
+    --dot-off:#34454E;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --ground:#0F171B; --ink:#E4ECEF; --muted:#9AAEB8; --line:#2A3A42;
+  --paper:#162228;
+  --accent:#5CC2C9; --accent-soft:#16363A;
+  --go:#6CCB95; --go-soft:#173226;
+  --check:#E6B15C; --check-soft:#372A14;
+  --out:#EC8A84; --out-soft:#3A1F1E;
+  --park:#A3B2BA; --park-soft:#233036;
+  --dot-off:#34454E;
+}
+body{background:var(--ground);color:var(--ink);font:15px/1.5 "Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:28px 40px;display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:Archivo,"Arial Narrow",system-ui,sans-serif;font-stretch:87%;text-wrap:balance;margin:0}
+h1{font-size:30px;line-height:1.15;font-weight:700}
+h2{font-size:18px;font-weight:700;letter-spacing:.01em}
+h3{font-size:16px;font-weight:600}
+p{margin:0}
+.eyebrow{font:500 11px/1.2 "JetBrains Mono",ui-monospace,Consolas,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{color:var(--muted);max-width:68ch}
+header{display:flex;flex-direction:column;gap:8px}
+
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rule{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.rule b{font-family:Archivo,sans-serif;font-stretch:87%;font-size:15px}
+.rule span{color:var(--muted);font-size:13.5px}
+
+section{display:flex;flex-direction:column;gap:10px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:4px}
+.sec-head small{color:var(--muted);font-size:13px}
+
+.cands{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:6px;background:var(--paper);overflow:hidden}
+.row{display:grid;grid-template-columns:minmax(0,2.1fr) minmax(0,1.35fr) minmax(0,1.35fr) minmax(0,1fr) 150px;gap:14px;padding:11px 14px;border-top:1px solid var(--line);align-items:start}
+.row:first-child{border-top:0}
+.row.head{background:var(--ground);font:500 10.5px/1.3 "JetBrains Mono",ui-monospace,monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding-block:8px}
+.row.lead{background:var(--accent-soft)}
+.row .name{display:flex;flex-direction:column;gap:2px}
+.row .name h3 .code{font:500 11px "JetBrains Mono",ui-monospace,monospace;color:var(--muted);margin-left:6px;font-stretch:100%}
+.row .name p,.row .cell{font-size:13.5px;line-height:1.42}
+.row .name p{color:var(--muted)}
+.cell .lbl{display:none}
+.gpu{display:flex;flex-direction:column;gap:3px}
+.dots{display:flex;gap:3px;align-items:center}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--dot-off);display:block}
+.dots i.on{background:var(--accent)}
+.dots em{font:500 10.5px "JetBrains Mono",monospace;font-style:normal;color:var(--accent);margin-left:5px;letter-spacing:.04em;text-transform:uppercase}
+
+.chip{display:inline-block;font:600 11.5px/1.25 "Source Sans 3",sans-serif;padding:3px 8px;border-radius:4px;border:1px solid currentColor}
+.chip.go{color:var(--go);background:var(--go-soft)}
+.chip.check{color:var(--check);background:var(--check-soft)}
+.chip.out{color:var(--out);background:var(--out-soft)}
+.chip.park{color:var(--park);background:var(--park-soft)}
+.chip.acc{color:var(--accent);background:var(--accent-soft)}
+.status{display:flex;flex-direction:column;gap:4px;align-items:flex-start;font-size:12.5px;color:var(--muted)}
+
+.two{display:grid;grid-template-columns:1.25fr 1fr;gap:22px}
+.papers{display:flex;flex-direction:column;border-left:2px solid var(--line);margin-left:4px}
+.paper{display:grid;grid-template-columns:64px 1fr;gap:10px;padding:6px 0 8px 12px;position:relative}
+.paper::before{content:"";position:absolute;left:-6px;top:12px;width:10px;height:10px;border-radius:50%;background:var(--paper);border:2px solid var(--accent)}
+.paper .tag{font:500 12px "JetBrains Mono",monospace;color:var(--accent);padding-top:2px}
+.paper p{font-size:13.5px;line-height:1.42}
+.paper p b{font-weight:600}
+.paper .st{color:var(--muted);font-size:12.5px}
+.thread{font-size:13.5px;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+
+.nserc{display:flex;flex-direction:column;gap:10px}
+.prop{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.prop .when{font:500 11px "JetBrains Mono",monospace;color:var(--muted);letter-spacing:.04em}
+.prop p{font-size:13.5px;line-height:1.42}
+.prop.now{border-color:var(--out)}
+.so{font-size:13.5px;padding:10px 12px;border-radius:6px;background:var(--out-soft);color:var(--ink)}
+.so b{color:var(--out)}
+
+.kept{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 22px}
+.k{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+.k .code{font:500 11.5px "JetBrains Mono",monospace;color:var(--muted)}
+.k .chip{font-size:11px;padding:1px 6px;white-space:nowrap}
+
+.decide{background:var(--ink);color:var(--ground);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.decide .eyebrow{color:var(--ground);opacity:.75}
+.decide p{font-size:15px;max-width:80ch}
+.decide b{font-family:Archivo,sans-serif;font-stretch:87%;font-size:17px}
+.foot{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.foot code{font:500 11.5px "JetBrains Mono",monospace;overflow-wrap:anywhere}
+
+@media (max-width:860px){
+  .row.head{display:none}
+  .row{grid-template-columns:1fr 1fr;gap:8px 14px}
+  .row .name{grid-column:1/-1}
+  .cell .lbl{display:block;font:500 10px "JetBrains Mono",monospace;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:1px}
+  .two{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .rules{grid-template-columns:1fr}
+  .row{grid-template-columns:1fr}
+  .kept{grid-template-columns:1fr}
+  h1{font-size:25px}
+}
+</style>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">New ideas · fifth paper (5J) subject choice · 28 September 2026</span>
+  <h1>Which occupancy paper can we train on Speed before the GPUs go?</h1>
+  <p class="lede">Every idea we have looked at, what it would train, how it builds on our five papers, and where it touches the two NSERC proposals. Nothing has been deleted: dropped and parked ideas stay on file with their status.</p>
+</header>
+
+<div class="rules" aria-label="Constraints">
+  <div class="rule"><b>Training ends late October 2026</b><span>Speed GPU access ends with the Concordia postdoc. Writing can follow later.</span></div>
+  <div class="rule"><b>Scored without people</b><span>Only against records that already exist: held-out surveys, meters or simulations. No labelling, no rating.</span></div>
+  <div class="rule"><b>Stays clear of NSERC and 4J</b><span>No harsh events, heat, outages or evacuations. Not the 4J language model moved to a new country.</span></div>
+</div>
+
+<section>
+  <div class="sec-head"><h2>Subjects that train a model</h2><small>Two external research reports, both checked 28 Sep; both failed on invented author names, confirmed facts kept</small></div>
+  <div class="cands">
+    <div class="row head"><span>Subject</span><span>GPU training</span><span>Builds on our papers</span><span>NSERC</span><span>Status</span></div>
+
+    <div class="row lead">
+      <div class="name"><h3>EnergyPlus stand-in<span class="code">B4</span></h3><p>A model learns a home's hourly heating, cooling and electricity from who is home and the building, so thousands of EnergyPlus runs are no longer needed.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><em>Strong</em></div><span>We generate the training runs on Speed CPUs, then train on the A100. Scored on runs it never saw.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Keeps the paired-run design of 1J to 4J (occupancy varied, building fixed). As chosen, built on the 4J European diaries and tools only, so it is sole-author.</div>
+      <div class="cell"><span class="lbl">NSERC</span>No overlap on ordinary days. Could later speed up the proposal's EnergyPlus step (estimate).</div>
+      <div class="status"><span class="chip go">Chosen 28 Sep</span>One outside search first: two older papers may already do it.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>Predict the next survey<span class="code">B5</span></h3><p>Train on the 2005 and 2010 time-use surveys, predict the 2015 day, score against the real 2015 survey. 2022 stays out because of COVID.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i></i><em>Medium</em></div><span>A Transformer of 2J size. All data already on disk.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Same four GSS cycles and Transformer as 2J. Must show it is more than a 2J rerun.</div>
+      <div class="cell"><span class="lbl">NSERC</span>None.</div>
+      <div class="status"><span class="chip go">Live backup</span>Can start today.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>Diary to meter<span class="code">B1</span></h3><p>Learn daily activities together with the electricity they cause, from a dataset that records both for the same home and day.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><em>Strong</em></div><span>Scored on held-out homes' measured load.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Adds measured load to the CENTUS and 2J diary generators.</div>
+      <div class="cell"><span class="lbl">NSERC</span>None.</div>
+      <div class="status"><span class="chip check">Open as searched</span>UK dataset; access time unknown, may miss the window.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>At-home estimate with a guaranteed range<span class="code">B9</span></h3><p>Give each hour's presence estimate a range that holds with stated probability (conformal intervals).</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i></i><i></i><em>Light</em></div><span>Wraps an existing model; little new training.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Sits on top of the 2J generator.</div>
+      <div class="cell"><span class="lbl">NSERC</span>Shares the "stated confidence" idea of the first outline, on ordinary days.</div>
+      <div class="status"><span class="chip park">Unchecked</span>Novelty never searched.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>Load by household type<span class="code">B2</span></h3><p>Generate meter load profiles from household size, ages, work and dwelling.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><em>Strong</em></div><span>Needs meter data joined to a survey.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Close to the 2J load-shape results.</div>
+      <div class="cell"><span class="lbl">NSERC</span>None.</div>
+      <div class="status"><span class="chip check">Partly done</span>Others have published parts of it.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>Pretrain on many time-use surveys<span class="code">B3</span></h3><p>One model pretrained on US, UK, multinational and Canadian surveys, then adapted to Canada.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><em>Heavy</em></div><span>Largest training job of all.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Too close to 4J's cross-country model.</div>
+      <div class="cell"><span class="lbl">NSERC</span>None.</div>
+      <div class="status"><span class="chip park">Parked</span>A US model of this kind (BuildOcc) exists.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>Detect presence from meters<span class="code">B6</span></h3><p>Infer who is home from electricity data in homes with presence sensors.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i></i><em>Medium</em></div><span>Small public sensor datasets.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>New direction for us.</div>
+      <div class="cell"><span class="lbl">NSERC</span>None.</div>
+      <div class="status"><span class="chip out">Taken</span>Crowded field.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>Language-model households<span class="code">B7</span></h3><p>A language model plays household members and writes their day, compared with time-use surveys.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i><em>Strong</em></div><span>Fine-tuning an open model.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Very close to 4J.</div>
+      <div class="cell"><span class="lbl">NSERC</span>None.</div>
+      <div class="status"><span class="chip out">Taken</span>Done in transport research.</div>
+    </div>
+
+    <div class="row">
+      <div class="name"><h3>Room-level presence<span class="code">B8</span></h3><p>Generate which room each person is in, hour by hour.</p></div>
+      <div class="cell gpu"><span class="lbl">GPU training</span><div class="dots"><i class="on"></i><i class="on"></i><i></i><em>Medium</em></div><span>Needs multi-room sensor data.</span></div>
+      <div class="cell"><span class="lbl">Builds on our papers</span>Links to the dwelling-division work.</div>
+      <div class="cell"><span class="lbl">NSERC</span>Near the proposal's "gather in one room" point.</div>
+      <div class="status"><span class="chip park">No data found</span>No room-level open dataset confirmed.</div>
+    </div>
+  </div>
+</section>
+
+<div class="two">
+  <section>
+    <div class="sec-head"><h2>Our papers so far</h2><small>What each one trained</small></div>
+    <div class="papers">
+      <div class="paper"><span class="tag">CENTUS</span><p><b>Italian census and time-use survey.</b> LSTM and Transformer trained for activity and presence. <span class="st">Published, Energy and Buildings 2026.</span></p></div>
+      <div class="paper"><span class="tag">eSim</span><p><b>Canadian GSS to EnergyPlus</b>, proof of concept; at-home share 63.5 % (2005) to 72.3 % (2022). <span class="st">Published 2026.</span></p></div>
+      <div class="paper"><span class="tag">1J</span><p><b>Paired EnergyPlus campaign</b>, occupancy varied with the building fixed. No model trained. <span class="st">In revision, J. Building Performance Simulation.</span></p></div>
+      <div class="paper"><span class="tag">2J</span><p><b>Conditional Transformer</b> (about 29 M parameters) on 64,061 GSS diaries; load shape 2005 to 2030. <span class="st">Resubmission to Applied Energy prepared.</span></p></div>
+      <div class="paper"><span class="tag">3J</span><p><b>Three-head Transformer</b> for a mixed-use tower (home, office, retail) plus a hotel channel. <span class="st">Final read, Building and Environment.</span></p></div>
+      <div class="paper"><span class="tag">4J</span><p><b>Open language model (OLMo 3 7B) fine-tuned</b> on European diaries; lost to a pool of real diaries. <span class="st">Final read, Energy and Buildings.</span></p></div>
+    </div>
+    <p class="thread">Common thread: we train an occupancy generator and run paired EnergyPlus simulations. The EnergyPlus stand-in uses both, which is why it fits the GPU window best.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>NSERC proposals</h2><small>Deadline 17 October 2026</small></div>
+    <div class="nserc">
+      <div class="prop"><span class="when">First outline · 15 Sep</span><h3>Survivability of neighbourhoods under power failure, in extreme cold and heat</h3><p>Hours a neighbourhood stays habitable after losing supply, with stated confidence. This is idea A9, now reserved for NSERC.</p></div>
+      <div class="prop now"><span class="when">Current submission · 22 Sep</span><h3>Occupancy during harsh events</h3><p>Who stays home during blizzards, cold spells, ice storms, heat waves, outages, evacuations and stay-at-home orders, and what heating, cooling and backup power they need. EnergyPlus ensembles on Speed with machine learning.</p></div>
+      <p class="so"><b>For 5J:</b> stay on ordinary days. Heat (idea A2) sits inside this proposal, and NSERC also asks the work to differ from the doctoral thesis.</p>
+    </div>
+  </section>
+</div>
+
+<section>
+  <div class="sec-head"><h2>Earlier ideas, kept on file</h2><small>From the first subject search (September)</small></div>
+  <div class="kept">
+    <div class="k"><span class="code">A2</span><span>Occupancy under heat</span><span class="chip out">In NSERC</span></div>
+    <div class="k"><span class="code">A9</span><span>Survivability under power failure</span><span class="chip out">In NSERC</span></div>
+    <div class="k"><span class="code">A13</span><span>Occupancy after sudden shocks</span><span class="chip out">Near NSERC</span></div>
+    <div class="k"><span class="code">A7</span><span>Language model reads building permits</span><span class="chip out">Dropped: needs labels</span></div>
+    <div class="k"><span class="code">A3</span><span>Closing the 4J transfer gap</span><span class="chip park">Near 4J</span></div>
+    <div class="k"><span class="code">A12</span><span>Privacy and release protocol from the 4J audit</span><span class="chip acc">Short companion</span></div>
+    <div class="k"><span class="code">A1</span><span>Language-model agent runs a district model</span><span class="chip park">Kept, no training</span></div>
+    <div class="k"><span class="code">A4</span><span>Future population, weather and stock, 2030 to 2050</span><span class="chip park">Kept, no training</span></div>
+    <div class="k"><span class="code">A5</span><span>Demand flexibility from daily activities</span><span class="chip park">Kept, no training</span></div>
+    <div class="k"><span class="code">A6</span><span>Energy burden by household type</span><span class="chip park">Kept, no training</span></div>
+    <div class="k"><span class="code">A8</span><span>District model moved to Canadian archetypes</span><span class="chip park">Kept, no training</span></div>
+    <div class="k"><span class="code">A10</span><span>Reference ranges for mixed-use buildings (after 3J)</span><span class="chip park">Kept, no training</span></div>
+    <div class="k"><span class="code">A11</span><span>Does zoning detail survive at stock scale</span><span class="chip park">Kept, no training</span></div>
+    <div class="k"><span class="code">A14</span><span>Occupancy from thermostats, meters, mobility data</span><span class="chip check">Partly done</span></div>
+  </div>
+</section>
+
+<div class="decide">
+  <span class="eyebrow">Decision, ruled 28 September 2026</span>
+  <b>The EnergyPlus stand-in (B4) is chosen, as a sole-author paper on the European diaries (Spain, UK, Italy).</b>
+  <p>The fifth paper now lives in its own folder. The two older papers are read at source before any novelty claim; if they already trained such a model, the backup is predicting the 2015 survey (B5).</p>
+</div>
+
+<div class="foot">
+  <span>Sources: <code>0_New_Ideas/DeepResearch/VETTING_RT43.md</code>, <code>VETTING_RT44.md</code>, <code>00_MASTER_BRIEF.md</code> sections 2, 4, 11; NSERC folder <code>submission-docs/01_OutlineOfProposedResearch.md</code> and <code>submission6/</code>. This page's source: <code>0_New_Ideas/New_Ideas.html</code>. The fifth paper: <code>5J_docs_occ/</code>.</span>
+  <span>GPU fit and the NSERC speed-up are estimates, not measured.</span>
+</div>
+</div>

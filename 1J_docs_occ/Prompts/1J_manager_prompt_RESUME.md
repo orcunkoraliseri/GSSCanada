@@ -3,9 +3,20 @@
 First written 2026-09-19 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6,
 §7 and §8 change only when a rule or a design changes.
-Last updated: **2026-09-26 ~09:50 EDT (plan log (be) WRITTEN, next letter (bf): block 4 scored CONTINUE 34/60, C1 OK; 31/36 draw tasks done, all VERIFIED; 5 running = 25 CPUs (LIGHT `_19`, `_23`, 1349360_22 [already VERIFIED, closing]; HEAVY `_8`, `_10`); scorers 1342412 (block 5: waits LIGHT `_19` + HEAVY `_8`) and 1342413 (block 6) PENDING; progress page db 60). Before that 2026-09-25 ~19:50 EDT (plan log (bd) WRITTEN, next letter (be): scratch cleanup DONE within the author's pre-approval, ~350 G freed, 9.3T/10T used; LIGHT `_23` requeued in 1342400, `_22` resubmitted as 1349360 (after scan 1349357); scorer 1342413 dependency now includes both; progress page db 58; see first bullet). Before that 2026-09-25 evening (plan log (bc) WRITTEN, next letter (bd): 24/36 draw tasks done, 10 running = 50 CPUs, blocks 1-3 CONTINUE, LIGHT `_22`/`_23` = RC3/RC4 block 6 still FAILED on the disk pre-flight, du_scan 1349352 RUNNING with empty output; progress page db 57; waiting on the author's cleanup, then rerun `_22`/`_23` only). Before that 2026-09-25 (status check: 23/36 draw tasks done, 11 running, blocks 1-3 scored CONTINUE, LIGHT tasks `_22`/`_23` STOPPED by the disk pre-flight (scratch free 307 G < 400 G); author is handling the disk problem with an Opus session; see the first bullet). Before that 2026-09-24 evening (block 1 scored: CONTINUE, 29/60 cells met, C1 OK; 13/36 draw tasks done; 12 running = 60 CPUs; plan log (bb), progress page db 56; session closed, nobody polling; see first bullet). Before that 2026-09-24 ~13:45 EDT (CPU budget raised to 64 — `histnu` done; LIGHT throttle 6; 9/36 draws done). Before that 2026-09-24 ~07:10 (status check) and 2026-09-23 ~19:15 (CPU budget 56); last plan log entry (ba), next (bb). Gate 4 PASS (all six baselines equal April,
+Last updated: **2026-09-28 afternoon: author SENT an update email to the supervisor (`General/e-mails/2026-09-28_to_CHV_update_1J_2J.txt`) saying 1J is a MAJOR REVISION (author's wording, not "reject and resubmit") and that the revised paper will be SUBMITTED THIS WEEK once the re-simulations finish. So after `_19` (1400935) and scorers 1342412/13 land, move straight to Stage 5 / writing and the resubmission package; the week is the target. Before that 2026-09-28 ~09:30 EDT (plan log (bg) WRITTEN, next letter (bh): `_19` restarted as 1400935 off antenna1, scorers repointed, rerun-log symlinks added; progress page db 62). Before that 2026-09-28 ~09:20 EDT (plan log (bf) WRITTEN, next letter (bg): 35/36 done + VERIFIED; `_19` still running on slow node antenna1 with a truncated draw 23, will end NOT_VERIFIED; waiting on the author, D-1J-bf). Before that 2026-09-26 ~09:50 EDT (plan log (be) WRITTEN, next letter (bf): block 4 scored CONTINUE 34/60, C1 OK; 31/36 draw tasks done, all VERIFIED; 5 running = 25 CPUs (LIGHT `_19`, `_23`, 1349360_22 [already VERIFIED, closing]; HEAVY `_8`, `_10`); scorers 1342412 (block 5: waits LIGHT `_19` + HEAVY `_8`) and 1342413 (block 6) PENDING; progress page db 60). Before that 2026-09-25 ~19:50 EDT (plan log (bd) WRITTEN, next letter (be): scratch cleanup DONE within the author's pre-approval, ~350 G freed, 9.3T/10T used; LIGHT `_23` requeued in 1342400, `_22` resubmitted as 1349360 (after scan 1349357); scorer 1342413 dependency now includes both; progress page db 58; see first bullet). Before that 2026-09-25 evening (plan log (bc) WRITTEN, next letter (bd): 24/36 draw tasks done, 10 running = 50 CPUs, blocks 1-3 CONTINUE, LIGHT `_22`/`_23` = RC3/RC4 block 6 still FAILED on the disk pre-flight, du_scan 1349352 RUNNING with empty output; progress page db 57; waiting on the author's cleanup, then rerun `_22`/`_23` only). Before that 2026-09-25 (status check: 23/36 draw tasks done, 11 running, blocks 1-3 scored CONTINUE, LIGHT tasks `_22`/`_23` STOPPED by the disk pre-flight (scratch free 307 G < 400 G); author is handling the disk problem with an Opus session; see the first bullet). Before that 2026-09-24 evening (block 1 scored: CONTINUE, 29/60 cells met, C1 OK; 13/36 draw tasks done; 12 running = 60 CPUs; plan log (bb), progress page db 56; session closed, nobody polling; see first bullet). Before that 2026-09-24 ~13:45 EDT (CPU budget raised to 64 — `histnu` done; LIGHT throttle 6; 9/36 draws done). Before that 2026-09-24 ~07:10 (status check) and 2026-09-23 ~19:15 (CPU budget 56); last plan log entry (ba), next (bb). Gate 4 PASS (all six baselines equal April,
 diff 0), workers check PASS (5 workers = 1 worker, 3.3x faster), swap+probe PASS. Step 4d draws SUBMITTED and
 RUNNING. Session closed after this; nobody is polling — the next session starts from the "first action" list below.**
+- **🔴 2026-09-28 ~09:30 EDT, plan log (bg) written (next is (bh)); progress page db 62. `_19` RESTARTED as 1400935 (author: "of course restart").**
+  Old run cancelled; its folder and log moved aside with suffix `.BROKEN_draw23_20260928` (not deleted). 1400935_19 RUNNING on `gomory`
+  (`--exclude=antenna1`), pre-flight PASS 921.6 G. Scorers 1342412/13 now `afterany:1400935_19`, released. The scorer finds logs only as
+  `wp11_draw_1342400_<task>.out`, so those names are now symlinks to the rerun logs for tasks 19 and 22 (see plan (bg)). **Next session:**
+  `sacct -j 1400935,1342412,1342413 -X`; when done, grep `wp11_draw_1400935_19.out` for `DRAW START: 21` + `EXTRACT VERDICT: VERIFIED`, then read both scorers.
+- **🔴 2026-09-28 ~09:20 EDT, plan log (bf) written (next is (bg)); progress page db 61. 35/36 DONE + VERIFIED; LAST TASK `_19` HAS A BROKEN DRAW; WAITING ON THE AUTHOR (D-1J-bf).**
+  Only LIGHT `_19` (RC4 block 5, draws 21-25) runs, on node `antenna1`, ~5x slow (~14 h per round), ends ~23:00 EDT 09-28 at the earliest.
+  Its draw 23 sql files are truncated (~570 MB vs ~1,688 MB; `database disk image is malformed` for all 5 years), so it will end NOT_VERIFIED
+  and block 5 cannot be scored as is. Scorers 1342412/13 PENDING on `_19` only. Offered: (a) hold both scorers, cancel `_19`, move
+  `stage4/draws/block_5/NUS_RC4` aside, resubmit `--array=19 --exclude=antenna1`, repoint the scorers (recommended, saves ~14 h); (b) wait, then
+  same rerun. **Next session: ask/read the author's answer; do not cancel without it.** Blocks 1-4 = CONTINUE (29, 31, 32, 34 of 60).
 - **🔴 2026-09-26 ~09:50 EDT, plan log (be) written (next is (bf)); progress page db 60. BLOCK 4 = CONTINUE, 31/36 DONE.**
   Block 4 scorer 1342411: `n=20 cells_met=34/60 VERDICT=CONTINUE`, C1 OK (trend 29, 31, 32, 34). All 31 done tasks VERIFIED + E5 PASS.
   5 RUNNING = 25 CPUs: block 5 = LIGHT `_19` + HEAVY `_8` (RC5, 1-19:37 h at 09:49; earlier RC5 tasks took ~1-20 h) -> scorer 1342412;
@@ -118,7 +129,16 @@ RUNNING. Session closed after this; nobody is polling — the next session start
   in the manuscript at the sampled-population share (2.8 % 2010, 5.4 % 2022), never the raw-census 4.1 % /
   10.0 % (see §7.3).
 - **G2.0: kept and disclosed (an).** Stays a recorded FAIL, no longer blocks anything.
-- **Live now (submitted 2026-09-22 ~18:00 EDT, plan log (ay)):**
+- **Live now (2026-09-28 ~09:30 EDT, plan log (bg)) — this supersedes the older "Live now" lines below:**
+  - 35 of 36 draw tasks COMPLETED + VERIFIED (1342400, 1342401, reruns 1349360_22 and the requeued 1342400_23).
+  - Only draw task left: **1400935_19** (LIGHT rerun of RC4 block 5, draws 21-25, `-c 5`, 56G, `--exclude=antenna1`),
+    RUNNING since ~09:26 EDT 09-28; estimate ~20 h -> ~2026-09-29 morning.
+  - Scorers **1342412** (block 5) and **1342413** (block 6) PENDING, both `afterany:1400935_19`. Scorers 1342408-11
+    DONE: blocks 1-4 all CONTINUE (29, 31, 32, 34 of 60 cells met), C1 OK.
+  - Rerun logs are reached by the scorer through symlinks `logs/wp11_draw_1342400_19.out` and `_22.out` (the scorer
+    reads only the `LIGHT` id from `job_ids.txt`). Do not delete these links. Old broken run kept as
+    `stage4/draws/block_5/NUS_RC4.BROKEN_draw23_20260928` (+ log with same suffix); delete only with approval.
+- *(Older)* **Live now (submitted 2026-09-22 ~18:00 EDT, plan log (ay)):**
   - LIGHT array **1342400** (RC1-RC4, 24 tasks, `%2`, `-c 5`, 56G) and HEAVY array **1342401** (RC5-RC6, 12 tasks,
     `%4`, `-c 5`, 90G): 6 tasks RUNNING at submission = 30 CPUs (cap 32). **Since 2026-09-23 ~19:00 (az): LIGHT
     `%5`, HEAVY `%6` = 11 tasks = 55 CPUs, cap 56.**
@@ -131,15 +151,14 @@ RUNNING. Session closed after this; nobody is polling — the next session start
 - **Author instruction in force:** "continue until the end" — carry Stage 4 through on your own (score blocks),
   closure ritual after every step; ask the author only if a fix is itself a design choice.
 
-**A fresh session's first action:** `sacct -j 1342400,1342401,1342408,1342409,1342410,1342411,1342412,1342413 -X
---format=JobID,JobName%24,State,Elapsed,ExitCode` on Speed (no more than once every 30 min). A draw task's exit
+**A fresh session's first action (since (bg)):** `sacct -j 1400935,1342412,1342413 -X
+--format=JobID,JobName%24,State,Elapsed,ExitCode,NodeList` on Speed (no more than once every 30 min). A draw task's exit
 code IS its verdict (0 = VERIFIED, 1 = not, 3 = disk/md5 pre-flight stop); the runner inside it still hits the
-harmless plotting crash, printed as `RUNNER EXIT: 1`. Also run `squeue -u o_iseri -h -n wp11_draw_task -t R` and
-count: it should have risen from 6 toward 11 as `histnu`'s old tasks ended (if still 6 after ~12 h, check
-`scontrol show job 1342400` / `1342401` still read `ArrayTaskThrottle=5` / `=6`). Then, as each lands:
-  0. **Throttle shift (az):** once `squeue` shows HEAVY 1342401 with no PENDING tasks left, raise LIGHT with
-     `scontrol update JobId=1342400 ArrayTaskThrottle=<12 - running HEAVY tasks>` so 1J keeps 12 tasks (60 CPUs);
-     never above 12 (64-CPU budget since (ba)). Log it in the plan.
+harmless plotting crash, printed as `RUNNER EXIT: 1`. While 1400935_19 runs, a round (one year set, 5 draws) should
+take ~3 h (RC4 ~167 min); if `grep -c 'Starting 5 simulations'` in its log shows it far slower (the antenna1 run took
+~14 h per round), check the node and tell the author. Grep every finished draw log for `malformed` too (the (bf) failure
+printed `[5/5] OK` and then `database disk image is malformed`). Then, as each lands:
+  0. *(Obsolete since (bf): nothing left to throttle; was: keep 1J <= 12 tasks = 60 CPUs, 64-CPU budget.)*
   1. **First draw task done** -> `grep` its log (`logs/wp11_draw_<array>_<i>.out`) for `WP11 DRAW START: <D>` (must be
      PRESENT, E5) and `WP11 EXTRACT VERDICT: VERIFIED`; any task not VERIFIED -> read why, rerun that one task only.
   2. **Scorer b done** (`logs/wp11_scorer_<id>.out`) -> read `STOPRULE SUMMARY: block=b ... VERDICT=...` and
@@ -154,9 +173,9 @@ count: it should have risen from 6 toward 11 as `histnu`'s old tasks ended (if s
 
 1. Read the **last three entries of §7 (Progress log)** in `1J_docs_occ/IMP/00_REVISION_PLAN.md`
    (`tail -60 00_REVISION_PLAN.md`). **The log is the state. This file is only a pointer; where the two
-   disagree, the plan wins.** The last entry written is **(be)**; the next letter you write is **(bf)**.
+   disagree, the plan wins.** The last entry written is **(bg)**; the next letter you write is **(bh)**.
 2. Read the progress page's database (`ArtifactData` `get`, url `https://claude.ai/artifact/JfzUauqeSBpwpkR5MZdVQn`,
-   collection `revision`, doc `progress`) and note its `version`. It was **60** when this file was last updated (2026-09-26 ~09:50 EDT, block 4 log line, sim 31/36; 58 = cleanup + reruns, sim 24/36; 57 after blocks 2-3 + disk stop; 51 at first writing)
+   collection `revision`, doc `progress`) and note its `version`. It was **62** when this file was last updated (2026-09-28 ~09:30 EDT, `_19` restart, sim 35/36; 60 = block 4 log line, sim 31/36; 58 = cleanup + reruns, sim 24/36; 57 after blocks 2-3 + disk stop; 51 at first writing)
    (the document now also carries a `sim` field: `{done, total, label, note, updated}`, read by the page's
    new tracker box — keep it when you next write the whole document, or update `done`/`total`/`note` if a
    different job's simulation count becomes the one worth showing).
@@ -386,6 +405,7 @@ except have the actual Section 4.1 prose rewritten at Step 7, using the shares (
    PASS (5 workers = 1 worker). Swap+probe PASS.
    d. **4d RUNNING (ay).** LIGHT 1342400, HEAVY 1342401, scorers 1342408-1342413; `--mem` 56G/90G derived in plan
       log (ay). Throttles raised to `%5`/`%6` (55 CPUs, cap 56) in (az). Design: plan log (aw), binding notes (ax), task doc `impl/2026-09-22_WP11_stage4d_draws.md`.
+      **Now (bg):** blocks 1-4 CONTINUE; 35/36 tasks VERIFIED; last task rerun as 1400935_19; scorers 1342412/13 wait on it.
       Read each scorer's `STOPRULE SUMMARY` as it lands (see the "first action" list at the top). Draws after
       the stopping block never enter any reported number. When a STOP (or CAP) verdict is read, Stage 4 is
       done: go to 5.6.

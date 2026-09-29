@@ -4430,3 +4430,44 @@ numbers are quotable under which ruling, so:
 - Rule: submission to Applied Energy only after her approval (author, 2026-09-22).
 - Open: her reply and any changes; NRC yes/no (author); Elsevier declarations tool and upload (author).
 - Tracker page republished: Version 90.
+
+### (fb) 2026-09-28 — Venue = Energy and Buildings (supervisor agreed); package reformatted
+- Supervisor reply 2026-09-28: "I agree for Energy and Buildings. Maybe you need to change the title, make it more energy/engineering oriented." Author chose the new title: "Residential electricity load shape under changing occupancy: household-level schedules and stock-scale building energy simulation for Canada, 2005–2030". The earlier "keep the original title" order is superseded.
+- New masters (AE files kept as history, backups `manuscript/prep/*_pre_EB_2026-09-28.*.bak`): `manuscript/2J_manuscript_EB.md`, `2J_SI_EB.md`, `2J_title_page_and_cover_letter_EB.md`, each with its .docx.
+- Manuscript: new title; author block (names, affiliation with country, corresponding e-mail) under the title (E&B title-page rule, single anonymized review). No other text change. Figures 1-5 captions keep "Drawn with Gemini": the E&B guide requires AI disclosure in each caption.
+- Cover letter: E&B, dated 28 September 2026, Original Paper, scope paragraph (energy demand in existing and future buildings; results benchmarked on a held-out survey year and measured electricity data; 10 of 48 references are E&B). Numbers unchanged from the AE letter.
+- Build: `extra/build_scripts/post.py` replaced by the 3J version (centred captions, content-sized table columns, 16 pt title; old copy `manuscript/prep/post.py.pre_EB_2026-09-28.bak`); new `extra/build_scripts/eb_layout.py` (copy of 4J's layout step: double spacing, continuous line numbers); `impl/T94_scripts/build_main_docx.py` reads the EB master and runs both. Build output: 12 images, 2 tables, 14 captions centred, 4 style patches + line numbers.
+- Upload set `manuscript/EB_upload/`: `2J_manuscript.docx`, `2J_supplementary_material.docx`, `2J_cover_letter.docx`, `2J_highlights.docx` (5 bullets, 78-85 characters), `Figure_1.pdf` to `Figure_12.pdf`.
+- Compliance table `manuscript/prep/eb_compliance.md`.
+- Graphical abstract is REQUIRED by E&B and none exists (the August image shows the retired pipeline). Prompt written: `submission/figures/Prompts_Images/Graphical_abstract_EB_prompt.md`; the author makes the image.
+- Length: about 13,800 words; the guide prefers about 20 double-spaced pages (soft). Not changed; if the editor asks, move Appendix B to the SI first.
+- Author only: graphical abstract image; Elsevier declarations tool; final read; upload and submit.
+
+### (fc) 2026-09-28 — No LLM name outside the AI declaration; submit tomorrow
+- Author: "no mentioning any LLM inside the text except AI-usage declarations, do not ever include". The (fb) choice to keep "Drawn with Gemini (Google) from the authors' specification." in the Figures 1-5 captions is REVERSED; the note is removed from all five captions in `manuscript/2J_manuscript_EB.md` (backup `manuscript/prep/2J_manuscript_EB.md.pre_noLLMcaption_2026-09-28.bak`). The AI declaration section is unchanged and still names Claude and Gemini and Figures 1 to 5.
+- Main docx rebuilt (2 tags, 14 captions, 12 images, line numbers) and copied to `manuscript/EB_upload/2J_manuscript.docx`. Text check of the docx: Gemini, Claude, Anthropic and Google each appear once, all inside the declaration. SI, cover letter and highlights hold no LLM name.
+- Google Calendar reminder: 2026-09-29, 09:00-10:00 Montreal time, "Submit 2J paper to Energy and Buildings", with the four author steps.
+- Author only (unchanged): graphical abstract image; Elsevier declarations form; final read; upload and submit.
+
+### (fd) 2026-09-28 — Graphical abstract made by the author; tracker ticks closed
+- The author made the graphical abstract with a plotting script (`submission/figures/scripts/generate_graphical_abstract_eb.py`, matplotlib, not an image generator), saved as `manuscript/EB_upload/2J_graphical_abstract.{pdf,tiff,png}`, 2656 x 1062 px. Checked by eye: every number matches the abstract (4.73, +0.12 %, +0.73 pp, +0.49 pp), no abbreviations, no "forecast". A Gemini concept image `figures/Prompts_Images/Graphical_abstract_EB_gemini.png` also exists; it is NOT in the upload folder and must not be used, so the AI declaration needs no change.
+- Tracker Version 93: 12 finished items ticked (b4b, b6, b8, c4, c8, c10, c11, c12, d3, e3, f4, f5); outside audit (T-AUDIT) dropped because the paper is submitted now; the browser-storage key changed so old ticks saved in the browser no longer hide the new ones. Only "Submit to Energy and Buildings" stays open.
+- Author only: Elsevier declarations form, final read, upload and submit on 2026-09-29 morning.
+
+### (fe) 2026-09-28 — manuscript folder tidied
+- On the author's request, the old files moved to `manuscript/archive_AE_and_drafts_2026-09-28/`: the Applied Energy masters (`2J_manuscript_AE_revised`, `2J_SI_AE_revised`, `2J_title_page_and_cover_letter_AE`, .md and .docx), all ten `draft_*.md` section drafts, and the `AE_upload/` folder. No build script reads them. The current Energy and Buildings masters (`2J_*_EB.md/.docx`), `EB_upload/` and `prep/` stay in `manuscript/`.
+
+### (ff) 2026-09-28 — Figures 7 and 9 redrawn as change plots; manager prompt renamed
+- Author: the 2022 and 2030 bars in Figures 7 and 9 look alike; show the comparison and the difference. Chosen: plotting from data (matplotlib), not an image generator, since these carry measured values.
+- Figure 7 (`impl/T94_out/fig03_annual_by_enduse.*`): horizontal bars of the percent change 2022 to 2030 for the eight meters with the 95 % confidence interval, 2022 level in each row label, orange = rise, blue = fall. Values from `impl/T79_in/t68_enduse_change_2022_2030.csv` stock-weighted rows (the file behind Section 3.3's numbers, accepted in (ds)); levels from `impl/T71_out/fig02_annual_by_enduse.csv`. The old per-dwelling panel B is dropped; its two levels stay in the text.
+- Figure 9 (`impl/T94_out/fig05_peak_loadfactor_ramp.*`): (a) percent change in peak demand (-1.85 %) and evening ramp (-1.07 %), computed from the levels already in the text (47.207 to 46.332 kW; 7.852 to 7.768 kW); (b) load factor +0.49 pp (0.41 to 0.57) and midday share +0.73 pp (0.62 to 0.86), both from the same t68 file. Every plotted value in `impl/T94_out/t94_fig7_fig9_values.json`; all match the numbers in the text.
+- Script `impl/T94_scripts/t94_fig7_fig9_change.py`; old plots kept in `impl/T94_out/_pre_change_plots_2026-09-28/`; manuscript backup `manuscript/prep/2J_manuscript_EB.md.pre_fig7_fig9_2026-09-28.bak`.
+- Text: the Figure 7 sentence (Section 3.3) and the Figure 9 sentences (Section 3.4) and both captions rewritten to describe the change plots. Main docx rebuilt and copied to `EB_upload/2J_manuscript.docx`; `EB_upload/Figure_7.pdf` and `Figure_9.pdf` replaced (md5 equal to the new plots).
+- Manager prompt renamed to `writing/Prompts/2J_manager_prompt_RESUME_EB_submission.md`; live links updated (Prompts README, repo README, memory). Older plan-log entries keep the old name as history.
+
+### (fg) 2026-09-29 — SUBMITTED to Energy and Buildings
+- The author submitted the manuscript through the Elsevier submission service on 2026-09-29 (title: "Residential electricity load shape under changing occupancy: household-level schedules and stock-scale building energy simulation for Canada, 2005–2030"). Manuscript number: not yet given (Elsevier sends it by email; add here when the author reports it).
+- Form answers used: funding = NSERC Discovery Grant and Volt-Age Seed Fund (Concordia University); five classifications chosen from the list (load profile, residential energy efficiency, building simulation, energy use behaviour, climate change); research data = available on request; SSRN preprint = No; subject area = Urban systems.
+- AI declaration before upload: analysis code (Claude) added to the sentence in `2J_manuscript_EB.md` and patched in place into `EB_upload/2J_manuscript.docx` (backups in `manuscript/prep/`, both named `..._pre_AIstmt_2026-09-29.bak`, still to be archived).
+- Left: wait for the editor's decision. No manager work is owed.
+

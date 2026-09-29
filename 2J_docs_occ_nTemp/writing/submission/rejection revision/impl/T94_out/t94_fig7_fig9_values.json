@@ -1,0 +1,90 @@
+{
+ "fig7": [
+  {
+   "meter": "elec_facility_kWh",
+   "change_pct": 0.1208995379010798,
+   "ci_low_pct": 0.0981143845805056,
+   "ci_high_pct": 0.1407447250873334,
+   "level_2022_kWh": 117942.54612320571
+  },
+  {
+   "meter": "lights_kWh",
+   "change_pct": -0.0156801083048665,
+   "ci_low_pct": -0.0274247573632887,
+   "ci_high_pct": -0.0043000273788326,
+   "level_2022_kWh": 15866.52542269065
+  },
+  {
+   "meter": "equip_kWh",
+   "change_pct": -0.0066222289342159,
+   "ci_low_pct": -0.0119098502797032,
+   "ci_high_pct": -0.0011566640923298,
+   "level_2022_kWh": 40093.705746699794
+  },
+  {
+   "meter": "fan_kWh",
+   "change_pct": 0.0,
+   "ci_low_pct": 0.0,
+   "ci_high_pct": 0.0,
+   "level_2022_kWh": 354.43792412111884
+  },
+  {
+   "meter": "heating_ET_kWh",
+   "change_pct": -0.2905265701285185,
+   "ci_low_pct": -0.4048551088358628,
+   "ci_high_pct": -0.1745507447886018,
+   "level_2022_kWh": 17132.542737148582
+  },
+  {
+   "meter": "cooling_ET_kWh",
+   "change_pct": 0.5946929895584767,
+   "ci_low_pct": 0.5235066656465563,
+   "ci_high_pct": 0.6522927420059244,
+   "level_2022_kWh": 58409.11329309615
+  },
+  {
+   "meter": "water_ET_kWh",
+   "change_pct": 0.5806345979904443,
+   "ci_low_pct": 0.341920435141668,
+   "ci_high_pct": 0.7844817650737299,
+   "level_2022_kWh": 3335.381581290506
+  },
+  {
+   "meter": "hvac_dhw_elec_kWh",
+   "change_pct": 0.3577973878430036,
+   "ci_low_pct": 0.2862528877971885,
+   "ci_high_pct": 0.416555125541766,
+   "level_2022_kWh": 61627.87702969415
+  }
+ ],
+ "fig9": {
+  "size": [
+   {
+    "metric": "Peak demand",
+    "value_2022_kW": 47.20728345029413,
+    "value_2030_kW": 46.33197851114644,
+    "change_pct": -1.8541734986071003
+   },
+   {
+    "metric": "Evening ramp\n(14:00 to 17:00)",
+    "value_2022_kW": 7.852196115574588,
+    "value_2030_kW": 7.7681070985936,
+    "change_pct": -1.0708980741604344
+   }
+  ],
+  "shape": [
+   {
+    "metric": "Load factor",
+    "change_pp": 0.4943184695576,
+    "ci_low_pp": 0.41284557418344997,
+    "ci_high_pp": 0.5743231074777
+   },
+   {
+    "metric": "Midday share\n(09:00 to 17:00)",
+    "change_pp": 0.73235127533722,
+    "ci_low_pp": 0.61604373226832,
+    "ci_high_pp": 0.85933605980201
+   }
+  ]
+ }
+}

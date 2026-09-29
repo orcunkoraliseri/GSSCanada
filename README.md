@@ -241,7 +241,7 @@ GSSCanada-main/
 | Paper | Start here | The running log |
 |---|---|---|
 | 1J | `1J_docs_occ/Prompts/1J_manager_prompt_RESUME.md` | `1J_docs_occ/IMP/00_REVISION_PLAN.md` §7 |
-| 2J | `2J_docs_occ_nTemp/writing/Prompts/2J_manager_prompt_RESUME_AE_resubmission.md` | `2J_docs_occ_nTemp/writing/submission/rejection revision/00_REVISION_PLAN.md` |
+| 2J | `2J_docs_occ_nTemp/writing/Prompts/2J_manager_prompt_RESUME_EB_submission.md` | `2J_docs_occ_nTemp/writing/submission/rejection revision/00_REVISION_PLAN.md` |
 | 3J | `3J_docs_occ_nTemp/Prompts/RESUME.md` | `3J_docs_occ_nTemp/writing/implementation/3rdJ_paper_TASKS.md` |
 | 4J | `4J_docs_occ/Prompts/RESUME.md` | `4J_docs_occ/4thJ_00_HETUS_LLM_Pipeline.md` |
 | 5J | `5J_docs_occ/5thJ_00_Kickoff_Note.md` | `5J_docs_occ/PROMPTS/New_ideas_Manager_Prompt.md` |
