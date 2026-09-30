@@ -355,3 +355,113 @@ checker seen failing twice, passing once. Manager settled the act2 code-length q
 detail). Open for the pilot: heat and cooling per m² look high; sensible vs total cooling to decide.
 Weather: download PID 19328 running since 10:17; first zip in. Nothing submitted to Speed.
 Next: implement act2 rule `prefix2_major`; design tables task; convert weather as zips land.
+
+**2026-09-29 afternoon (Progedo email: France request n°38663 accepted, but NOT the diary).**
+Author pasted the Progedo approval of demande n°38663 (same request 4J dropped France over, decision 16,
+2026-08-15). Accepted items: lil-0576 (LFS ad hoc module 2004, work organisation and working time),
+lil-0944b and lil-1000b (LFS 2013, 2014), lil-1188 and lil-1523 (FQP 2014-15, mainland and Réunion/
+Guadeloupe), lil-1804 (SRCV 2025). **The item 4J asked for, `[lil-1065] Emploi du temps (version pour
+Eurostat) 2009-2010`, is not in the list** (4J archive RESUME, "France — NOT data"). None of the six has
+a time-use diary, so none gives an hourly occupancy sequence; 5J design unchanged. Access window 3 months
+(to about 2026-12-29); data licensed to the author personally for the described project. Nothing opened,
+nothing downloaded by the manager. Open for the author: check files.progedo.fr for lil-1065; if missing,
+ask Progedo (outward-facing, author's). If the diary arrives, France as a fourth, held-out test country is
+a design change (author decides; Progedo terms on AI tools to be read first, as for UK clause 5).
+Next: author checks the portal; manager continues Step 2 (act2 rule, weather, design tables).
+
+**2026-09-29 ~15:40 (weather batch 1 converted and checked: Valencia, Birmingham, Turin).**
+Employee converted the three complete ERA5 sites (13 zips each) to EPW and wrote `tools/5thJ_check_epw.py`
+(8,760 rows / location / year / sentinels / ranges; PASS, FAIL, NOT_EVALUABLE; exit 0/1/2). Gates seen failing
+on scratch copies: 8,759 rows gives FAIL (exit 1), latitude +1° gives FAIL (exit 1), a missing file gives
+NOT_EVALUABLE (exit 2). Real run: PASS=3, exit 0. RMSE of monthly mean dry bulb against TABULA, in °C:
+Valencia 1.62, Birmingham 1.18, Turin 2.96, Madrid 4.73, London 1.61, Bologna 3.67 (`epw/weather_score_5J.json`).
+Manager re-derived Valencia 1.621 and Turin July -4.30 °C against its station file. Turin's summer
+cold is mostly the real 2014 year: Bologna ERA5 2014 is also -3.4 °C in July. Turin is kept. Accepted the
+half-cell location tolerance. Seville is at 5/13 (about 25 min per month), Manchester and Milan at 0, so batch 2
+is tomorrow. Details are in `Step2_docs/impl/2026-09-29_wp1_weather.md`.
+Next: act2 rule `prefix2_major` employee task; batch 2 conversion when the zips are complete; design tables.
+
+**2026-09-29 ~15:50 (act2 rule `prefix2_major` implemented and checked).**
+Employee added `--act2-match prefix2_major` (now the default) to `tools/5thJ_step9_trigger_act2.py` (md5
+f02f52d1…) and wrote `tools/5thJ_check_act2.py` (seen failing on a planted wrong choice, then PASS on the real Spain
+and Italy logs). Regression: `--act2-match prefix2` and `--no-act2` (year 2017) outputs are md5-equal to `wp1_test`
+(manager recomputed all six). Prefix 33 (care of textiles) now takes ironing (332) in both countries: Spain 118,790
+vs 22,780 laundry minutes, Italy 24,540 vs 5,610 (manager re-derived both from the full pools, 5,200 days each).
+Spain act2 minutes counted rise 287,740 -> 294,270. H1 (Madrid 2010): heating 10,747, cooling 4,831, appliance
+2,372 kWh (was 10,752 / 4,841 / 2,388); manager re-derived appliance = 2,927.8 W x 810.149 / 1000. Stock appliance
+total barely moves (2,321.7 -> 2,322.8 kWh/dwelling.y) because Step 9 calibrates appliance cycles to CREST's published stock mean: act2 shifts timing and redistributes between households.
+UK not run. Details in `Step2_docs/impl/2026-09-29_wp1_act2.md`.
+Next: design tables task (buildings, households, climates, seeds); weather batch 2 when zips complete.
+
+**2026-09-29 ~16:05 (🔴 FINDING 5J-1: Spain/Italy trigger runs read the pooled 4J corpus that holds UK rows).**
+Found by the manager while planning the design tables. `tools/5thJ_step9_trigger_act2.py:686` (4J code, unchanged)
+takes household composition from `4J_docs_occ/Step3_docs/outputs_step3/4J_step3_corpus.jsonl`, and 4J Step 7
+`load_households` reads that file line by line, `json.loads` every line, and skips lines whose `country` is not the
+fold. The corpus holds all three countries (4J Progress Log: "The corpus is three countries (es/uk/it)"). So every
+5J trigger run on 2026-09-29 (wrapper test runs; act2 regression, Spain and Italy runs) parsed the UK lines inside a
+local python process launched by an AI tool. Nothing from a UK line was printed, written, or read into any AI context
+(the function keeps only the fold's rows; the outputs are Spain/Italy only), and the file was never displayed. But
+RESUME §3 says no AI tool opens "any file pooling UK rows", so this breaks the rule as written. The manager missed it
+in both task docs (they banned opening pooled files, not scripts that read one). The manager did not open, grep or
+count the pooled file while checking this (the country list comes from the 4J log).
+Fix proposed to the author: the author runs one line (in their own terminal) that writes a Spain+Italy-only copy to
+`_5J_data/surrogate/inputs/4J_step3_corpus_es_it.jsonl`; 5J tools then read only that copy (additive `--corpus`
+argument; a guard refuses the pooled file); regression = the Spain outputs stay md5-equal (the Spain rows and their
+order are unchanged). Until then: **no 5J run that loads the corpus** (trigger, design-tables household draw, pilot).
+Weather work is unaffected. Whether the past runs need reporting to UKDS is the author's call.
+Next: author's answer and the one-line copy; then the corpus-guard task, then design tables.
+
+**2026-09-29 ~21:40 (times checked against the system clock) (FINDING 5J-1 fixed; design tables done; 🔴 FINDING 5J-2).**
+* Copy made by the author 21:20 (`_5J_data/surrogate/inputs/4J_step3_corpus_es_it.jsonl`, 57,400 lines, es 19,140,
+  it 38,260, uk 0; md5 1a516344...). Corpus guard (employee; `Step2_docs/impl/2026-09-29_wp1_corpus_guard.md`): the
+  trigger takes `--corpus` (default = the copy) and refuses the pooled file by name or location before opening
+  anything. Manager re-derived: trigger md5 c642cda4..., guard refuses the real pooled path and a made-up one (exit 3),
+  Spain and Italy outputs md5-equal to the act2 runs (one file per country re-hashed). Limit kept: a renamed copy of
+  the pooled file elsewhere would pass the name check.
+* Weather: Seville 2010 converted and checked (RMSE 2.30 C; July 29.5 C). Manchester and Milan still downloading.
+* Design tables (employee; `Step2_docs/impl/2026-09-29_wp1_design.md`): buildings 120 (40 per country, same 40 on
+  the 3 climates), households es 60 + it 60 (size-stratified, unweighted), climates 9 (2 pending), pilot 50 rows.
+  Manager re-ran the checker (PASS=44, exit 0) and re-derived the Spain size strata from the copy (19/28/9/4 = rounded
+  proportional; sizes 5+ get 0, accepted). Rulings: infiltration [0.3, 1.0] ach accepted; no U scale; survey weights
+  WILL be used (Spain/Italy episode files are not UK data); a `--hids` option will make the trigger run exactly the
+  chosen households. Follow-up task `Step2_docs/impl/2026-09-29_wp1_households_v2_TASK.md`.
+* 🔴 **FINDING 5J-2.** The design employee started a repo-wide grep for `n_air_use` over *.csv/*.json/*.py and killed
+  it at once; nothing was printed. The repo holds about 1,800 csv/json files with `uk` in their names (4J outputs,
+  names listed only), so the grep may have scanned UK-derived files before it was stopped. Same class as 5J-1 (a
+  process run by an AI tool, no content surfaced). Fix: every 5J task doc now names its folders; no repo-wide search
+  (RESUME §3). Whether to report 5J-1/5J-2 to UKDS is the author's call.
+Next: households v2 task; batch 2b weather when the zips are in.
+
+**2026-09-29 ~21:37 (O-5 CPU share: queue read).** `squeue` on Speed: the account runs 64 CPUs, the group cap
+(pending tasks show `AssocGrpCpuLimit`): 1J WP4 hindcast scorers 5 × 8 = 40 CPUs (1401498-1502, 3 h in, expected to
+end tonight; aggregate 1401505 waits on them) + two `openubem_t07`/`openubem_t08` arrays at 12 + 12 single-CPU
+tasks (not 5J; more pending). Scratch filesystem 43 T free overall (the per-user quota was 9.3 of 10 T on 09-25, not
+re-read). **Manager ruling O-5 (pilot only): the 50-run pilot asks 8 CPUs, `-t 7-00:00:00`, `--exclude=antenna1`;
+it simply queues until the cap has room; nothing is cancelled for it.** The campaign share is set after the pilot,
+from its measured time and the queue then.
+Next: households v2 verified, then pilot inputs to Speed.
+
+**2026-09-29 ~21:48 (households v2 DONE + verified; pilot part 1 started).** Households are now drawn with the
+survey weights (seed 5, same size-stratum counts as v1; v1 kept in `outputs_step2/v1_unweighted/`). Manager ruling:
+household weight = the person weight of the lowest-pid member in both countries (Italy has no household weight;
+the Spanish household weight lives in the raw DHOGAR file and is kept for a sensitivity check only). Re-derived:
+one Spain weight from `episodes_spain.parquet` (hid 00388: 10982.835100 = table), checker PASS=46 exit 0, default
+run `stock_series_es.csv` md5-equal to `wp1_guard`, one written presence file md5-equal to the 4J shipped one, the
+60 Spanish hids in `wp1_hids/es_60/`, the 10 pilot hids among them. The trigger (md5 075fdd73…) now runs exactly the
+households listed with `--hids` and writes each dwelling's presence file. Pilot part 1 employee started ~21:47
+(task `Step2_docs/impl/2026-09-30_wp1_pilot_TASK.md`).
+Next: verify pilot inputs and Speed jobs.
+
+**2026-09-29 ~21:53 (pilot part 1 DONE + verified; runs queued on Speed).** 42 portable Spain inputs (50 runs,
+Madrid 2010) built with schedule paths made relative; relative = absolute gate PASS (identical hourly output), seen
+failing on a missing schedule (Severe + Fatal). Copied to `/speed-scratch/o_iseri/5J/pilot/`; check job 1401744
+wrote `MD5 equal=127 differ=0 missing=0` and 43 T free on scratch; array 1401745 (1-50%8, 1 CPU, afterok) pending.
+Manager re-derived: one idf md5 on both sides, the 50 manifest rows, the job states. The B16 test input gives about
+23.8 MWh heating and 12.0 MWh cooling a year; gate 4.1 of pilot part 2 checks it per m2.
+Next: pilot part 2 once the array finishes (task `Step2_docs/impl/2026-09-30_wp1_pilot_report_TASK.md`).
+
+**2026-09-29 ~22:07 (session closed by the author).** Check job 1401744 still running after 14 min: md5 part done
+(127 equal), now in `du -sh` over the whole ~9 TB scratch tree, which is slow; the pilot array 1401745 waits on it.
+A delay, not a fault. If still stuck next morning, cancel and resubmit with `du` of the 5J folder only (RESUME §5 item 0).
+Weather: Manchester 2 of 13 files. Handover: `Prompts/manager/5J_manager_prompt_RESUME.md`.
+Next: pilot jobs, then pilot part 2.

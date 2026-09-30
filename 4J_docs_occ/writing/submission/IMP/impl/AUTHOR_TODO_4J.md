@@ -76,3 +76,8 @@ Routes in `VETTING_RL36.md` section 3:
 - UK: Low Carbon London smart-meter data (London Datastore); we can compute its peak on the cluster once
   you say yes to downloading it.
 Fix the comparison rule before any file is opened (daily maximum hour, weekday).
+
+10. **(added 2026-09-29 by the 1J session) One reference differs between your papers.** 4J line 526 reads
+    "Iseri, O. K., Gursel Dino, I., and Kalkan, B. (2026) ... Energy and Buildings 357, 117155"; the submitted 2J reads
+    "Iseri, O.K., Dino, I.G. and Kalkan, S. (2026)". Check the third author's initial (B. or S.) and the second author's
+    surname form on the publisher page, and make 4J match it before upload.

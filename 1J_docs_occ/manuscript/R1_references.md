@@ -1,0 +1,45 @@
+# R1 reference entries (key: entry). The build script numbers them in order of first citation.
+# A line starting with "CHECK" after an entry lists what the author must confirm in the publisher record before submission.
+# 2026-09-29 (bn): all CHECK lines closed from dr_1J-09 (IMP/deepResearch/dr_1J-09_reference_check_results.md, vetted in dr_1J_VETTING.md).
+# Entries marked VERIFIED-4J were checked for the 4J manuscript. Entries marked SUBMITTED-v1 are unchanged from the submitted version.
+
+wilke2011: U. Wilke, F. Haldi, D. Robinson, A model of occupants' activities based on time use survey data, in: Proceedings of Building Simulation 2011: 12th Conference of the International Building Performance Simulation Association, Sydney, 2011.
+sood2025: D. Sood, S. Wolf, D. Cali, R.K. Andersen, R. Li, H. Madsen, J. O'Donnell, Room-level domestic occupancy simulation model using time use survey data, J. Build. Perform. Simul. 19 (2025) 564–578. https://doi.org/10.1080/19401493.2025.2465508.
+osman2021: M. Osman, M. Ouf, A comprehensive review of time use surveys in modelling occupant presence and behavior: data, methods, and applications, Build. Environ. 196 (2021) 107785. https://doi.org/10.1016/j.buildenv.2021.107785.
+duan2025: J. Duan, J. He, C.W. Yu, A brief review of modelling methods for occupants' behaviours in residential buildings, Indoor Built Environ. 35 (2025) 193–210. https://doi.org/10.1177/1420326X251396163.
+vellei2022: M. Vellei, E. Azar, K. Bandurski, C. Berger, S. Carlucci, B. Dong, M. Favero, A. Mahdavi, M. Schweiker, Documenting occupant models for building performance simulation: a state-of-the-art, J. Build. Perform. Simul. 15 (2022) 634–655. https://doi.org/10.1080/19401493.2022.2061050.
+mitra2020asce: D. Mitra, Y. Chu, K. Cetin, Activity profiles of occupants in residential buildings using the American Time Use Survey data, in: Construction Research Congress 2020, ASCE, 2020. https://doi.org/10.1061/9780784482865.113.
+jeong2021: B. Jeong, J. Kim, R. de Dear, Creating household occupancy and energy behavioural profiles using national time use survey data, Energy Build. 252 (2021) 111440. https://doi.org/10.1016/j.enbuild.2021.111440.
+mahdavi2021: A. Mahdavi, C. Berger, H. Amin, E. Ampatzi, R.K. Andersen, E. Azar, V.M. Barthelmes, M. Favero, J. Hahn, D. Khovalyg, H.N. Knudsen, A. Luna-Navarro, A. Roetzel, F.C. Sangogboye, M. Schweiker, M. Taheri, D. Teli, M. Touchie, S. Verbruggen, The role of occupants in buildings' energy performance gap: myth or reality?, Sustainability 13 (2021) 3146. https://doi.org/10.3390/su13063146.
+hong2017: T. Hong, D. Yan, S. D'Oca, C. Chen, Ten questions concerning occupant behavior in buildings: the big picture, Build. Environ. 114 (2017) 518–530. https://doi.org/10.1016/j.buildenv.2016.12.006.
+xia2023: C. Xia, Y. Hu, J. Chen, Community time-activity trajectory modeling based on Markov chain simulation and Dirichlet regression, Comput. Environ. Urban Syst. 100 (2023) 101933. https://doi.org/10.1016/j.compenvurbsys.2022.101933.
+gieter2017: C. Gieter, O. Neu, W. Turner, D. Finn, Modelling household occupancy profiles using data mining clustering techniques on time use data, in: Proceedings of Building Simulation 2017, IBPSA, 2017. https://doi.org/10.26868/25222708.2017.478.
+reis2026: D.V.A. Reis, M.G.L.C. Loomans, M. Hajdukiewicz, A systematic literature review on occupant behaviour modelling for residential building performance simulation in future climate change scenarios, Build. Environ. 287 (2026) 113796. https://doi.org/10.1016/j.buildenv.2025.113796.
+mylonas2023: A. Mylonas, A. Tsangrassoulis, J. Pascual, A systematic review of time use surveys-questionnaires and monitoring variables used to track occupant behaviour in residential buildings, IOP Conf. Ser. Earth Environ. Sci. 1196 (2023) 012102. https://doi.org/10.1088/1755-1315/1196/1/012102.
+vosough2023: S. Vosoughkhosravi, A. Jafari, Y. Zhu, Application of American time use survey (ATUS) in modelling energy-related occupant-building interactions: a comprehensive review, Energy Build. 294 (2023) 113245. https://doi.org/10.1016/j.enbuild.2023.113245.
+VERIFIED-4J vosough2023
+richardson2008: I. Richardson, M. Thomson, D. Infield, A high-resolution domestic building occupancy model for energy demand simulations, Energy Build. 40 (2008) 1560–1566. https://doi.org/10.1016/j.enbuild.2008.02.006.
+VERIFIED-4J richardson2008
+widen2010: J. Widén, E. Wäckelgård, A high-resolution stochastic model of domestic activity patterns and electricity demand, Appl. Energy 87 (2010) 1880–1892. https://doi.org/10.1016/j.apenergy.2009.11.006.
+VERIFIED-4J widen2010
+sekar2018: A. Sekar, E. Williams, R. Chen, Changes in time use and their effect on energy consumption in the United States, Joule 2 (2018) 521–536. https://doi.org/10.1016/j.joule.2018.01.003.
+anderson2018: B. Anderson, J. Torriti, Explaining shifts in UK electricity demand using time use data from 1974 to 2014, Energy Policy 123 (2018) 544–557. https://doi.org/10.1016/j.enpol.2018.09.025.
+yin2024: R. Yin, Y. Yamaguchi, A.M. Zajch, H. Uchida, Y. Shimoda, Long-term changes in time use and impacts on residential energy demand, in: Proceedings of ASim2024, the 5th Asia Conference of the IBPSA, Osaka, 2024, pp. 1321–1328. https://doi.org/10.69357/asim2024.1285.
+diasdossantos2025: B. Dias dos Santos, M. Moghadasi, A. Páez, ActiveCA: time use data from the General Social Survey of Canada to study active travel, Environ. Plan. B Urban Anal. City Sci. 52 (2025) 2037–2047. https://doi.org/10.1177/23998083251374724.
+osman2023: M. Osman, M. Ouf, E. Azar, B. Dong, Stochastic bottom-up load profile generator for Canadian households' electricity demand, Build. Environ. 241 (2023) 110490. https://doi.org/10.1016/j.buildenv.2023.110490.
+mitra2020eb: D. Mitra, N. Steinmetz, Y. Chu, K.S. Cetin, Typical occupancy profiles and behaviors in residential buildings in the United States, Energy Build. 210 (2020) 109713. https://doi.org/10.1016/j.enbuild.2019.109713.
+mitra2021eb: D. Mitra, Y. Chu, K. Cetin, Cluster analysis of occupancy schedules in residential buildings in the United States, Energy Build. 236 (2021) 110791. https://doi.org/10.1016/j.enbuild.2021.110791.
+chen2022: J. Chen, R. Adhikari, E. Wilson, J. Robertson, A. Fontanini, B. Polly, O. Olawale, Stochastic simulation of occupant-driven energy use in a bottom-up residential building stock model, Appl. Energy 325 (2022) 119890. https://doi.org/10.1016/j.apenergy.2022.119890.
+iseri2026b: O.K. Iseri, C. Hachem-Vermette, Residential electricity load shape under changing occupancy: household-level schedules and stock-scale building energy simulation for Canada, 2005–2030, submitted to Energy and Buildings (2026).
+iseri2026esim: O.K. Iseri, C. Hachem-Vermette, Longitudinal analysis of occupancy-driven energy demand in Canadian residential buildings (2005–2025), in: eSim 2026, IBPSA-Canada, 2026.
+statcan_nhs2011: Statistics Canada, National Household Survey User Guide, 2011, Catalogue no. 99-001-X2011001, Ottawa, 2013.
+statcan_census2021: Statistics Canada, Guide to the Census of Population, 2021, Catalogue no. 98-304-X2021001, 2022. https://www12.statcan.gc.ca/census-recensement/2021/ref/98-304/98-304-x2021001-eng.pdf (accessed February 15, 2026).
+statcan_gss2022: Statistics Canada, General Social Survey – Time Use (GSS), 2022. https://www150.statcan.gc.ca/n1/pub/45-25-0001/index-eng.htm (accessed February 15, 2026).
+statcan_gss2005: Statistics Canada, General Social Survey, Cycle 19: Time Use (2005), Public Use Microdata File Documentation and User's Guide, Catalogue no. 12M0019GPE, Ottawa, 2006.
+statcan_gss2015: Statistics Canada, General Social Survey, Cycle 29: Time Use (2015), Public Use Microdata File Documentation and User's Guide, Catalogue no. 89M0034X, Ottawa, 2017.
+borysov2019: S.S. Borysov, J. Rich, F.C. Pereira, How to generate micro-agents? A deep generative modeling approach to population synthesis, Transp. Res. Part C Emerg. Technol. 106 (2019) 73–97. https://doi.org/10.1016/j.trc.2019.07.006.
+johnsen2021: M. Johnsen, O. Brandt, S. Garrido, F. Pereira, Population synthesis for urban resident modeling using deep generative models, Neural Comput. Appl. 34 (2021) 4677–4692. https://doi.org/10.1007/s00521-021-06622-2.
+hachem2025: C. Hachem-Vermette, Designing energy-positive neighborhoods: a modular framework for integrated planning and policy guidance, Energy Rep. 14 (2025) 4492–4507. https://doi.org/10.1016/j.egyr.2025.11.021.
+hachem2023: C. Hachem-Vermette, K. Singh, Role of neighbourhood spatial and energy design in reducing energy vulnerability during power disruption, Renew. Sustain. Energy Rev. 183 (2023) 113519. https://doi.org/10.1016/j.rser.2023.113519.
+doe_refbldg: U.S. Department of Energy, Prototype building models (commercial, ASHRAE Standard 90.1): Midrise Apartment, Pacific Northwest National Laboratory. https://www.energycodes.gov/prototype-building-models (accessed February 15, 2026).
+nrel_osstd: National Renewable Energy Laboratory, OpenStudio Standards Gem, 2025. https://github.com/NREL/openstudio-standards (accessed February 15, 2026).

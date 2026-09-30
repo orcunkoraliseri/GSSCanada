@@ -128,3 +128,11 @@ Not supported:
 ## Carried into the plan
 New plan items P11 (N1), P12 (N2), P13 (N3) and P14 (overlap and prior-version disclosure); P3
 wording updated; §4 literature list gains the Dias dos Santos et al. (2025) item.
+
+## dr_1J-09 (reference check) — vetted 2026-09-29 evening (manager, plan log (bn))
+Results: `dr_1J-09_reference_check_results.md`. Control item 0 (Richardson 2008) matched our VERIFIED-4J entry exactly: the run is trusted for metadata.
+- **Applied (metadata, Crossref):** sood2025 (JBPS 19, 564–578), duan2025 (35, 193–210), mitra2021eb title, borysov2019 unchanged (title agrees), hachem2025 single author (agrees), statcan_gss2015 catalogue 89M0034X, statcan_gss2005/nhs2011 titles agree, doe_refbldg now names only the commercial Midrise Apartment prototype (the only DOE element left in the paper after F-1J-12), yin2024 DOI 10.69357/asim2024.1285.
+- **Corrected (our entries were wrong):** diasdossantos2025 — our DOI did not resolve; correct record "ActiveCA: time use data from the General Social Survey of Canada to study active travel", B. (not L.) Dias dos Santos, DOI 10.1177/23998083251374724, same volume/pages. It covers SEVEN cycles 1986–2022 (not 1986–2015) and only active-travel episodes: §1.2 sentence and Table 1 row fixed. johnsen2021 — authors and pages from dr_1J-04 were wrong (the DOI is Johnsen, Brandt, Garrido, Pereira, NCA 34, 4677–4692); claim (empirical conditional-table baseline) SUPPORTED with quote.
+- **Claims supported with quotes:** anderson2018, mitra2020eb (a, b), mitra2021eb (2006–2017 pooled), chen2022 (2013–2017 pooled, ResStock), johnsen2021, diasdossantos2025 (b, c).
+- **Not opened (HTTP 403):** sekar2018 — metadata confirmed; the claim is kept because Yin et al. 2024 (full text on disk) reports the same finding about Sekar et al.; osman2023 — the claim "built occupancy models from the 2015 GSS" could not be confirmed, so the sentence now says only what the title states ("a stochastic bottom-up load-profile generator for household electricity demand").
+- Not used from the run: nothing contradicts another entry. No search-only verdict was accepted without a quote.

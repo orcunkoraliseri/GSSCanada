@@ -250,7 +250,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
       <h1>5J Pipeline Board</h1>
       <p class="sub">HETUS diaries (Spain, UK, Italy) &rarr; schedules &rarr; paired EnergyPlus campaign &rarr; learned surrogate, scored on the occupancy effect. Sole author. Work items for steps 0&ndash;8, with the status of each.</p>
     </div>
-    <div class="stamp">Updated 2026&#8209;09&#8209;28 late night &mdash; weather cities checked and proposed; nothing running</div>
+    <div class="stamp">Updated 2026&#8209;09&#8209;29 night &mdash; pilot waiting in the cluster queue; session closed</div>
   </header>
 
   <section class="summary">
@@ -277,7 +277,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
   <main id="board"></main>
 
   <section class="standing">
-    <h2>Where things stand &mdash; 2026&#8209;09&#8209;28</h2>
+    <h2>Where things stand &mdash; 2026&#8209;09&#8209;29</h2>
     <ul>
       <li class="ok"><b>The subject is chosen: an occupancy-aware stand-in for EnergyPlus (B4), sole author, European diaries.</b> All earlier ideas are kept in <code>0_New_Ideas/</code>.</li>
       <li class="stop"><b>&#128308; Deadline: Speed GPU access ends about late October 2026.</b> Campaign in week 2, training in week 3, one scoring in week 4; writing afterwards.</li>
@@ -285,7 +285,10 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
       <li class="ok"><b>Novelty settled (O-2), closed by the author.</b> Nothing read so far feeds household occupancy into a stand-in and scores the occupancy effect. Scoring a stand-in on differences is already published (Park and Park 2023, retrofit), so the paper claims only the occupancy version. One logged search is still owed before the paper says &ldquo;first&rdquo;.</li>
       <li class="ok"><b>Every step now has a written plan and its checks.</b> A handover note lets a new session pick up the work cold.</li>
       <li class="hold"><b>What 4J already built is listed and checked.</b> The 4J buildings model heating only and there is one weather city per country, so Step 2 adds cooling and meters. The UK file check is one line for the author to run.</li>
-      <li class="hold"><b>More weather cities are possible, and six are proposed.</b> The OpenUBEM weather download works for any city with a small 5J copy of its two scripts; six files take about 8 hours to 2 days to download. Proposed: Valencia and Seville, Birmingham and Manchester, Turin and Milan. Each set is the city that best matches the building data's climate plus one large city, all inside the regions the buildings describe. Waiting on the author's yes.</li>
+      <li class="hold"><b>Weather: six new cities approved by the author (29 Sep), three already ready.</b> Valencia, Birmingham and Turin are converted and pass every file check. Seville is now converted and checked too (July average 29.5 &deg;C, the hot end); Manchester and Milan are still downloading on this PC; the download service has slowed, so they should be done in the afternoon of 30 Sep. Turin is about 4 &deg;C cooler than its station in July, mostly because the 2014 summer was cool (Bologna shows the same), so it is kept.</li>
+      <li class="hold"><b>The building model now gives heating, cooling and appliance electricity every hour.</b> Four Madrid test runs work, and two different households give different results. Heating and cooling per square metre look high; the 50-run pilot checks this.</li>
+      <li class="hold"><b>UK-file issue: fixed on our side (29 Sep night).</b> The 5J script now reads only your Spain-and-Italy copy and refuses the mixed 4J file; Spain and Italy tests give exactly the same results as before. A second small slip: a helper started a search over the whole project folder and stopped it at once; nothing was shown, but UK-derived 4J files were within its reach. Searches are now limited to named files. Whether anything needs reporting to the UK Data Service stays your call.</li>
+      <li class="ok"><b>France stays out.</b> Progedo approved a French data request on 29 Sep, but it does not include the time-use diary, so the 5J design does not change.</li>
       <li class="hold"><b>Lessons from 1J to 4J are in the checklist.</b> The biggest: identical EnergyPlus input gave different heating values in 4J, and the heating occupancy effect was under half a percent, so replicate runs set a noise floor.</li>
     </ul>
   </section>
@@ -318,12 +321,12 @@ const DATA = [
     {t:"Manager re-derives one number per item", s:"done", note:"Five numbers re-read, all equal. The helper opened no UK file (its full log was searched)."}
   ]},
   {n:2, title:"Campaign design and pilot (week 1)", items:[
-    {t:"Climates, building variants, households (DRAFT ~21,600 runs)", s:"todo", note:"Checked 28 Sep late night: new weather files can be made for any city. Proposed: Valencia + Seville, Birmingham + Manchester, Turin + Milan (Edinburgh, Rome, Palermo dropped: outside the building regions). Waiting on the author's yes; the download then starts first."},
-    {t:"Same households on every building of a country", s:"todo"},
-    {t:"Targets from the right meters; annual = sum of hourly", s:"todo"},
+    {t:"Climates, building variants, households (DRAFT ~21,600 runs)", s:"prog", note:"Climates approved 29 Sep: nine cities, three per country. Valencia, Birmingham and Turin are ready and checked; Seville is ready and checked too; Manchester and Milan are due in the afternoon of 30 Sep. The design tables are written and checked: 40 building variants per country, 60 households each for Spain and Italy, and the 50-run pilot list. Households are now drawn with the survey weights (checked 29 Sep night)."},
+    {t:"Same households on every building of a country", s:"done", note:"Done 29 Sep night. The script now runs exactly the chosen households: the 60 Spanish households ran, and the default run gives the same results as before."},
+    {t:"Targets from the right meters; annual = sum of hourly", s:"prog", note:"Built 29 Sep: hourly heating, cooling and appliance electricity. In one test the appliance total equals peak power times the schedule sum. Heating and cooling per m&sup2; look high; checked in the pilot."},
     {t:"&#128308; Replicate runs for a truth noise floor", s:"todo", risk:true, note:"Identical input gave different heating values in 4J."},
-    {t:"Secondary activity in electricity schedules", s:"todo"},
-    {t:"Pilot of 50 runs timed on Speed", s:"todo"},
+    {t:"Secondary activity in electricity schedules", s:"done", note:"Done 29 Sep. Laundry-or-ironing as a second activity now switches on the ironing profile, the more common of the two in both Spain and Italy (about 5 to 1 in diary minutes). Old runs are reproduced byte for byte when the rule is off. Stock appliance totals do not change; the timing does."},
+    {t:"Pilot of 50 runs timed on Speed", s:"prog", note:"The run list is written: Madrid, 5 buildings, 10 households, 2 runs repeated 5 times. The 50 run files are built, checked and copied to Speed (all 127 files arrive identical; 43 TB free on scratch). The runs wait in the queue: a slow disk-space check on Speed must finish first, and the cluster is full tonight."},
     {t:"Campaign size set from the pilot", s:"todo"}
   ]},
   {n:3, title:"Full campaign on Speed, CPU (week 2)", items:[

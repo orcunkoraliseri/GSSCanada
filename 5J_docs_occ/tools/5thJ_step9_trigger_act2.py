@@ -97,10 +97,11 @@ class TriggerError(RuntimeError):
 
 
 # 5J change (D2-4): secondary-activity switch. Set once per run in run_fold().
-ACT2 = {"on": False, "match": "prefix2", "map": {}, "ambiguous": [], "n_used": 0}
+ACT2 = {"on": False, "match": "prefix2_major", "map": {}, "ambiguous": [], "n_used": 0,
+        "pool_minutes": {}, "major_detail": []}   # 5J change (D2-4): D2-4 detail, prefix2_major
 
 
-def build_act2_map(acl_to_profile, match):
+def build_act2_map(acl_to_profile, match, pool_minutes=None):
     """5J change (D2-4). The SAME map as `act`, applied to `act2`.
 
     act2 is a 2-digit code in the generated diaries ('51', '82', ...) while the
@@ -116,9 +117,23 @@ def build_act2_map(acl_to_profile, match):
     for code, prof in acl_to_profile.items():
         by_prefix[code[:2]].add(prof)
     out, amb = {}, []
+    ACT2["major_detail"] = []                            # 5J change (D2-4)
     for pre, profs in by_prefix.items():
         if len(profs) == 1:
             out[pre] = next(iter(profs))
+        elif match == "prefix2_major":                   # 5J change (D2-4)
+            # `prefix2_major`: an ambiguous prefix takes the profile of the child
+            # (mapped 3-digit code) with the most primary-episode minutes over the
+            # whole loaded pool; ties -> lowest child code.
+            kids = sorted(c for c in acl_to_profile if c[:2] == pre)
+            mins = dict((c, int((pool_minutes or {}).get(c, 0))) for c in kids)
+            best = max(kids, key=lambda c: (mins[c], [-ord(ch) for ch in c]))
+            tie = [c for c in kids if mins[c] == mins[best]]
+            assert best == min(tie)
+            out[pre] = acl_to_profile[best]
+            amb.append(pre)
+            ACT2["major_detail"].append({"prefix": pre, "minutes": mins, "chosen": best,
+                                         "profile": acl_to_profile[best], "tie": len(tie) > 1})
         else:
             amb.append(pre)
     return out, sorted(amb)
@@ -631,8 +646,61 @@ def _make_load_pool_act2(s7):
     return load_pool
 
 
+# 5J change (FINDING 5J-1): corpus guard. The pooled 4J corpus holds UK rows (UKDS EUL v16
+# cl. 5), so the trigger reads only the Spain+Italy copy and refuses the pooled file BEFORE
+# anything opens it.
+DEFAULT_CORPUS = os.path.join("C:/Users/o_iseri/Desktop/GSSCanada", "_5J_data",
+                              "surrogate", "inputs", "4J_step3_corpus_es_it.jsonl")
+
+
+def check_corpus_guard(corpus_path):                     # 5J change (FINDING 5J-1)
+    """Refuse the pooled corpus by NAME/LOCATION only; opens nothing. Returns the path."""
+    norm = os.path.abspath(corpus_path).replace("\\", "/").lower()
+    parts = norm.split("/")
+    if (os.path.basename(norm) == "4j_step3_corpus.jsonl"
+            or "4j_docs_occ" in parts or "step3_docs" in parts):
+        sys.stderr.write("GUARD corpus REFUSED: %s is the pooled 4J corpus or lies under "
+                         "4J_docs_occ/Step3_docs (holds UK rows); use the es+it copy\n"
+                         % corpus_path)
+        sys.exit(3)
+    return corpus_path
+
+
+HIDS = {"on": False, "file": None, "md5": None, "list": None}   # 5J change (households v2)
+
+
+def load_households_by_hids(s7, corpus_path, country, hids):     # 5J change (households v2)
+    """Exactly the households in `hids`, in that order, parsed like s7.load_households
+    (decode the prefix, first diary day per pid). Unknown hid or hid of another country: exit 4."""
+    if len(set(hids)) != len(hids):
+        sys.exit("HIDS refused: the hids file has duplicate hids")
+    want = set(hids)
+    hh = collections.OrderedDict()
+    seen_other = set()
+    with io.open(corpus_path, encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            r = json.loads(line)
+            if r["hid"] not in want:
+                continue
+            if r["country"] != country:
+                seen_other.add(r["hid"])
+                continue
+            pfx = s7.dec.decode_prefix(r["text"].split("|", 1)[0])
+            hh.setdefault(r["hid"], collections.OrderedDict())
+            hh[r["hid"]].setdefault(r["pid"], pfx)
+    bad = [h for h in hids if h not in hh]
+    if bad:
+        sys.exit("HIDS refused: %d hid(s) not in the %s households of the corpus (first: %s%s)"
+                 % (len(bad), country, bad[0],
+                    "; it belongs to another country" if bad[0] in seen_other else "; unknown"))
+    return [(k, list(hh[k].values())) for k in hids]
+
+
 def build_dwellings(root, fold, leg, year, seed, n_households, timestep_min,
-                    verify_against_step8=True, pool_path=None):
+                    verify_against_step8=True, pool_path=None, corpus_path=None):
     """The 100 dwellings, their member-years, and their presence series.
 
     🔴 P3, 2026-09-23 (additive). `pool_path` is a NEW, OPTIONAL parameter. Left
@@ -656,12 +724,28 @@ def build_dwellings(root, fold, leg, year, seed, n_households, timestep_min,
                        os.path.abspath(pool_path) == os.path.abspath(default_pool_path))
     pool_path = pool_path or default_pool_path
     pools, pool_meta = s7.load_pool(pool_path, step2, bitpos)
-    cal = s7.year_day_types(year)
+    if ACT2["on"]:                                       # 5J change (D2-4)
+        # primary-episode minutes per `act` over the WHOLE loaded pool (depth 0:
+        # every day sits in exactly one bucket, so nothing is counted twice)
+        pm = collections.Counter()
+        for _bucket in pools[0].values():
+            for _day in _bucket:
+                for _dur, _a in _day["acts"]:
+                    pm[_a] += _dur
+        ACT2["pool_minutes"] = dict(pm)
+    cal =s7.year_day_types(year)
     rng = random.Random(seed)
-    corpus = os.path.join(root, "Step3_docs", "outputs_step3",
-                          "4J_step3_corpus.jsonl")
-    households = s7.load_households(corpus, fold, n_households, rng, min_size=1)
+    corpus = check_corpus_guard(corpus_path or DEFAULT_CORPUS)   # 5J change (FINDING 5J-1)
+    _cmd5 = hashlib.md5(open(corpus, "rb").read()).hexdigest()   # 5J change (FINDING 5J-1): hash of the COPY
+    print("GUARD corpus OK path=%s md5=%s" % (corpus, _cmd5))
+    if HIDS["on"]:                                       # 5J change (households v2)
+        households = load_households_by_hids(s7, corpus, fold, HIDS["list"])
+        print("HIDS OK file=%s md5=%s n=%d" % (HIDS["file"], HIDS["md5"], len(households)))
+    else:
+        households = s7.load_households(corpus, fold, n_households, rng, min_size=1)
     backoff = collections.Counter()
+    pool_meta["corpus_path"] = corpus                    # 5J change (FINDING 5J-1): new keys only
+    pool_meta["corpus_md5"] = _cmd5                      # 5J change (FINDING 5J-1)
 
     out = []
     for hid, members in households:
@@ -679,7 +763,10 @@ def build_dwellings(root, fold, leg, year, seed, n_households, timestep_min,
         pool_meta["pool_is_default_generated"] = False
         pool_meta["backoff_tally"] = dict(backoff)
 
-    if verify_against_step8 and is_default_pool:
+    if HIDS["on"] and verify_against_step8:              # 5J change (households v2)
+        print("NOTE: --hids selects the households; the Step 8 dwelling-identity check is skipped "
+              "(the households are not Step 8's sample).")
+    elif verify_against_step8 and is_default_pool:
         shipped_dir = os.path.join(
             root, "Step7_docs", "outputs_step7", "schedules",
             "%s_%s_independent_seed1" % (leg, fold))
@@ -1076,7 +1163,7 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
              collapse_dhw_events=False, extra_runtime_columns=(),
              force_two_digit_mapping=False, zero_load_share=0.0,
              verify_against_step8=True, map_path=None, calibration_passes=6,
-             rotate_origin=True, pool_path=None):
+             rotate_origin=True, pool_path=None, corpus_path=None):
     """One fold, end to end. Every keyword after `dhw_l_per_day` exists ONLY so
     the registered perturbation battery has something to perturb; all of them
     default to the correct behaviour and any non-default is stamped into the
@@ -1097,14 +1184,33 @@ def run_fold(root, fold, leg, year, seed, n_households, timestep_min, out_dir,
         # PERTURBATION ONLY (G9.11's falsifier): collapse the join to two digits.
         acl_to_profile = dict((c[:2] + "0", p) for c, p in acl_to_profile.items())
 
-    if ACT2["on"]:                                       # 5J change (D2-4)
-        ACT2["map"], ACT2["ambiguous"] = build_act2_map(acl_to_profile, ACT2["match"])
-        print("PATCH act2 OK match=%s act2_map_entries=%d ambiguous_prefixes=%s"
-              % (ACT2["match"], len(ACT2["map"]), ACT2["ambiguous"]))
     dwellings, pool_meta, _s7 = build_dwellings(
         root, fold, leg, year, seed, n_households, timestep_min,
-        verify_against_step8=verify_against_step8, pool_path=pool_path)
+        verify_against_step8=verify_against_step8, pool_path=pool_path,
+        corpus_path=corpus_path)   # 5J change (FINDING 5J-1)
+    if ACT2["on"]:                       # 5J change (D2-4): moved after the pool load (needs its minutes)
+        ACT2["map"], ACT2["ambiguous"] = build_act2_map(
+            acl_to_profile, ACT2["match"], ACT2["pool_minutes"])
+        print("PATCH act2 OK match=%s act2_map_entries=%d ambiguous_prefixes=%s"
+              % (ACT2["match"], len(ACT2["map"]), ACT2["ambiguous"]))
+        for _d in ACT2["major_detail"]:
+            print("PATCH act2 OK match=prefix2_major fold=%s prefix=%s minutes={%s} chosen=%s "
+                  "profile=%s%s" % (fold, _d["prefix"],
+                                    ",".join("%s:%d" % (k, v) for k, v in sorted(_d["minutes"].items())),
+                                    _d["chosen"], _d["profile"],
+                                    " tie=lowest_child_code" if _d["tie"] else ""))
     n_days = len(dwellings[0]["members"][0])
+
+    # 5J change (households v2, 6b): write each dwelling's presence in the 4J shipped format
+    # (rotated to midnight, s7.write_schedule_csv), so 5thJ_idf.py can read it from <out>/presence/.
+    _pdir = os.path.join(out_dir, "presence")
+    if not os.path.isdir(_pdir):
+        os.makedirs(_pdir)
+    for _d in dwellings:
+        _nm = "HH_%s_%s" % (fold, _d["hid"])
+        _s7.write_schedule_csv(os.path.join(_pdir, "presence_%s.csv" % _nm),
+                               rotate_to_midnight(_d["presence"], timestep_min), _nm + "_Presence")
+    print("PRESENCE written %d files to %s" % (len(dwellings), _pdir))
 
     own_rng = random.Random(seed * 7919 + 13)
     owned = sample_ownership(mapping, dwellings, own_rng,
@@ -1397,6 +1503,9 @@ def write_outputs(root, fold, out_dir, mapping, per_dwelling, stock_elec,
             "profiles_dir": os.path.relpath(prof_dir, out_dir).replace("\\", "/"),
         },
     }
+    if HIDS["on"]:                                       # 5J change (households v2): new keys only
+        manifest["households"] = {"hids_file": HIDS["file"], "hids_md5": HIDS["md5"],
+                                  "n": len(per_dwelling)}
     man_path = os.path.join(out_dir, "step9_manifest_%s.json" % fold)
     io.open(man_path, "w", encoding="utf-8", newline="").write(
         json.dumps(manifest, indent=2, sort_keys=True))
@@ -1429,12 +1538,24 @@ def main(argv=None):
                          "report and would be ours. See D-S9-2 item 5.")
     ap.add_argument("--no-act2", action="store_true",
                     help="5J: 4J behaviour (primary activity only).")
-    ap.add_argument("--act2-match", default="prefix2", choices=["prefix2", "exact"],
+    ap.add_argument("--act2-match", default="prefix2_major",
+                    choices=["prefix2", "prefix2_major", "exact"],   # 5J change (D2-4)
                     help="5J change (D2-4): how a 2-digit act2 is looked up in the map.")
     ap.add_argument("--shipped-suffix", default="",
                     help="5J plumbing: suffix of the Step 7 schedules dir the dwelling "
                          "identity check compares with (e.g. _cal2010 for --year 2010).")
+    ap.add_argument("--corpus", default=DEFAULT_CORPUS,  # 5J change (FINDING 5J-1)
+                    help="Spain+Italy corpus copy; the pooled 4J corpus is refused.")
+    ap.add_argument("--hids", default=None,               # 5J change (households v2)
+                    help="csv with a `hid` column: run exactly these households, in file order.")
     args = ap.parse_args(argv)
+    check_corpus_guard(args.corpus)                      # 5J change (FINDING 5J-1): before any file opens
+    if args.hids:                                        # 5J change (households v2)
+        with io.open(args.hids, encoding="utf-8", newline="") as _fh:
+            _lst = [r["hid"] for r in csv.DictReader(_fh)]
+        HIDS.update({"on": True, "file": args.hids, "list": _lst,
+                     "md5": hashlib.md5(open(args.hids, "rb").read()).hexdigest()})
+        print("NOTE: --hids given, %d hids; --households (%d) is ignored" % (len(_lst), args.households))
     ACT2["on"] = not args.no_act2                        # 5J change (D2-4)
     ACT2["match"] = args.act2_match
     if args.shipped_suffix:                              # 5J plumbing
@@ -1445,7 +1566,7 @@ def main(argv=None):
     out = args.out or os.path.join(args.root, "Step9_docs", "outputs_step9")
     m = run_fold(args.root, args.fold, args.leg, args.year, args.seed,
                  args.households, args.timestep, out, args.dhw_l_per_day,
-                 pool_path=args.pool)
+                 pool_path=args.pool, corpus_path=args.corpus)   # 5J change (FINDING 5J-1)
     print("fold                       %s" % m["fold"])
     print("dwellings / people         %d / %d" % (m["n_dwellings"], m["n_people"]))
     print("electricity kWh/dwelling.y %.1f" % m["stock_elec_kwh_per_dwelling_year"])
