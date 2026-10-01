@@ -86,3 +86,9 @@ Each row: the gate verdict before and after, and the line that printed it.
 
 ## PROGRESS LOG (append-only)
 - 2026-09-28 (manager): doc written as a plan. Next: Step 3.
+- 2026-09-30 18:58 EDT (manager): Step 3 closed for Spain + Italy; task `impl/2026-09-30_freeze_TASK.md` written with
+  five rulings (pairs under every-flat-tested, pair-level sums, floor 0, good stand-in noise 10 % of hourly SD,
+  per class/end use); employee launched. Freeze waits on the ASHRAE Guideline 14 page (author).
+- 2026-09-30 19:38 EDT (manager): chain results read, Italy AB re-derived with own code (equal). Not met: val 2.0 (good
+  stand-in fails G5J.3 on heating/cooling, 15/32 cells; kept as row 0, a result) and val 5.2 (k-only plant inert at floor 0).
+  Fix 1 (`impl/2026-09-30_freeze_fix1_TASK.md`): effect-good stand-in, planted floors file, perturbations.md filled.

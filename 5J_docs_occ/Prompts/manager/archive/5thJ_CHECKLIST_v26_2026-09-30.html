@@ -1,0 +1,499 @@
+<title>5J Pipeline Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F7F7F3;
+  --surface:#FFFFFF;
+  --surface-2:#F1F2ED;
+  --ink:#181A18;
+  --ink-2:#43474A;
+  --muted:#787E80;
+  --line:#DEE0D9;
+  --line-soft:#E9EAE4;
+  --accent:#0B6E68;
+  --accent-soft:#DDECEA;
+  --done:#2E6F4E;
+  --done-bg:#E2EFE6;
+  --prog:#9A6408;
+  --prog-bg:#F6EAD4;
+  --todo:#6E7478;
+  --todo-bg:#E8E9E5;
+  --risk:#A8352A;
+  --risk-bg:#F6E3E0;
+  --shadow:0 1px 2px rgba(24,26,24,.05), 0 8px 24px -16px rgba(24,26,24,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111311;
+    --surface:#181B19;
+    --surface-2:#1F2320;
+    --ink:#E9EBE6;
+    --ink-2:#B7BDB8;
+    --muted:#858C87;
+    --line:#2B302C;
+    --line-soft:#232725;
+    --accent:#4FBBB0;
+    --accent-soft:#16302E;
+    --done:#6FC08E;
+    --done-bg:#173123;
+    --prog:#DFA33E;
+    --prog-bg:#33260F;
+    --todo:#8B928D;
+    --todo-bg:#232623;
+    --risk:#E4776A;
+    --risk-bg:#341C19;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111311;
+  --surface:#181B19;
+  --surface-2:#1F2320;
+  --ink:#E9EBE6;
+  --ink-2:#B7BDB8;
+  --muted:#858C87;
+  --line:#2B302C;
+  --line-soft:#232725;
+  --accent:#4FBBB0;
+  --accent-soft:#16302E;
+  --done:#6FC08E;
+  --done-bg:#173123;
+  --prog:#DFA33E;
+  --prog-bg:#33260F;
+  --todo:#8B928D;
+  --todo-bg:#232623;
+  --risk:#E4776A;
+  --risk-bg:#341C19;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 24px 96px}
+
+/* ---------- masthead ---------- */
+.mast{display:flex;flex-wrap:wrap;align-items:flex-end;gap:20px;justify-content:space-between;margin-bottom:8px}
+h1{
+  font-family:Archivo,system-ui,sans-serif;
+  font-weight:700;
+  font-size:clamp(28px,4.4vw,42px);
+  letter-spacing:-.022em;
+  line-height:1.04;
+  margin:0;
+  text-wrap:balance;
+}
+.sub{color:var(--muted);font-size:13.5px;margin:6px 0 0;max-width:62ch}
+.stamp{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap;
+}
+
+/* ---------- summary ---------- */
+.summary{
+  margin-top:28px;background:var(--surface);border:1px solid var(--line);
+  border-radius:10px;padding:20px 22px;box-shadow:var(--shadow);
+}
+.tallies{display:flex;flex-wrap:wrap;gap:28px;align-items:baseline}
+.tally{display:flex;align-items:baseline;gap:9px}
+.tally b{
+  font-family:Archivo,sans-serif;font-weight:700;font-size:26px;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;
+}
+.tally span{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.tally.d b{color:var(--done)} .tally.p b{color:var(--prog)} .tally.n b{color:var(--todo)}
+
+.meter{display:flex;height:9px;border-radius:99px;overflow:hidden;margin-top:18px;background:var(--surface-2)}
+.meter i{display:block;height:100%}
+.meter i.d{background:var(--done)} .meter i.p{background:var(--prog)} .meter i.n{background:var(--line)}
+
+/* ---------- step track ---------- */
+.track{
+  display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:26px;
+}
+.seg{
+  appearance:none;border:1px solid var(--line);background:var(--surface);
+  border-radius:6px;padding:9px 4px 8px;cursor:pointer;text-align:center;
+  color:var(--ink-2);font-family:"IBM Plex Mono",monospace;font-size:11px;
+  display:flex;flex-direction:column;gap:6px;align-items:center;
+  transition:transform .12s ease, border-color .12s ease;
+}
+.seg:hover{transform:translateY(-2px);border-color:var(--accent)}
+.seg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg .n{font-weight:600;font-size:14px;color:var(--ink)}
+.seg .bar{width:100%;height:4px;border-radius:99px;background:var(--line)}
+.seg[data-s="done"] .bar{background:var(--done)}
+.seg[data-s="prog"] .bar{background:var(--prog)}
+.seg[data-s="todo"] .bar{background:var(--line)}
+.seg .f{font-size:10px;color:var(--muted);letter-spacing:.03em}
+
+/* ---------- filters ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:7px;margin:34px 0 20px;align-items:center}
+.filters .lab{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);margin-right:5px;
+}
+.chip{
+  appearance:none;cursor:pointer;border:1px solid var(--line);background:var(--surface);
+  color:var(--ink-2);border-radius:99px;padding:5px 13px;font-size:12.5px;
+  font-family:"IBM Plex Sans",sans-serif;
+}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0C1614}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0C1614}}
+
+/* ---------- step blocks ---------- */
+.step{margin-top:26px;scroll-margin-top:16px}
+.step-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;padding-bottom:9px;border-bottom:2px solid var(--ink)}
+.step-no{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+  letter-spacing:.1em;color:var(--accent);
+}
+.step-head h2{
+  font-family:Archivo,sans-serif;font-weight:600;font-size:19px;letter-spacing:-.012em;
+  margin:0;flex:1;text-wrap:balance;
+}
+.step-note{width:100%;color:var(--muted);font-size:12.5px;margin:9px 0 0}
+.step-note.warn{color:var(--risk)}
+
+table{width:100%;border-collapse:collapse;margin-top:2px}
+.scroller{overflow-x:auto}
+tbody tr{border-bottom:1px solid var(--line-soft)}
+tbody tr.risk td:first-child{box-shadow:inset 3px 0 0 var(--risk)}
+td{padding:11px 12px;vertical-align:top}
+td.item{font-weight:500;width:31%;min-width:190px}
+td.st{width:1%;white-space:nowrap}
+td.note{color:var(--ink-2);font-size:13px}
+code{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  background:var(--surface-2);border-radius:4px;padding:1px 5px;
+}
+.flag{color:var(--risk);font-weight:600}
+
+.standing{
+  margin-top:16px;background:var(--surface);border:1px solid var(--line);
+  border-left:4px solid var(--accent);border-radius:10px;padding:18px 22px;
+  box-shadow:var(--shadow);
+}
+.standing h2{
+  font-family:Archivo,sans-serif;font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 12px;font-weight:700;
+}
+.standing ul{margin:0;padding:0;list-style:none}
+.standing li{
+  font-size:13.5px;line-height:1.65;color:var(--ink-2);
+  padding:5px 0 5px 22px;position:relative;border-top:1px solid var(--line-soft);
+}
+.standing li:first-child{border-top:0}
+.standing li b{color:var(--ink)}
+.standing li::before{
+  content:"";position:absolute;left:4px;top:12px;width:7px;height:7px;
+  border-radius:50%;background:var(--line);
+}
+.standing li.ok::before{background:var(--done)}
+.standing li.hold::before{background:var(--prog)}
+.standing li.stop::before{background:var(--risk)}
+.standing .who{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);
+}
+
+.pill{
+  display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.07em;text-transform:uppercase;padding:3px 9px;border-radius:99px;
+  font-weight:500;white-space:nowrap;
+}
+.pill.done{background:var(--done-bg);color:var(--done)}
+.pill.prog{background:var(--prog-bg);color:var(--prog)}
+.pill.todo{background:var(--todo-bg);color:var(--todo)}
+
+/* ---------- in-flight ---------- */
+.flight{
+  margin-top:38px;background:var(--surface);border:1px solid var(--line);
+  border-left:3px solid var(--accent);border-radius:8px;padding:18px 20px;
+}
+.flight h3{
+  font-family:Archivo,sans-serif;font-size:13px;font-weight:600;margin:0 0 12px;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+}
+.jobs{display:grid;gap:8px}
+.job{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;font-size:13px}
+.job code{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.job span{color:var(--ink-2)}
+
+footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+.empty{padding:26px 2px;color:var(--muted);font-size:13.5px}
+
+@media (max-width:720px){
+  .track{grid-template-columns:repeat(5,1fr)}
+  td.item{width:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1>5J Pipeline Board</h1>
+      <p class="sub">HETUS diaries (Spain, UK, Italy) &rarr; schedules &rarr; paired EnergyPlus campaign &rarr; learned surrogate, scored on the occupancy effect. Sole author. Work items for steps 0&ndash;8, with the status of each.</p>
+    </div>
+    <div class="stamp">Updated 2026&#8209;09&#8209;30 20:10 &mdash; scoring rules frozen; Step 5 started</div>
+  </header>
+
+  <section class="summary">
+    <div class="tallies">
+      <div class="tally d"><b id="t-done">&mdash;</b><span>done</span></div>
+      <div class="tally p"><b id="t-prog">&mdash;</b><span>in progress</span></div>
+      <div class="tally n"><b id="t-todo">&mdash;</b><span>not started</span></div>
+      <div class="tally"><b id="t-all">&mdash;</b><span>items total</span></div>
+    </div>
+    <div class="meter" id="meter" aria-hidden="true"></div>
+  </section>
+
+  <nav class="track" id="track" aria-label="Jump to a step"></nav>
+
+  <div class="filters">
+    <span class="lab">Show</span>
+    <button class="chip" data-f="all" aria-pressed="true">Everything</button>
+    <button class="chip" data-f="prog" aria-pressed="false">In progress</button>
+    <button class="chip" data-f="todo" aria-pressed="false">Not started</button>
+    <button class="chip" data-f="done" aria-pressed="false">Done</button>
+    <button class="chip" data-f="risk" aria-pressed="false">Flagged &#128308;</button>
+  </div>
+
+  <main id="board"></main>
+
+  <section class="standing">
+    <h2>Where things stand &mdash; 2026&#8209;09&#8209;30</h2>
+    <ul>
+      <li class="ok"><b>The subject is chosen: an occupancy-aware stand-in for EnergyPlus (B4), sole author, European diaries.</b> All earlier ideas are kept in <code>0_New_Ideas/</code>.</li>
+      <li class="stop"><b>&#128308; Deadline: Speed GPU access ends about late October 2026.</b> Campaign in week 2, training in week 3, one scoring in week 4; writing afterwards.</li>
+      <li class="ok"><b>Licences settled (O-1): Spain, Italy and the UK all stay.</b> UK-derived outputs stay private, and no AI tool opens UK data.</li>
+      <li class="ok"><b>Novelty settled (O-2), closed by the author.</b> Nothing read so far feeds household occupancy into a stand-in and scores the occupancy effect. Scoring a stand-in on differences is already published (Park and Park 2023, retrofit), so the paper claims only the occupancy version. One logged search is still owed before the paper says &ldquo;first&rdquo;.</li>
+      <li class="ok"><b>Every step now has a written plan and its checks.</b> A handover note lets a new session pick up the work cold.</li>
+      <li class="hold"><b>What 4J already built is listed and checked.</b> The 4J buildings model heating only and there is one weather city per country, so Step 2 adds cooling and meters. The UK file check is one line for the author to run.</li>
+      <li class="ok"><b>Weather is done: nine cities, three per country, all converted and checked (30 Sep).</b> Manchester and Milan arrived on 30 Sep and pass every check. Turin's cool summer is the real 2014 year, so it is kept.</li>
+      <li class="stop"><b>&#128308; Buildings are split into floors and flats (your ruling, 30 Sep).</b> Every flat on every floor has its own zone and its own household, and every flat becomes a training row. The new model is built and checked, and its 36-run pilot passed on 30 Sep: every run clean, 4 to 25 seconds each, and the manager's own recount matched.</li>
+      <li class="ok"><b>Campaign design is final for Spain and Italy (30 Sep): 4,768 Spanish and 4,501 Italian runs.</b> That is about 18 CPU-hours, under one hour on 30 CPUs, with 46 TB of disk free. Each household lives in at least three different flats of every apartment building, and runs never mix training and test households. The UK waits for your UK household script.</li>
+      <li class="ok"><b>The Spain and Italy campaign is finished and checked (30 Sep).</b> All 9,269 runs passed every check; repeats of the same run give identical results; the training/validation/test lists are written and locked, and the test lists cannot be opened until the scoring rules are frozen.</li>
+      <li class="ok"><b>The scoring rules are frozen (30 Sep, 20:04).</b> You were asleep and said to go on without you, so I found the ASHRAE Guideline 14 page myself (2002 edition, clause 5.3.2.4 f, page 18: hourly error at most 30 %, bias at most 10 %) and read it word for word. Please check that your 2014 edition says the same; any change is added as a dated note, never by rewriting the rules. The test lists stayed locked until the freeze and open only now.</li>
+      <li class="hold"><b>A first result for the paper (30 Sep).</b> A stand-in that meets the usual hourly accuracy standard can still get the household effect on heating and cooling badly wrong (15 of 16 heating and cooling groups fail). A stand-in with no household effect at all passes the load standard in half of the groups. This is the paper&rsquo;s point, shown on stand-ins; the trained surrogate in Step 5 must do better on heating and cooling.</li>
+      <li class="hold"><b>Outputs: everything useful, per flat and per hour (your ruling, 30 Sep).</b> Heating, cooling, equipment electricity, total electricity (heat pump efficiency 3 for now; your number if you have one), plus heat gains and losses, temperatures and unmet hours. Lighting: nothing in 4J or 5J models it; your call whether to add a simple model.</li>
+      <li class="ok"><b>The first 50 test runs worked (30 Sep) and taught three things.</b> Every run finished cleanly in about 2 seconds; appliance electricity only copied the schedule, which is why total electricity now includes heating and cooling; and the "at home" check must count a home as empty only when nobody is in.</li>
+      <li class="hold"><b>UK-file issue: fixed on our side (29 Sep night).</b> The 5J script now reads only your Spain-and-Italy copy and refuses the mixed 4J file; Spain and Italy tests give exactly the same results as before. A second small slip: a helper started a search over the whole project folder and stopped it at once; nothing was shown, but UK-derived 4J files were within its reach. Searches are now limited to named files. Whether anything needs reporting to the UK Data Service stays your call.</li>
+      <li class="ok"><b>France stays out.</b> Progedo approved a French data request on 29 Sep, but it does not include the time-use diary, so the 5J design does not change.</li>
+      <li class="hold"><b>Lessons from 1J to 4J are in the checklist.</b> The biggest: identical EnergyPlus input gave different heating values in 4J, and the heating occupancy effect was under half a percent, so replicate runs set a noise floor.</li>
+    </ul>
+  </section>
+
+  <footer>
+    The state is the Progress Log of <code>5thJ_00_Occupancy_Surrogate_Pipeline.md</code>; the one-page picture is
+    <code>5thJ_00_Occupancy_Surrogate_Pipeline_Overview.md</code>. How B4 was chosen: <code>0_New_Ideas/</code>.
+  </footer>
+</div>
+
+<script>
+const DATA = [
+  {n:0, title:"Decisions, licences, novelty (week 1)", items:[
+    {t:"Subject ruled: B4, occupancy-aware simulation surrogate", s:"done", note:"Ruled by the author 2026-09-28."},
+    {t:"Sole author, no co-authored input", s:"done", note:"No 2J generator, no 1J to 3J runs, no CENTUS model."},
+    {t:"Old folder renamed <code>0_New_Ideas</code>; new <code>5J_docs_occ</code> created", s:"done"},
+    {t:"&#128308; O-1 HETUS agreements read (Spain, UK, Italy)", s:"done", risk:true, note:"Read 28 Sep. Spain and Italy: open licences. UK kept (author, 28 Sep); UK-derived outputs stay private; no online AI tool touches UK data."},
+    {t:"Graphical abstract prompt written (method panels now, result panel after scoring)", s:"done"},
+    {t:"Graphical abstract draft 2 built (method panels; result panel empty until scoring)", s:"done", note:"Even rows, full arrows, grey cross, all text 8 pt; word, size and clash checks pass. Panel widths 31 / 40 / 30 %."},
+    {t:"O-2 nearest work read at source", s:"done", note:"Closed by the author 28 Sep night. He 2015 and Dabirian 2024: no surrogate. Park and Park 2023 already score a surrogate on differences (retrofit savings): cited as the source. Li 2021 accepted from its summary; read in full at Step 8, with one logged search before the paper says \"first\". <code>Prompts/deepResearch/VETTING_RT45.md</code>"},
+    {t:"O-5 Speed CPU share agreed with 1J", s:"done", note:"Set 30 Sep: 30 CPUs for 5J. Only one small job of yours was on the cluster."},
+    {t:"Venue left open (O-6)", s:"todo"}
+  ]},
+  {n:1, title:"Inventory of what 4J already built", items:[
+    {t:"HETUS files located, counts and checksums", s:"prog", note:"Spain and Italy: every count and checksum equals the 4J record. UK: waiting on the author (one line to run; no AI tool opens UK files)."},
+    {t:"Diary-to-schedule path, midnight origin checked", s:"done", risk:true, note:"All diaries start at 04:00 and are turned to midnight over the whole year. 4J ignores the second activity people report; 5J adds it."},
+    {t:"TABULA IDF builder and variable parameters", s:"done", note:"88 archetypes (Spain 24, UK 32, Italy 32). The builder models heating only and asks for no meters: 5J adds cooling and meters (Step 2)."},
+    {t:"ERA5 weather files and years", s:"done", note:"Only one city per country: Madrid, London, Bologna, two years each. More cities need new files (author to decide, Step 2)."},
+    {t:"OpenUBEM campaign entry point (EnergyPlus 23.1)", s:"done", note:"EnergyPlus 23.1 is installed here and on Speed. The 4J box files say 24.2; 5J writes them for 23.1."},
+    {t:"Manager re-derives one number per item", s:"done", note:"Five numbers re-read, all equal. The helper opened no UK file (its full log was searched)."}
+  ]},
+  {n:2, title:"Campaign design and pilot (week 1)", items:[
+    {t:"Climates, building variants, households", s:"done", note:"Done 30 Sep for Spain and Italy: nine climates, 40 building variants per country, 60 households each (Spain's schedules rebuilt on Speed match the originals exactly), one average household per country, Italian flat counts, the training/test split and the run tables. A placement flaw (a few households twice in the same flat) was found and fixed. UK households wait for your script."},
+    {t:"Same households on every building of a country", s:"done", note:"Done 29 Sep night. The script now runs exactly the chosen households: the 60 Spanish households ran, and the default run gives the same results as before."},
+    {t:"Targets from the right meters; annual = sum of hourly", s:"done", note:"Done 30 Sep: per flat, every hour: heating, cooling, equipment electricity and total electricity (heat pump efficiency 3, for now), plus all other useful outputs. Annual equals the sum of hourly for every pilot run, at building and at flat level."},
+    {t:"&#128308; Replicate runs for a truth noise floor", s:"done", risk:true, note:"Planned 30 Sep: 10 inputs repeated 10 times per country. In the multi-zone pilot, 5 repeats of 2 inputs gave identical results (in 4J identical input once gave different heating values)."},
+    {t:"Secondary activity in electricity schedules", s:"done", note:"Done 29 Sep. Laundry-or-ironing as a second activity now switches on the ironing profile, the more common of the two in both Spain and Italy (about 5 to 1 in diary minutes). Old runs are reproduced byte for byte when the rule is off. Stock appliance totals do not change; the timing does."},
+    {t:"Pilot of 50 runs timed on Speed", s:"done", note:"Done 30 Sep: 50 of 50 runs finished cleanly, about 2 s each. Report accepted as a measurement, but these were one-box buildings, so the pilot is repeated with the new model."},
+    {t:"&#128308; Multi-zone buildings: floors and flats (your ruling, 30 Sep)", s:"done", risk:true, note:"Learned from 3J and 4J: 4J gave each flat its own zone and household, but its builder needs real footprints; 3J put the same household in every flat. The 5J model keeps the TABULA physics and splits the building into floors and flats (flat count from TABULA). Checked 30 Sep: it gives the old answer exactly when collapsed back to one box."},
+    {t:"Multi-zone pilot rerun and timed on Speed", s:"done", note:"Done 30 Sep: 36 Madrid runs, every flat with its own household. All clean, 4 to 25 s each; four planted errors all caught; repeats identical. Cooling per square metre in Madrid looks high: noted for a check before the paper."},
+    {t:"Campaign size set from the pilot", s:"done", note:"Set 30 Sep: about 14,200 runs for nine cities, under one hour on 30 CPUs, about 22 GB. No cut needed. The largest block (77 flats) is being timed now."},
+  ]},
+  {n:3, title:"Full campaign on Speed, CPU (week 2)", items:[
+    {t:"<code>sbatch</code> arrays submitted, ledger written", s:"done", note:"Done 30 Sep, 16:49 to 18:33: all 9,269 Spain and Italy runs finished in six batches on 30 CPUs, and none failed. The run tool passed all 16 checks of its four-run test first."},
+    {t:"G5J.1 campaign integrity", s:"done", note:"Done 30 Sep: all 9,269 Spain and Italy runs pass (complete, 8,760 hours per flat, not cut short); four planted errors were caught."},
+    {t:"Resume check seen to drop the plan count", s:"done", note:"Done 30 Sep: one batch moved away was counted as missing (9,269 to 9,260), then restored."},
+    {t:"Outputs differ between households; one work folder per run", s:"done", note:"Done 30 Sep: 36,181 flats checked, no two households give the same series."},
+    {t:"Splits written and sealed by checksum", s:"done", risk:true, note:"Done 30 Sep: 12 lists written, read-only, checksums recorded. Households and buildings never cross splits. Test lists stay closed until the rules are frozen."},
+  ]},
+  {n:4, title:"Freeze the gates", items:[
+    {t:"Thresholds frozen, checksum written", s:"done", note:"Done 30 Sep, 20:04: the load limit is cited to ASHRAE Guideline 14-2002, clause 5.3.2.4 f, page 18; the checksums of the rules and the scoring program are locked on Speed. Before the lock a test list was refused; after it, the test lists open."},
+    {t:"Perturbation table", s:"done", note:"Done 30 Sep: each planted fault (a missing run, an average-only prediction, no household effect, a 2-hour shift, a control that copies the stand-in) turns the right check from pass to fail."},
+    {t:"&#128308; Each gate seen failing", s:"done", risk:true, note:"Done 30 Sep. The first &ldquo;too few usable pairs&rdquo; test could not fire (it multiplied a zero); redone properly, it now fires in all 32 groups."},
+    {t:"Exit code and SUMMARY meaning written", s:"done", note:"Done 30 Sep: 0 = all scored, 2 = some groups not scoreable, 1 = a section crashed; a planted crash gives 1."},
+    {t:"Noise floor from replicates; per end use and dwelling class", s:"done", note:"Done 30 Sep: repeated runs give identical results, so the floor is zero (the 4J run-to-run noise did not come back)."}
+  ]},
+  {n:5, title:"Baselines and surrogate, GPU (week 3)", items:[
+    {t:"B0 average-schedule baseline", s:"prog", note:"Started 30 Sep, 20:08: the rules for all of Step 5 were written and locked before any training. A helper is building the training data (what EnergyPlus gets: who is home, appliance use, neighbouring flats, weather, building) and the average-household baseline."},
+    {t:"B1 boosted trees (CPU)", s:"todo"},
+    {t:"S sequence model on the A100, chosen on validation only", s:"todo", note:"Two model types, 8 settings each, one small GPU slice per setting. The winner is the one that gets the household effect right in the most groups, judged by the frozen scoring program."},
+    {t:"C occupancy-blind control", s:"todo", risk:true, note:"Must fail G5J.3."},
+    {t:"Training logs and GPU hours written", s:"todo"}
+  ]},
+  {n:6, title:"One scoring of the sealed tests (week 4)", items:[
+    {t:"G5J.2 load accuracy", s:"todo"},
+    {t:"G5J.3 occupancy effect, cluster bootstrap", s:"todo"},
+    {t:"G5J.4 blind control fails", s:"todo"},
+    {t:"G5J.5 peaks and thermal-mass lag", s:"todo"},
+    {t:"G5J.6 leave one country out (reported)", s:"todo"},
+    {t:"Manager re-derives every number", s:"todo"}
+  ]},
+  {n:7, title:"What the speed buys (week 4)", items:[
+    {t:"One OpenUBEM European district chosen", s:"todo"},
+    {t:"100,000 occupancy draws by surrogate", s:"todo"},
+    {t:"EnergyPlus check on a random subsample", s:"todo"},
+    {t:"G5J.7 time per dwelling-year (reported)", s:"todo"},
+    {t:"&#128308; Checkpoints copied off Speed before GPU access ends", s:"todo", risk:true}
+  ]},
+  {n:8, title:"Writing (after the GPU window)", items:[
+    {t:"Nearest work re-checked at source", s:"todo"},
+    {t:"Data plots from frozen data only; image prompts for drawings", s:"todo"},
+    {t:"Manuscript in the 2J AE style", s:"todo"},
+    {t:"Venue and sole-author declarations", s:"todo"}
+  ]}
+];
+
+const LABEL = {done:"Done", prog:"In progress", todo:"Not started"};
+const KEY = "5j-board-filter";
+let filter = "all";
+try { filter = localStorage.getItem(KEY) || "all"; } catch (e) { filter = "all"; }
+
+function stepStatus(step){
+  const s = step.items.map(i => i.s);
+  if (s.every(x => x === "done")) return "done";
+  if (s.every(x => x === "todo")) return "todo";
+  return "prog";
+}
+
+function keep(item){
+  if (filter === "all") return true;
+  if (filter === "risk") return !!item.risk;
+  return item.s === filter;
+}
+
+function renderSummary(){
+  const all = DATA.flatMap(s => s.items);
+  const c = {done:0, prog:0, todo:0};
+  all.forEach(i => c[i.s]++);
+  document.getElementById("t-done").textContent = c.done;
+  document.getElementById("t-prog").textContent = c.prog;
+  document.getElementById("t-todo").textContent = c.todo;
+  document.getElementById("t-all").textContent = all.length;
+  const m = document.getElementById("meter");
+  m.innerHTML = "";
+  ["done","prog","todo"].forEach(k => {
+    const i = document.createElement("i");
+    i.className = k === "done" ? "d" : (k === "prog" ? "p" : "n");
+    i.style.width = (100 * c[k] / all.length) + "%";
+    m.appendChild(i);
+  });
+}
+
+function renderTrack(){
+  const t = document.getElementById("track");
+  t.innerHTML = "";
+  DATA.forEach(step => {
+    const st = stepStatus(step);
+    const done = step.items.filter(i => i.s === "done").length;
+    const b = document.createElement("button");
+    b.className = "seg";
+    b.dataset.s = st;
+    b.type = "button";
+    b.innerHTML = '<span class="n">' + step.n + '</span>' +
+                  '<span class="bar"></span>' +
+                  '<span class="f">' + done + '/' + step.items.length + '</span>';
+    b.setAttribute("aria-label", "Step " + step.n + ", " + step.title + ", " + LABEL[st]);
+    b.addEventListener("click", () => {
+      const el = document.getElementById("step-" + step.n);
+      if (el) el.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    t.appendChild(b);
+  });
+}
+
+function renderBoard(){
+  const board = document.getElementById("board");
+  board.innerHTML = "";
+  let shown = 0;
+  DATA.forEach(step => {
+    const items = step.items.filter(keep);
+    if (!items.length) return;
+    shown += items.length;
+    const sec = document.createElement("section");
+    sec.className = "step";
+    sec.id = "step-" + step.n;
+
+    const head = document.createElement("div");
+    head.className = "step-head";
+    head.innerHTML = '<span class="step-no">STEP ' + step.n + '</span>' +
+                     '<h2>' + step.title + '</h2>' +
+                     '<span class="pill ' + stepStatus(step) + '">' + LABEL[stepStatus(step)] + '</span>' +
+                     (step.note ? '<p class="step-note' + (step.warn ? ' warn' : '') + '">' + step.note + '</p>' : '');
+    sec.appendChild(head);
+
+    const scroller = document.createElement("div");
+    scroller.className = "scroller";
+    const table = document.createElement("table");
+    const tb = document.createElement("tbody");
+    items.forEach(i => {
+      const tr = document.createElement("tr");
+      if (i.risk) tr.className = "risk";
+      tr.innerHTML = '<td class="item">' + i.t + '</td>' +
+                     '<td class="st"><span class="pill ' + i.s + '">' + LABEL[i.s] + '</span></td>' +
+                     '<td class="note">' + (i.note || "") + '</td>';
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    scroller.appendChild(table);
+    sec.appendChild(scroller);
+    board.appendChild(sec);
+  });
+  if (!shown){
+    board.innerHTML = '<p class="empty">Nothing matches that filter.</p>';
+  }
+}
+
+document.querySelectorAll(".chip").forEach(btn => {
+  btn.addEventListener("click", () => {
+    filter = btn.dataset.f;
+    try { localStorage.setItem(KEY, filter); } catch (e) {}
+    document.querySelectorAll(".chip").forEach(b =>
+      b.setAttribute("aria-pressed", String(b.dataset.f === filter)));
+    renderBoard();
+  });
+});
+document.querySelectorAll(".chip").forEach(b =>
+  b.setAttribute("aria-pressed", String(b.dataset.f === filter)));
+
+renderSummary();
+renderTrack();
+renderBoard();
+</script>

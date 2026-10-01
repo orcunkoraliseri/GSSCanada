@@ -1,0 +1,93 @@
+# -*- coding: utf-8 -*-
+"""5J Step 5 part C: predictions of a trained checkpoint for validation runs (scorer layout, copied from frz_standins.write_pred).
+  usage: s5_predict.py --ckpt <dir with best.pt> --split validation --out <pred dir> [--n_runs N]
+All flats of every validation run, 365 windows each -> 8,760 h x 3 targets (clipped at 0 kWh); total_elec = equipment +
+(heating + cooling)/3.0 (rules R3). Output: <out>/<climate_id>/<run_id>.csv.gz. Only the validation split is allowed here (R1, R7)."""
+import argparse, gzip, io, json, os, sys, time
+sys.dont_write_bytecode = True
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import numpy as np
+import pandas as pd
+import torch
+import s5_common as c
+import s5_data as sd
+import s5_models as sm
+
+H = c.H
+
+
+def load_model(ckpt_dir, device):
+    ck = torch.load(os.path.join(ckpt_dir, "best.pt"), map_location=device, weights_only=False)
+    cfg = ck["config"]
+    return ck, cfg
+
+
+def write_pred(out, climate, rid, arr, note):
+    d = "%s/%s/" % (out.rstrip("/"), climate)
+    os.makedirs(d, exist_ok=True)
+    nd = arr.shape[0]
+    df = pd.DataFrame({"dwelling": np.repeat(np.arange(nd), H), "hour": np.tile(np.arange(1, H + 1), nd)})
+    for i, t in enumerate(c.TARGETS):
+        df[t] = arr[:, :, i].reshape(-1)
+    with open(d + rid + ".csv.gz", "wb") as raw:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as gz:
+            txt = io.TextIOWrapper(gz, encoding="utf-8", newline="")
+            txt.write("# 5J Step 5 surrogate prediction for run %s: %s\n" % (rid, note))
+            df.to_csv(txt, index=False, float_format="%.8g")
+            txt.flush()
+            txt.detach()
+
+
+@torch.no_grad()
+def predict_runs(ckpt_dir, out, run_ids=None, n_runs=None, device="cuda", data=None, chunk=2048):
+    """Returns a list of dicts (run_id, climate, nd, window_shape, rows_written)."""
+    ck, cfg = load_model(ckpt_dir, device)
+    # new flags (control, rules R8/R9) come from the checkpoint's own config; absent -> the old call exactly
+    dv = data or sd.Data("validation", device, stats=ck["static_stats"], load_targets=False, drop_climate=bool(cfg.get("no_climate", False)),
+                         country=cfg.get("country"), blind=bool(cfg.get("blind", False)))
+    model = sm.build_model(cfg, dv.n_dyn, dv.S).to(device)
+    model.load_state_dict(ck["state_dict"])
+    model.eval()
+    fl = dv.flats
+    rid_col = fl["run_id"].to_numpy()
+    uniq, first, cnt = np.unique(rid_col, return_index=True, return_counts=True)
+    start = dict(zip(uniq, first))
+    ndr = dict(zip(uniq, cnt))
+    ids = list(uniq) if run_ids is None else list(run_ids)
+    if n_runs:
+        ids = ids[:n_runs]
+    info = []
+    for rid in ids:
+        s0, nd = int(start[rid]), int(ndr[rid])
+        assert (fl["flat"].to_numpy()[s0:s0 + nd] == np.arange(nd)).all(), rid
+        rows = torch.arange(s0, s0 + nd, device=device).repeat_interleave(sd.NDAY)
+        days = torch.arange(sd.NDAY, device=device).repeat(nd)
+        outs = []
+        for i in range(0, len(rows), chunk):
+            x, st, _ = dv.windows(rows[i:i + chunk], days[i:i + chunk], with_y=False)
+            with torch.autocast("cuda", dtype=torch.bfloat16):
+                o = model(x, st)
+            o = torch.maximum(o.float(), dv.lo)
+            outs.append(o * dv.tsd + dv.tmu)
+        o = torch.cat(outs, 0)
+        wshape = tuple(o.shape[1:])
+        o = torch.clamp(o, min=0.0).reshape(nd, sd.NDAY * 24, 3).double().cpu().numpy()
+        arr = np.concatenate([o, (o[:, :, 2] + (o[:, :, 0] + o[:, :, 1]) / c.COP)[:, :, None]], 2)
+        cl = fl["climate_id"].iloc[s0]
+        write_pred(out, cl, rid, arr, "config %s, checkpoint %s, clipped at 0 kWh, total_elec = equipment + (heating + cooling)/3.0" % (cfg.get("id"), ckpt_dir))
+        info.append({"run_id": rid, "climate": cl, "nd": nd, "window_shape": wshape, "rows_written": nd * H})
+    return info
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--ckpt", required=True)
+    ap.add_argument("--split", default="validation")
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--n_runs", type=int, default=None)
+    a = ap.parse_args()
+    if a.split != "validation":
+        raise PermissionError("REFUSED: s5_predict writes validation predictions only")
+    t0 = time.time()
+    res = predict_runs(a.ckpt, a.out, n_runs=a.n_runs)
+    print("PREDICT_DONE runs=%d seconds=%.0f" % (len(res), time.time() - t0), flush=True)

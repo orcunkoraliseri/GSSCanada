@@ -17,6 +17,7 @@ import hashlib
 import io
 import json
 import math
+import ntpath
 import os
 import random
 import sys
@@ -25,12 +26,23 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT5 = os.path.dirname(HERE)
 OUT_DEFAULT = os.path.join(ROOT5, "Step2_docs", "outputs_step2")
 DATA = r"C:\Users\o_iseri\Desktop\GSSCanada\_5J_data\surrogate"
-CORPUS_ES_IT = os.path.join(DATA, "inputs", "4J_step3_corpus_es_it.jsonl")
+CORPUS_ES_IT = ntpath.join(DATA, "inputs", "4J_step3_corpus_es_it.jsonl")
 CORPUS_ES_IT_MD5 = "1a5163445291b54114832e192b0d9a05"
 MANIFEST = os.path.join(os.path.dirname(ROOT5), "4J_docs_occ", "Step8_docs", "outputs_step8",
                         "archetype_idf_manifest.csv")
-WEATHER_JSON = os.path.join(DATA, "weather", "epw", "weather_score_5J.json")
+WEATHER_JSON = ntpath.join(DATA, "weather", "epw", "weather_score_5J.json")
 OPENUBEM_EPW = r"C:\Users\o_iseri\Desktop\OpenUBEM\openubem\data\weather"
+# 5J change 2026-09-30 (run on Speed): DATA and OPENUBEM_EPW stay the names WRITTEN in climates.csv
+# (ntpath, so the tables are byte-identical on Linux); --data / --openubem only say where to READ them.
+READ_ROOTS = {DATA: DATA, OPENUBEM_EPW: OPENUBEM_EPW}
+
+
+def rpath(p):
+    """5J change 2026-09-30: read location of a file recorded under DATA or OPENUBEM_EPW."""
+    for rec, rd in READ_ROOTS.items():
+        if p.startswith(rec) and rd != rec:
+            return os.path.join(rd, *p[len(rec):].lstrip("\\").split("\\"))
+    return p
 
 CLASSES = ["SFH", "TH", "MFH", "AB"]
 COUNTRIES = ["es", "uk", "it"]
@@ -44,13 +56,13 @@ NO_WEIGHT = {}   # 5J change (households v2): country -> hids dropped for lack o
 
 # nine climates: (country, city, year, site key in weather_score_5J.json or None, fixed path or None)
 CLIMATES = [
-    ("es", "Madrid", 2010, None, os.path.join(OPENUBEM_EPW, "es_madrid_2009_2010_y2010.epw")),
+    ("es", "Madrid", 2010, None, ntpath.join(OPENUBEM_EPW, "es_madrid_2009_2010_y2010.epw")),
     ("es", "Valencia", 2010, "es_valencia", None),
     ("es", "Seville", 2010, "es_seville", None),
-    ("uk", "London", 2014, None, os.path.join(OPENUBEM_EPW, "uk_london_2014_2015_y2014.epw")),
+    ("uk", "London", 2014, None, ntpath.join(OPENUBEM_EPW, "uk_london_2014_2015_y2014.epw")),
     ("uk", "Birmingham", 2014, "uk_birmingham", None),
     ("uk", "Manchester", 2014, "uk_manchester", None),
-    ("it", "Bologna", 2014, None, os.path.join(OPENUBEM_EPW, "it_bologna_2013_2014_y2014.epw")),
+    ("it", "Bologna", 2014, None, ntpath.join(OPENUBEM_EPW, "it_bologna_2013_2014_y2014.epw")),
     ("it", "Turin", 2014, "it_turin", None),
     ("it", "Milan", 2014, "it_milan", None),
 ]
@@ -250,14 +262,14 @@ CLIMATE_HEADER = ["climate_id", "country", "city", "year", "source", "path", "md
 
 
 def build_climates():
-    sc = json.load(io.open(WEATHER_JSON, encoding="utf-8"))
+    sc = json.load(io.open(rpath(WEATHER_JSON), encoding="utf-8"))
     rows = []
     for c, city, year, key, path in CLIMATES:
         cid = "%s_%s_%d" % (c, city.lower(), year)
         rmse = ghi = sm = ""
         source = "ERA5 5J" if key else "ERA5 OpenUBEM"
         if key:
-            path = os.path.join(DATA, "weather", "epw", "%s_%d.epw" % (key, year))
+            path = ntpath.join(DATA, "weather", "epw", "%s_%d.epw" % (key, year))
             if key in sc:
                 rmse = "%.3f" % sc[key]["rmse_theta_month"]
                 ghi = "%.0f" % sc[key]["ghi_year_kwh"]
@@ -265,13 +277,13 @@ def build_climates():
             rmse = "%.3f" % OPENUBEM_SCORE[city][0]
             ghi = "%d" % OPENUBEM_SCORE[city][1]
         scored = (key is None) or (key in sc)
-        if key in ("uk_manchester", "it_milan"):
-            status = "pending"              # still downloading; md5 stays blank
-        elif os.path.exists(path) and scored:
-            sm, status = md5(path), "ok"
+        # 5J change 2026-09-30: the hard-coded "pending" for uk_manchester / it_milan is removed
+        # (both converted and scored 2026-09-30); every row now follows the rule below.
+        if os.path.exists(rpath(path)) and scored:
+            sm, status = md5(rpath(path)), "ok"
             if key and sm != sc[key]["md5"]:
                 raise ValueError("md5 of %s differs from the score json" % path)
-        elif os.path.exists(path):
+        elif os.path.exists(rpath(path)):
             status = "on_disk_not_scored"   # file exists, no score/md5 in the json yet
         else:
             status = "pending"
@@ -308,10 +320,14 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", type=int, default=5)
     ap.add_argument("--out", default=OUT_DEFAULT)
+    ap.add_argument("--data", default=DATA, help="read root for _5J_data/surrogate (5J change 2026-09-30)")
+    ap.add_argument("--openubem", default=OPENUBEM_EPW, help="read root for the OpenUBEM EPWs (same)")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
+    READ_ROOTS[DATA], READ_ROOTS[OPENUBEM_EPW] = a.data, a.openubem
+    print("PATCH read_roots OK data=%s openubem=%s" % (a.data, a.openubem))
 
-    if md5(CORPUS_ES_IT) != CORPUS_ES_IT_MD5:
+    if md5(rpath(CORPUS_ES_IT)) != CORPUS_ES_IT_MD5:
         sys.exit("GUARD: corpus is not the Spain+Italy copy (md5 mismatch); refused")
 
     manifest = load_manifest()
@@ -321,7 +337,7 @@ def main():
     hh = []
     for c in ("es", "it"):
         w = read_household_weights(EPISODES[c], strict_constant=(c == "it"))   # 5J change (households v2)
-        hh += draw_households(a.seed, c, read_household_sizes(CORPUS_ES_IT, c), w)
+        hh += draw_households(a.seed, c, read_household_sizes(rpath(CORPUS_ES_IT), c), w)
         print("%s: hids without a positive weight (dropped from the draw): %d" % (c, NO_WEIGHT[c]))
     pilot_h = pick_pilot_households(a.seed, [h for h in hh if h["country"] == "es"])
 
@@ -337,7 +353,7 @@ def main():
     lines = []
     for n in ("buildings.csv", "households.csv", "climates.csv", "pilot_runs.csv"):
         lines.append("%s  %s" % (md5(os.path.join(a.out, n)), n))
-    lines.append("%s  %s" % (md5(CORPUS_ES_IT), "4J_step3_corpus_es_it.jsonl (copy)"))
+    lines.append("%s  %s" % (md5(rpath(CORPUS_ES_IT)), "4J_step3_corpus_es_it.jsonl (copy)"))
     lines.append("%s  %s" % (md5(MANIFEST), "archetype_idf_manifest.csv"))
     lines.append("%s  %s" % (md5(os.path.abspath(__file__)), "5thJ_design_tables.py"))
     with io.open(os.path.join(a.out, "design_md5.txt"), "w", encoding="utf-8", newline="") as fh:

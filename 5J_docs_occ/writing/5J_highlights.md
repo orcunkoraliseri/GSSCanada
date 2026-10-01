@@ -1,0 +1,5 @@
+- Surrogate gets the household effect on loads right in 31 of 32 test cells
+- A blind control, given shuffled household inputs, passes the effect test nowhere
+- Hourly load meets the ASHRAE bands in only 14 to 21 of 32 test cells
+- Household size and appliance level explain 73 to 98 % of the annual effect
+- Other training seeds and a new country pass far fewer cells

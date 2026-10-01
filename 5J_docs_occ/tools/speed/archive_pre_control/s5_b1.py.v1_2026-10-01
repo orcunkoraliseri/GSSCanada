@@ -1,0 +1,354 @@
+# -*- coding: utf-8 -*-
+"""5J Step 5 part B1: boosted trees (rules R5), Speed job only; Spain + Italy only; never a UK file; never a test run.
+Reads ONLY the feature store /speed-scratch/o_iseri/5J/train/store/ (development and validation tables, no truth files).
+Features (hourly, per flat): current drivers (people at home, appliance power), current weather (7), lags 1,2,3,6,12,24,48,168 h of
+people / appliance power / dry-bulb, rolling 24 h and 168 h means (current hour included) of people and dry-bulb, neighbour drivers
+(9), calendar (5), static vector and climate one-hot. Lags and rolling windows wrap inside the year (as R2).
+Training rows: 6,000,000 random development flat-hours (seed 20260930). Tuning: 20 random configurations on the first 2,000,000 of
+those rows, chosen by MSE (standardised targets) on 2,000,000 random validation flat-hours (seed 20260931), one per target.
+Refit on all 6 M rows; predict all 1,980 validation runs; total_elec = equipment + (heating + cooling)/3.0 (R3).
+B1_SMOKE=1 runs a tiny version into pred/B1_smoke and ckpt/B1_smoke (never scored)."""
+import sys, os, io, gzip, json, time, hashlib, multiprocessing as mp
+sys.dont_write_bytecode = True
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import numpy as np
+import pandas as pd
+
+SMOKE = os.environ.get("B1_SMOKE") == "1"
+TR = "/speed-scratch/o_iseri/5J/train/"
+ST = TR + "store/"
+TAG = "B1_smoke" if SMOKE else "B1"
+OUT = TR + "pred/%s/" % TAG
+CK = TR + "ckpt/%s/" % TAG
+TRIALS = TR + "logs/%s_trials.jsonl" % TAG
+H = 8760
+COP = 3.0
+SEED_TRAIN, SEED_VAL = 20260930, 20260931
+N_TRAIN = 60000 if SMOKE else 6000000
+N_TUNE = 20000 if SMOKE else 2000000
+N_VAL = 20000 if SMOKE else 2000000
+N_CFG = 2 if SMOKE else 20
+N_PRED_RUNS = 6 if SMOKE else None
+LAGS = [1, 2, 3, 6, 12, 24, 48, 168]
+ROLLS = [24, 168]
+TNAMES = ["heating", "cooling", "equipment"]
+CH = 400000
+
+
+def md5(p):
+    h = hashlib.md5()
+    with open(p, "rb") as f:
+        for b in iter(lambda: f.read(1 << 20), b""):
+            h.update(b)
+    return h.hexdigest()
+
+
+def stamp(msg):
+    print("[%s] %s" % (time.strftime("%H:%M:%S"), msg), flush=True)
+
+
+# ------------------------------------------------------------------------------------------------ writer (worker processes)
+def write_pred(task):
+    climate, rid, arr, note = task
+    d = "%s%s/" % (OUT, climate)
+    os.makedirs(d, exist_ok=True)
+    nd = arr.shape[0]
+    full = np.empty((nd, H, 4), dtype=np.float64)
+    full[:, :, :3] = arr
+    full[:, :, 3] = arr[:, :, 2] + (arr[:, :, 0] + arr[:, :, 1]) / COP
+    df = pd.DataFrame({"dwelling": np.repeat(np.arange(nd), H), "hour": np.tile(np.arange(1, H + 1), nd)})
+    for i, t in enumerate(["heating_kwh", "cooling_kwh", "equipment_kwh", "total_elec_kwh"]):
+        df[t] = full[:, :, i].reshape(-1)
+    with open(d + rid + ".csv.gz", "wb") as raw:
+        with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as gz:
+            txt = io.TextIOWrapper(gz, encoding="utf-8", newline="")
+            txt.write("# 5J Step 5 model 'B1' for run %s: %s\n" % (rid, note))
+            df.to_csv(txt, index=False, float_format="%.8g")
+            txt.flush()
+            txt.detach()
+    return rid, nd
+
+
+# ------------------------------------------------------------------------------------------------ context
+def roll_mean(x, w):
+    """x [n, 8760]: mean of hours h-w+1..h, wrapping inside the year."""
+    xp = np.concatenate([x[:, -(w - 1):], x], axis=1).astype(np.float64)
+    cs = np.cumsum(xp, axis=1)
+    cs = np.concatenate([np.zeros((x.shape[0], 1)), cs], axis=1)
+    return ((cs[:, w:] - cs[:, :-w]) / w).astype(np.float32)
+
+
+class Ctx:
+    def __init__(self, split, cn):
+        self.F = pd.read_parquet(ST + "flats_%s.parquet" % split)
+        F = self.F
+        hh = {cc: np.load(ST + "hh_%s.npz" % cc) for cc in ("es", "it")}
+        n_es = hh["es"]["people"].shape[0]
+        self.P = np.vstack([hh["es"]["people"], hh["it"]["people"]]).astype(np.float32)
+        self.A = np.vstack([hh["es"]["appl_w"], hh["it"]["appl_w"]]).astype(np.float32)
+        off = {"es": 0, "it": n_es}
+        self.hh = (F["hh_index"].to_numpy() + F["country"].map(off).to_numpy()).astype(np.int64)
+        self.P24, self.P168 = roll_mean(self.P, 24), roll_mean(self.P, 168)
+        clim = sorted(F["climate_id"].unique()) if False else cn["climates"]
+        cidx = {c: i for i, c in enumerate(clim)}
+        self.W = np.stack([np.load(ST + "weather_%s.npy" % c) for c in clim]).astype(np.float32)    # [nc, 8760, 7]
+        self.cl = F["climate_id"].map(cidx).to_numpy().astype(np.int64)
+        self.D24 = np.stack([roll_mean(self.W[i, :, 0][None, :], 24)[0] for i in range(len(clim))])
+        self.D168 = np.stack([roll_mean(self.W[i, :, 0][None, :], 168)[0] for i in range(len(clim))])
+        self.CAL = np.stack([np.load(ST + "calendar_%s.npy" % cc) for cc in ("es", "it")]).astype(np.float32)   # [2, 8760, 5]
+        self.ct = F["country"].map({"es": 0, "it": 1}).to_numpy().astype(np.int64)
+        self.S = F[cn["static"] + cn["climate_onehot"]].to_numpy(dtype=np.float32)
+        self.NB = {}
+        for g in ("same", "above", "below"):
+            lst = [[int(x) for x in str(s).split(";")] if isinstance(s, str) and s != "" else [] for s in F["nb_" + g]]
+            m = max(1, max(len(x) for x in lst))
+            arr = -np.ones((len(lst), m), dtype=np.int64)
+            for i, x in enumerate(lst):
+                for j, v in enumerate(x):
+                    arr[i, j] = v + off[F["country"].iloc[i]]
+            self.NB[g] = arr
+
+
+def feature_names(cn):
+    import s5_common as c
+    n = ["people", "appl_w"] + c.WEATHER_CHANNELS
+    for L in LAGS:
+        n += ["people_lag%d" % L, "appl_w_lag%d" % L, "dry_bulb_c_lag%d" % L]
+    for w in ROLLS:
+        n += ["people_roll%d" % w, "dry_bulb_c_roll%d" % w]
+    n += c.NB_CHANNELS + c.CALENDAR_CHANNELS + cn["static"] + cn["climate_onehot"]
+    return n
+
+
+def build(ctx, rows, hours, nfeat):
+    n = len(rows)
+    X = np.empty((n, nfeat), dtype=np.float32)
+    j = 0
+    hh, cl, ct = ctx.hh[rows], ctx.cl[rows], ctx.ct[rows]
+    X[:, j] = ctx.P[hh, hours]; j += 1
+    X[:, j] = ctx.A[hh, hours]; j += 1
+    for k in range(7):
+        X[:, j] = ctx.W[cl, hours, k]; j += 1
+    for L in LAGS:
+        hl = (hours - L) % H
+        X[:, j] = ctx.P[hh, hl]; j += 1
+        X[:, j] = ctx.A[hh, hl]; j += 1
+        X[:, j] = ctx.W[cl, hl, 0]; j += 1
+    X[:, j] = ctx.P24[hh, hours]; j += 1
+    X[:, j] = ctx.D24[cl, hours]; j += 1
+    X[:, j] = ctx.P168[hh, hours]; j += 1
+    X[:, j] = ctx.D168[cl, hours]; j += 1
+    for g in ("same", "above", "below"):
+        idx = ctx.NB[g][rows]
+        mask = idx >= 0
+        cnt = mask.sum(1)
+        safe = np.where(mask, idx, 0)
+        pm = (ctx.P[safe, hours[:, None]] * mask).sum(1) / np.maximum(cnt, 1)
+        am = (ctx.A[safe, hours[:, None]] * mask).sum(1) / np.maximum(cnt, 1)
+        X[:, j] = pm; X[:, j + 1] = am; X[:, j + 2] = (cnt > 0); j += 3
+    X[:, j:j + 5] = ctx.CAL[ct, hours, :]; j += 5
+    X[:, j:] = ctx.S[rows]
+    assert j + ctx.S.shape[1] == nfeat, (j, ctx.S.shape, nfeat)
+    return X
+
+
+def build_chunked(ctx, rows, hours, nfeat):
+    X = np.empty((len(rows), nfeat), dtype=np.float32)
+    for a in range(0, len(rows), CH):
+        X[a:a + CH] = build(ctx, rows[a:a + CH], hours[a:a + CH], nfeat)
+    return X
+
+
+def sample(nrows, n, seed):
+    N = nrows * H
+    idx = np.random.default_rng(seed).choice(N, size=min(n, N), replace=False)
+    return (idx // H).astype(np.int64), (idx % H).astype(np.int64)
+
+
+def configs():
+    rng = np.random.default_rng(SEED_TRAIN)
+    out = []
+    for i in range(N_CFG):
+        out.append({"trial": i, "learning_rate": float(np.exp(rng.uniform(np.log(0.03), np.log(0.2)))),
+                    "max_leaf_nodes": int(rng.choice([31, 63, 127, 255])), "min_samples_leaf": int(rng.choice([20, 100, 400])),
+                    "l2_regularization": float(rng.choice([0.0, 0.1, 1.0]))})
+    return out
+
+
+def make_model(cfg):
+    from sklearn.ensemble import HistGradientBoostingRegressor as HGB
+    return HGB(learning_rate=cfg["learning_rate"], max_leaf_nodes=cfg["max_leaf_nodes"], min_samples_leaf=cfg["min_samples_leaf"],
+               l2_regularization=cfg["l2_regularization"], max_iter=600, early_stopping=True, validation_fraction=0.1,
+               n_iter_no_change=10, scoring="loss", random_state=SEED_TRAIN)
+
+
+def main():
+    t0 = time.time()
+    import joblib
+    import s5_common as c
+    os.makedirs(OUT, exist_ok=True)
+    os.makedirs(CK, exist_ok=True)
+    pool = mp.get_context("fork").Pool(1 if SMOKE else 3)          # forked before any OpenMP use
+    cn = json.load(open(ST + "static_cols.json"))
+    cn["climates"] = c.climates()
+    assert sorted(["c_" + x for x in cn["climates"]]) == sorted(cn["climate_onehot"]), "climate list mismatch"
+    names = feature_names(cn)
+    ok, bad = c.check_features(names)
+    print("FEATURES %d: %s" % (len(names), names), flush=True)
+    print("CHECK check_features %s %s" % ("PASS" if ok else "FAIL", bad), flush=True)
+    if not ok:
+        sys.exit(4)
+    nfeat = len(names)
+    norm = json.load(open(ST + "norm.json"))["targets"]
+    mu = np.array([norm[t]["mean"] for t in TNAMES], dtype=np.float64)
+    sd = np.array([norm[t]["sd"] for t in TNAMES], dtype=np.float64)
+
+    stamp("loading development store")
+    dev = Ctx("development", cn)
+    val = Ctx("validation", cn)
+    # runs in the tables must be inside the allowed lists (read through load_split only)
+    L = c.lists()
+    print("CHECK store_runs_in_allowed_lists %s dev_runs=%d val_runs=%d" % (
+        "PASS" if set(dev.F["run_id"]) <= set(L["development"]) and set(val.F["run_id"]) <= set(L["validation"]) else "FAIL",
+        dev.F["run_id"].nunique(), val.F["run_id"].nunique()), flush=True)
+    assert set(dev.F["run_id"]) <= set(L["development"]) and set(val.F["run_id"]) <= set(L["validation"])
+    print("INFO dev flats=%d val flats=%d" % (len(dev.F), len(val.F)), flush=True)
+    # Val 1.3 as amended (AMENDMENT 1): (a) no (country, household, building) in both dev and val
+    kd = set(zip(dev.F["country"], dev.F["hid"], dev.F["building_id"]))
+    kv = set(zip(val.F["country"], val.F["hid"], val.F["building_id"]))
+    print("CHECK val1_3a_country_household_building_in_both %s overlap=%d" % ("PASS" if not (kd & kv) else "FAIL", len(kd & kv)), flush=True)
+
+    Ydev = np.load(ST + "targets_development.npy")
+    Yval = np.load(ST + "targets_validation.npy")
+    assert Ydev.shape[0] == len(dev.F) and Yval.shape[0] == len(val.F)
+    r_tr, h_tr = sample(len(dev.F), N_TRAIN, SEED_TRAIN)
+    r_va, h_va = sample(len(val.F), N_VAL, SEED_VAL)
+    stamp("building features: train %d rows, validation sample %d rows, %d features" % (len(r_tr), len(r_va), nfeat))
+    Xtr = build_chunked(dev, r_tr, h_tr, nfeat)
+    Ytr = ((Ydev[r_tr, h_tr, :].astype(np.float64) - mu) / sd).astype(np.float32)
+    del Ydev
+    Xva = build_chunked(val, r_va, h_va, nfeat)
+    Yva = ((Yval[r_va, h_va, :].astype(np.float64) - mu) / sd).astype(np.float32)
+    del Yval
+    assert np.isfinite(Xtr).all() and np.isfinite(Xva).all() and np.isfinite(Ytr).all(), "non-finite"
+    stamp("features built (no NaN)")
+
+    # ---- tuning
+    cfgs = configs()
+    done = {}
+    if os.path.exists(TRIALS):
+        for ln in open(TRIALS):
+            d = json.loads(ln)
+            done[(d["target"], d["trial"])] = d
+    n_tune = min(N_TUNE, len(r_tr))
+    for ti, t in enumerate(TNAMES):
+        for cfg in cfgs:
+            key = (t, cfg["trial"])
+            if key in done:
+                d = done[key]
+                print("TRIAL (from earlier run) target=%s cfg=%s val_mse_std=%.6f seconds=%.0f" % (t, cfg, d["mse_std"], d["seconds"]), flush=True)
+                continue
+            s0 = time.time()
+            m = make_model(cfg).fit(Xtr[:n_tune], Ytr[:n_tune, ti])
+            mse = float(np.mean((m.predict(Xva).astype(np.float64) - Yva[:, ti]) ** 2))
+            d = {"target": t, "trial": cfg["trial"], "cfg": cfg, "mse_std": mse, "mse_kwh2": mse * sd[ti] ** 2, "n_iter": int(m.n_iter_),
+                 "seconds": time.time() - s0}
+            done[key] = d
+            with open(TRIALS, "a") as fh:
+                fh.write(json.dumps(d) + "\n")
+            print("TRIAL target=%s cfg=%s val_mse_std=%.6f val_mse_kwh2=%.6g n_iter=%d seconds=%.0f" % (t, cfg, mse, d["mse_kwh2"], d["n_iter"], d["seconds"]), flush=True)
+    chosen = {}
+    for t in TNAMES:
+        best = min((done[(t, cfg["trial"])] for cfg in cfgs), key=lambda d: d["mse_std"])
+        chosen[t] = best
+        print("CHOSEN target=%s trial=%d cfg=%s val_mse_std=%.6f (tuning-size fit)" % (t, best["trial"], best["cfg"], best["mse_std"]), flush=True)
+    tune_s = time.time() - t0
+
+    # ---- refit on the full training rows
+    models, final = {}, {}
+    for ti, t in enumerate(TNAMES):
+        s0 = time.time()
+        m = make_model(chosen[t]["cfg"]).fit(Xtr, Ytr[:, ti])
+        mse = float(np.mean((m.predict(Xva).astype(np.float64) - Yva[:, ti]) ** 2))
+        p = CK + "%s.joblib" % t
+        joblib.dump(m, p)
+        models[t] = m
+        final[t] = {"mse_std": mse, "mse_kwh2": mse * sd[ti] ** 2, "n_iter": int(m.n_iter_), "md5": md5(p), "seconds": time.time() - s0}
+        print("REFIT target=%s cfg=%s val_mse_std=%.6f val_mse_kwh2=%.6g n_iter=%d seconds=%.0f model=%s md5=%s" % (
+            t, chosen[t]["cfg"], mse, final[t]["mse_kwh2"], final[t]["n_iter"], final[t]["seconds"], p, final[t]["md5"]), flush=True)
+    json.dump({"chosen": {t: chosen[t]["cfg"] for t in TNAMES}, "final": final, "features": names}, open(CK + "b1_config.json", "w"), indent=1)
+    del Xtr, Ytr
+    refit_s = time.time() - t0 - tune_s
+
+    # ---- predict every validation run
+    stamp("predicting validation runs")
+    F = val.F
+    runs = F["run_id"].to_numpy()
+    starts = np.r_[0, np.nonzero(runs[1:] != runs[:-1])[0] + 1, len(runs)]
+    R = c.runs()
+    spans = [(int(starts[i]), int(starts[i + 1])) for i in range(len(starts) - 1)]
+    if N_PRED_RUNS:
+        spans = spans[:N_PRED_RUNS]
+    pend, nwritten, first = [], 0, None
+    batch, brows = [], 0
+
+    def flush(batch):
+        nonlocal first
+        rows = np.concatenate([np.arange(a, b) for a, b in batch])
+        rr = np.repeat(rows, H)
+        hh = np.tile(np.arange(H), len(rows))
+        pred = np.empty((len(rr), 3), dtype=np.float64)
+        for a in range(0, len(rr), CH):
+            Xc = build(val, rr[a:a + CH], hh[a:a + CH], nfeat)
+            for ti, t in enumerate(TNAMES):
+                pred[a:a + CH, ti] = models[t].predict(Xc).astype(np.float64) * sd[ti] + mu[ti]
+        pred = pred.reshape(len(rows), H, 3)
+        o = 0
+        for a, b in batch:
+            nd = b - a
+            rid = runs[a]
+            assert int(R[rid]["n_dwellings"]) == nd and list(F["flat"].iloc[a:b]) == list(range(nd)), rid
+            arr = pred[o:o + nd].astype(np.float32)
+            if first is None:
+                first = (rid, arr.copy(), F["climate_id"].iloc[a])
+            pend.append(pool.apply_async(write_pred, ((F["climate_id"].iloc[a], rid, arr,
+                        "HistGradientBoosting (B1), total_elec = equipment + (heating + cooling)/3.0"),)))
+            o += nd
+        while len(pend) > 12:
+            pend.pop(0).get()
+
+    for a, b in spans:
+        batch.append((a, b)); brows += (b - a)
+        if brows * H >= CH * 2:
+            flush(batch); nwritten += len(batch); batch, brows = [], 0
+            if nwritten % 100 < 20:
+                stamp("predicted %d/%d runs" % (nwritten, len(spans)))
+    if batch:
+        flush(batch); nwritten += len(batch)
+    for pnd in pend:
+        pnd.get()
+    pool.close(); pool.join()
+    pred_s = time.time() - t0 - tune_s - refit_s
+    n_expected = 6 if SMOKE else 1980
+    print("CHECK b1_run_count %s written=%d expected=%d" % ("PASS" if nwritten == n_expected else "FAIL", nwritten, n_expected), flush=True)
+    # layout self-check on the first written run
+    rid, arr, cl = first
+    p = "%s%s/%s.csv.gz" % (OUT, cl, rid)
+    with open(p, "rb") as fh:
+        head = fh.read(10)
+    df = pd.read_csv(p, comment="#", compression="gzip")
+    tot = df["equipment_kwh"] + (df["heating_kwh"] + df["cooling_kwh"]) / COP
+    print("CHECK b1_layout %s file=%s rows=%d cols=%s gzip_mtime_bytes=%s max_total_formula_diff=%.3e" % (
+        "PASS" if len(df) == arr.shape[0] * H and head[4:8] == b"\x00\x00\x00\x00" and abs(tot - df["total_elec_kwh"]).max() < 1e-4 else "FAIL",
+        p, len(df), list(df.columns), head[4:8], abs(tot - df["total_elec_kwh"]).max()), flush=True)
+    me = os.path.abspath(__file__)
+    print("CODE_MD5 s5_b1.py %s" % md5(me), flush=True)
+    for t in TNAMES:
+        print("MODEL_MD5 %s %s" % (t, final[t]["md5"]), flush=True)
+    tot_s = time.time() - t0
+    print("SECONDS tuning=%.0f refit=%.0f predict_write=%.0f total=%.0f ; CPU-hours (6 CPUs x wall) = %.2f" % (tune_s, refit_s, pred_s, tot_s, 6 * tot_s / 3600.0), flush=True)
+    print("B1_DONE OK", flush=True)
+
+
+if __name__ == "__main__":
+    main()

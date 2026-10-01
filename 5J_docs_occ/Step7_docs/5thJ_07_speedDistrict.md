@@ -9,7 +9,7 @@ Written 2026-09-28. Week 4, in parallel with Step 6 only once the Step 6 scoring
 
 ## STATUS
 
-⬜ NOT STARTED. Needs Step 5 closed (winner pinned). Its RQ4 claim is read together with Step 6: if S
+🟡 IN PROGRESS (2026-10-01 04:22 EDT): design ruling `impl/2026-10-01_step7_design.md` replaces every DRAFT item (archetype twins of 100 real Madrid buildings, 560-household pool, draws sized by measured time, 20-draw EnergyPlus check with the 5J builder); part A employee launched. Before: ⬜ NOT STARTED. Needs Step 5 closed (winner pinned). Its RQ4 claim is read together with Step 6: if S
 fails G5J.3, the district spread is reported as "what the surrogate says", not as a validated spread.
 
 ## AIM
@@ -67,7 +67,7 @@ Measured with the job's own clock lines, not estimated.
 
 ## 7E. BEFORE THE GPU ENDS
 
-🔴 All GPU work finished and the checkpoints copied off Speed (Spain and Italy locally; UK-trained ones
+✅ Checkpoint copy DONE 2026-10-01 04:19 (parent Progress Log; 24/24 md5 OK). 🔴 All GPU work finished and the checkpoints copied off Speed (Spain and Italy locally; UK-trained ones
 kept only where the licence allows) before about 31 Oct 2026. A dated line in the parent Progress Log
 confirms the copy with md5s.
 

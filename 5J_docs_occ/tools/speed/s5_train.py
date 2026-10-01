@@ -1,0 +1,414 @@
+# -*- coding: utf-8 -*-
+"""5J Step 5 part C: train one sequence model (rules R6). Speed GPU job only. Spain + Italy; development / validation only.
+  s5_train.py --config <grid index | json file> --out <dir> [--epochs N --windows N]      one configuration
+  s5_train.py --smoke --out <dir>                                                       smoke test with the printed CHECK lines
+Writes <out>/config.json, train_log.tsv (epoch, train_loss, val_level, val_pair, val_sum, seconds), best.pt, norm_static.json,
+run_info.json (md5 of every s5_*.py used, GPU name, GPU-hours, stop reason), openlog.
+Decisions (manager, 2026-09-30): outputs clipped at 0 kWh after de-standardising (training uses a straight-through clip so the
+gradient is not zeroed where a prediction is below 0); batches = 256 pairs x one day = 512 windows (lambda 0 drops the pair term only);
+validation = fixed 20,000 (validation pair, day) draws, seed 20260930, early stopping on level + pair (patience 4); cosine lr per
+step over epochs x steps; bf16 autocast; stop at max_gpu_hours keeping the best epoch."""
+import argparse, hashlib, json, math, os, random, sys, time
+sys.dont_write_bytecode = True
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import numpy as np
+import pandas as pd
+import torch
+import s5_common as c
+import s5_data as sd
+import s5_models as sm
+import s5_predict as sp
+
+CODE = ["s5_common.py", "s5_data.py", "s5_models.py", "s5_train.py", "s5_predict.py", "s5_grid.json"]
+
+
+def md5_of(p):
+    return hashlib.md5(open(p, "rb").read()).hexdigest()
+
+
+def code_md5():
+    return {f: md5_of(os.path.join(HERE, f)) for f in CODE if os.path.exists(os.path.join(HERE, f))}
+
+
+def seed_all(s):
+    random.seed(s)
+    np.random.seed(s)
+    torch.manual_seed(s)
+    torch.cuda.manual_seed_all(s)
+    # manager 2026-09-30 20:41: deterministic cudnn made the dilated Conv1d 30x slower (probe job 1404560: TCN w64 L8
+    # 1.30 -> 0.044 s/step); rules R6 do not require bitwise determinism; reload check stays at 4 dp
+    torch.backends.cudnn.deterministic = False
+    torch.backends.cudnn.benchmark = True
+
+
+def lam_terms(out, y, lo, B, straight):
+    """out, y [2B,24,3] standardised (first B = member A, last B = member B). Returns (level, pair), both means over
+    windows (pairs) and hours of the sum over the 3 targets."""
+    if straight:
+        out = out + (torch.maximum(out, lo) - out).detach()
+    else:
+        out = torch.maximum(out, lo)
+    level = ((out - y) ** 2).sum(2).mean()
+    pair = (((out[:B] - out[B:]) - (y[:B] - y[B:])) ** 2).sum(2).mean()
+    return level, pair
+
+
+@torch.no_grad()
+def evaluate(model, dv, draws, chunk=1024, n=None):
+    model.eval()
+    pidx, day = draws
+    if n:
+        pidx, day = pidx[:n], day[:n]
+    pidx = torch.from_numpy(pidx).to(dv.dev)
+    day = torch.from_numpy(day).to(dv.dev)
+    sl = sp_ = 0.0
+    N = len(pidx)
+    for i in range(0, N, chunk):
+        pa, pb, d = dv.pa[pidx[i:i + chunk]], dv.pb[pidx[i:i + chunk]], day[i:i + chunk]
+        m = len(pa)
+        x, st, y = dv.windows(torch.cat([pa, pb]), torch.cat([d, d]))
+        with torch.autocast("cuda", dtype=torch.bfloat16):
+            out = model(x, st)
+        out = torch.maximum(out.float(), dv.lo)
+        sl += float(((out - y) ** 2).sum()) / 1.0
+        sp_ += float((((out[:m] - out[m:]) - (y[:m] - y[m:])) ** 2).sum())
+    return sl / (2 * N * sd.OUTH), sp_ / (N * sd.OUTH)
+
+
+def load_config(arg):
+    if arg.isdigit():
+        g = json.load(open(os.path.join(HERE, "s5_grid.json")))
+        return dict(g[int(arg)])
+    return json.load(open(arg))
+
+
+def build_opt(model, cfg, total):
+    opt = torch.optim.AdamW(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"])
+    sch = torch.optim.lr_scheduler.LambdaLR(opt, lambda t: 0.5 * (1.0 + math.cos(math.pi * min(t, total) / total)))
+    return opt, sch
+
+
+def train_step(model, dtr, cfg, gen, opt=None, sch=None):
+    B = cfg["batch_pairs"]
+    dev = dtr.dev
+    pi = torch.randint(0, len(dtr.pa), (B,), device=dev, generator=gen)
+    d = torch.randint(0, sd.NDAY, (1,), device=dev, generator=gen).expand(B)
+    rows = torch.cat([dtr.pa[pi], dtr.pb[pi]])
+    x, st, y = dtr.windows(rows, torch.cat([d, d]))
+    with torch.autocast("cuda", dtype=torch.bfloat16):
+        out = model(x, st)
+    level, pair = lam_terms(out.float(), y, dtr.lo, B, True)
+    loss = level + cfg["lam"] * pair if cfg["lam"] > 0 else level
+    if opt is not None:
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        opt.step()
+        sch.step()
+    return float(loss.detach())
+
+
+def train(cfg, out, dtr, dv, eval_init=False, tag=None):
+    os.makedirs(out, exist_ok=True)
+    cfg = dict(cfg)
+    json.dump(cfg, open(os.path.join(out, "config.json"), "w"), indent=1)
+    json.dump({"static_stats": dtr.stats, "static_names": dtr.static_names, "dyn_names": dtr.dyn_names}, open(os.path.join(out, "norm_static.json"), "w"))
+    seed_all(cfg["seed"])
+    model = sm.build_model(cfg, dtr.n_dyn, dtr.S).to(dtr.dev)
+    npar = sum(p.numel() for p in model.parameters())
+    steps = max(1, cfg["windows_per_epoch"] // (2 * cfg["batch_pairs"]))
+    total = steps * cfg["epochs"]
+    opt, sch = build_opt(model, cfg, total)
+    gen = torch.Generator(device=dtr.dev)
+    gen.manual_seed(cfg["seed"])
+    draws = sd.validation_draws(len(dv.pa), cfg["val_draws"], cfg["val_seed"])
+    logp = os.path.join(out, "train_log.tsv")
+    with open(logp, "w") as fh:
+        fh.write("epoch\ttrain_loss\tval_level\tval_pair\tval_sum\tseconds\n")
+    print("TRAIN config=%s family=%s width=%d n_layers=%d lam=%g params=%d steps/epoch=%d epochs=%d" %
+          (cfg.get("id"), cfg["family"], cfg["width"], cfg["n_layers"], cfg["lam"], npar, steps, cfg["epochs"]), flush=True)
+    t0 = time.time()
+    hist = []
+    if eval_init:
+        l0, p0 = evaluate(model, dv, draws)
+        hist.append((0, float("nan"), l0, p0, l0 + p0, time.time() - t0))
+        print("EPOCH 0 (untrained) val_level=%.5f val_pair=%.5f val_sum=%.5f" % (l0, p0, l0 + p0), flush=True)
+    best, bad, stop, best_ep = float("inf"), 0, "epochs_done", 0
+    for ep in range(1, cfg["epochs"] + 1):
+        model.train()
+        tl = 0.0
+        for _ in range(steps):
+            tl += train_step(model, dtr, cfg, gen, opt, sch)
+        tl /= steps
+        vl, vp = evaluate(model, dv, draws)
+        vs = vl + vp
+        secs = time.time() - t0
+        hist.append((ep, tl, vl, vp, vs, secs))
+        with open(logp, "a") as fh:
+            fh.write("%d\t%.6f\t%.6f\t%.6f\t%.6f\t%.1f\n" % (ep, tl, vl, vp, vs, secs))
+        print("EPOCH %d train_loss=%.5f val_level=%.5f val_pair=%.5f val_sum=%.5f seconds=%.0f" % (ep, tl, vl, vp, vs, secs), flush=True)
+        if vs < best:
+            best, bad, best_ep = vs, 0, ep
+            torch.save({"config": cfg, "state_dict": model.state_dict(), "static_stats": dtr.stats, "epoch": ep, "val_sum": vs,
+                        "val_level": vl, "val_pair": vp}, os.path.join(out, "best.pt"))
+        else:
+            bad += 1
+        if bad >= cfg["patience"]:
+            stop = "early_stop"
+            break
+        if secs > cfg["max_gpu_hours"] * 3600:
+            stop = "time_cap_4_gpu_hours"
+            break
+    secs = time.time() - t0
+    info = {"config_id": cfg.get("id"), "stop": stop, "best_epoch": best_ep, "best_val_sum": best, "epochs_run": hist[-1][0],
+            "params": npar, "gpu": torch.cuda.get_device_name(0), "gpu_hours": secs / 3600.0, "seconds": secs,
+            "peak_gpu_mem_gb": torch.cuda.max_memory_allocated() / 1e9, "md5": code_md5(), "torch": torch.__version__}
+    json.dump(info, open(os.path.join(out, "run_info.json"), "w"), indent=1)
+    print("TRAIN_DONE %s" % json.dumps({k: v for k, v in info.items() if k != "md5"}), flush=True)
+    return hist, info, model
+
+
+def open_log_check(dtr, dv, tag):
+    allowed = c.allowed_ids()
+    log = []
+    for d in (dtr, dv):
+        for rid in d.flats["run_id"].unique():
+            log.append(("store_" + d.split, rid, c.TRAIN + "store/flats_%s.parquet" % d.split))
+    c.flush_log(log, tag)
+    bad = [x for x in log if x[1] not in allowed]
+    return len(log), len(bad)
+
+
+def config_diff(base, new):
+    """{key: [base value, new value]} for every key whose value differs or exists in only one config (None = absent)."""
+    return {k: [base.get(k), new.get(k)] for k in sorted(set(base) | set(new)) if base.get(k) != new.get(k)}
+
+
+def control_flags(cfg, a):
+    """Part E flags (rules R8, R9). Flags off -> cfg unchanged (no new key is written)."""
+    cfg = dict(cfg)
+    if a.seed is not None:
+        cfg["seed"] = a.seed
+    if a.blind:
+        cfg["blind"] = True
+    if a.country:
+        cfg["country"] = a.country
+    if a.no_climate:
+        cfg["no_climate"] = True
+    return cfg
+
+
+def check_control_config(cfg):
+    """Config diff check (val 3.2): the winner's config vs this config, seeds aside; for the blind control the only difference must
+    be blind: true. Prints the JSON diff line; returns True when it passes (always True when blind is off)."""
+    w = json.load(open(c.TRAIN + "winner/winner.json"))["config"]
+    d = config_diff(w, cfg)
+    dd = {k: v for k, v in d.items() if k != "seed"}
+    print("CONFIG_DIFF winner(S%s) vs this config: %s ; seed winner=%s this=%s" % (w.get("index"), json.dumps(dd, sort_keys=True), w.get("seed"), cfg.get("seed")), flush=True)
+    if cfg.get("blind"):
+        ok = list(dd.keys()) == ["blind"] and dd["blind"] == [None, True]
+        print("CHECK config_diff_only_blind_true %s" % ("PASS" if ok else "FAIL"), flush=True)
+        return ok
+    return True
+
+
+def run_config(a):
+    dev = "cuda"
+    cfg = control_flags(load_config(a.config), a)
+    if a.epochs:
+        cfg["epochs"] = a.epochs
+    if a.windows:
+        cfg["windows_per_epoch"] = a.windows
+    if not check_control_config(cfg):
+        sys.exit(2)
+    t0 = time.time()
+    kw = {}
+    if cfg.get("country"):
+        kw["country"] = cfg["country"]
+    if cfg.get("blind"):
+        kw["blind"] = True
+    if cfg.get("no_climate"):
+        kw["drop_climate"] = True
+    dtr = sd.Data("development", dev, **kw)
+    dv = sd.Data("validation", dev, stats=dtr.stats, **kw)
+    print("DATA loaded seconds=%.0f dev_rows=%d val_rows=%d n_dyn=%d S=%d M_nb=%d pairs dev=%d val=%d" %
+          (time.time() - t0, dtr.n_rows(), dv.n_rows(), dtr.n_dyn, dtr.S, dtr.M, len(dtr.pa), len(dv.pa)), flush=True)
+    ok, bad = c.check_features(dtr.dyn_names + dtr.static_names)
+    print("CHECK check_features %s n=%d bad=%s" % ("PASS" if ok else "FAIL", len(dtr.dyn_names + dtr.static_names), bad), flush=True)
+    if not ok:
+        sys.exit(2)
+    nl, nb = open_log_check(dtr, dv, "train_%s" % cfg.get("id", "cfg"))
+    print("CHECK openlog_outside_allowed_zero %s lines=%d outside=%d" % ("PASS" if nb == 0 else "FAIL", nl, nb), flush=True)
+    if nb:
+        sys.exit(2)
+    train(cfg, a.out, dtr, dv)
+
+
+# ------------------------------------------------------------------------------------------------ smoke test
+def val13(dev, val, pool):
+    """Amended val 1.3 (rules AMENDMENT 1). Returns (a, b, c_) counts, each must be 0."""
+    dk = set(zip(dev["country"], dev["hid"], dev["building_id"]))
+    vk = set(zip(val["country"], val["hid"], val["building_id"]))
+    a = len(dk & vk)
+    dh = set(zip(dev["country"], dev["hid"]))
+    vp = val[val["run_id"].map(pool) == "val"]
+    b = len(set(zip(vp["country"], vp["hid"])) & dh)
+    db = set(dev["building_id"])
+    vd = val[val["run_id"].map(pool) == "dev"]
+    c_ = len(set(vd["building_id"]) & db)
+    return a, b, c_
+
+
+def smoke(a):
+    dev = "cuda"
+    out = a.out.rstrip("/")
+    fails = []
+
+    def chk(name, ok, text=""):
+        print("CHECK %s %s %s" % (name, "PASS" if ok else "FAIL", text), flush=True)
+        if not ok:
+            fails.append(name)
+
+    print("SMOKE start gpu=%s mem_gb=%.1f" % (torch.cuda.get_device_name(0), torch.cuda.get_device_properties(0).total_memory / 1e9), flush=True)
+    t0 = time.time()
+    dtr = sd.Data("development", dev)
+    dv = sd.Data("validation", dev, stats=dtr.stats)
+    print("DATA loaded seconds=%.0f dev_rows=%d val_rows=%d n_dyn=%d S=%d M_nb=%d pairs dev=%d val=%d" %
+          (time.time() - t0, dtr.n_rows(), dv.n_rows(), dtr.n_dyn, dtr.S, dtr.M, len(dtr.pa), len(dv.pa)), flush=True)
+    chk("val_pairs_33474", len(dv.pa) == 33474, "n=%d" % len(dv.pa))
+    # static clip (rules AMENDMENT 2)
+    chk("clip_dev_zero", dtr.clip_info["values_clipped"] == 0, "dev values_clipped=%d" % dtr.clip_info["values_clipped"])
+    chk("clip_val_fires", dv.clip_info["values_clipped"] > 0 and "s_v_c" in dv.clip_info["columns_clipped"],
+        "val values_clipped=%d columns=%s" % (dv.clip_info["values_clipped"], dv.clip_info["columns_clipped"]))
+    ns_ = len(dv.s_cols)
+    sv = dv.static[:, :ns_].cpu().numpy().astype(np.float64)
+    zmx, zmn = np.array(dtr.stats["zmax"]), np.array(dtr.stats["zmin"])
+    chk("clip_bounds", sv.max() <= zmx.max() + 1e-6 and sv.min() >= zmn.min() - 1e-6 and bool((sv <= zmx + 1e-6).all()) and bool((sv >= zmn - 1e-6).all()),
+        "val max=%.4f (max zmax %.4f) min=%.4f (min zmin %.4f)" % (sv.max(), zmx.max(), sv.min(), zmn.min()))
+    try:
+        sd.Data("validation", dev, stats={"mean": dtr.stats["mean"], "sd": dtr.stats["sd"]})
+        refused = False
+    except KeyError as e:
+        refused = True
+        print("  refusal text: %s" % e, flush=True)
+    torch.cuda.empty_cache()
+    chk("clip_refuses_old_stats (seen failing: old path loaded silently)", refused, "")
+    names = dtr.dyn_names + dtr.static_names
+    ok, bad = c.check_features(names)
+    chk("check_features_real_list", ok, "n=%d bad=%s" % (len(names), bad))
+    ok2, bad2 = c.check_features(names + ["heating_kwh_lag24"])
+    chk("check_features_planted_heating_kwh_lag24_FAILS (val 1.2 seen failing)", (not ok2) and bad2 == ["heating_kwh_lag24"], "caught=%s" % bad2)
+    chk("input_names_equal_spec_list", sorted(names) == sorted(c.all_input_names()), "n=%d spec=%d" % (len(names), len(c.all_input_names())))
+    # val 1.3 amended
+    R = c.runs()
+    pool = {rid: R[rid]["pool"] for rid in set(dtr.flats["run_id"]) | set(dv.flats["run_id"])}
+    a_, b_, c_ = val13(dtr.flats, dv.flats, pool)
+    chk("val13_amended_real_a_b_c_zero", a_ == 0 and b_ == 0 and c_ == 0, "a_combos=%d b_devhh_in_valpool_runs=%d c_devbuilding_in_devpool_runs=%d" % (a_, b_, c_))
+    fv = dv.flats.copy()
+    drow = dtr.flats.iloc[0]
+    i1 = int(np.flatnonzero((fv["run_id"].map(pool) == "val").to_numpy())[0])
+    fv.loc[fv.index[i1], ["country", "hid", "building_id"]] = [drow["country"], drow["hid"], drow["building_id"]]
+    pa_, pb_, pc_ = val13(dtr.flats, fv, pool)
+    chk("val13_planted_a_and_b_FAIL (seen failing)", pa_ > 0 and pb_ > 0, "a=%d b=%d" % (pa_, pb_))
+    fv = dv.flats.copy()
+    i2 = int(np.flatnonzero((fv["run_id"].map(pool) == "dev").to_numpy())[0])
+    fv.loc[fv.index[i2], "building_id"] = drow["building_id"]
+    _, _, pc_ = val13(dtr.flats, fv, pool)
+    chk("val13_planted_c_FAIL (seen failing)", pc_ > 0, "c=%d" % pc_)
+    nl, nb = open_log_check(dtr, dv, "train_smoke")
+    chk("openlog_outside_allowed_zero", nb == 0, "lines=%d outside=%d" % (nl, nb))
+    # one window rebuilt by hand from the store arrays (own channel + target)
+    rows = torch.tensor([0, 5, 100], device=dev)
+    days = torch.tensor([0, 200, 364], device=dev)
+    x, st, y = dtr.windows(rows, days)
+    chk("window_shapes_x_192_st_y_24x3", tuple(x.shape) == (3, 192, 25) and tuple(y.shape) == (3, 24, 3) and st.shape == (3, dtr.S), "x=%s y=%s st=%s" % (tuple(x.shape), tuple(y.shape), tuple(st.shape)))
+    z = np.load(sd.STORE + "hh_%s.npz" % dtr.flats["country"].iloc[0])
+    r0 = int(dtr.flats["hh_index"].iloc[0])
+    nm = dtr.norm["channels"]["presence"]
+    ref = (z["presence"][r0, (np.arange(192) - 168) % 8760] - nm["mean"]) / nm["sd"]
+    chk("window_own_presence_equals_store_day0_wrap", np.allclose(x[0, :, 0].cpu().numpy(), ref, atol=1e-5), "max abs diff %.2e" % np.abs(x[0, :, 0].cpu().numpy() - ref).max())
+    # training config 0: 2 epochs x 5,000 windows
+    cfg = load_config("0")
+    cfg["epochs"], cfg["windows_per_epoch"] = 2, 5000
+    sm_out = out + "/cfg0"
+    hist, info, model = train(cfg, sm_out, dtr, dv, eval_init=True)
+    chk("loss_falls_val_sum_last_lt_untrained (val 2.1)", hist[-1][4] < hist[0][4], "untrained=%.5f last=%.5f" % (hist[0][4], hist[-1][4]))
+    chk("train_loss_finite", all(np.isfinite(h[1]) for h in hist[1:]))
+    # reload best.pt, recompute validation loss
+    ck = torch.load(sm_out + "/best.pt", map_location=dev, weights_only=False)
+    m2 = sm.build_model(ck["config"], dtr.n_dyn, dtr.S).to(dev)
+    m2.load_state_dict(ck["state_dict"])
+    draws = sd.validation_draws(len(dv.pa), cfg["val_draws"], cfg["val_seed"])
+    l2, p2 = evaluate(m2, dv, draws)
+    chk("reload_best_pt_val_sum_equal_4dp (val 4.3)", round(l2 + p2, 4) == round(ck["val_sum"], 4), "logged=%.6f reloaded=%.6f" % (ck["val_sum"], l2 + p2))
+    # output shape and predictions of 3 validation runs
+    fl = dv.flats
+    uq = list(pd.unique(fl["run_id"]))
+    ids = [uq[0], uq[len(uq) // 2], uq[-1]]
+    pdir = c.TRAIN + "pred/smoke"
+    res = sp.predict_runs(sm_out, pdir, run_ids=ids, data=dv)
+    chk("output_24x3_per_window", all(r["window_shape"] == (24, 3) for r in res), str([r["window_shape"] for r in res]))
+    good = True
+    for r in res:
+        df = pd.read_csv("%s/%s/%s.csv.gz" % (pdir, r["climate"], r["run_id"]), comment="#", compression="gzip")
+        n_ok = (len(df) == r["nd"] * 8760) and list(df.columns) == ["dwelling", "hour"] + c.TARGETS and np.isfinite(df[c.TARGETS].to_numpy()).all() and (df[c.TARGETS].to_numpy() >= 0).all()
+        tot_ok = np.abs(df["total_elec_kwh"] - (df["equipment_kwh"] + (df["heating_kwh"] + df["cooling_kwh"]) / c.COP)).max() < 1e-4
+        print("  pred %s nd=%d rows=%d (expected %d) total_rule_ok=%s" % (r["run_id"], r["nd"], len(df), r["nd"] * 8760, tot_ok), flush=True)
+        good = good and n_ok and tot_ok
+    chk("predict_8760_rows_per_flat_nonneg_total_rule (val 2.3)", good, "runs=%s" % ids)
+    # timing of all 16 configurations: 3 warm-up + 20 training steps, one evaluation chunk
+    grid = json.load(open(os.path.join(HERE, "s5_grid.json")))
+    chk("grid_has_16_configs_differ_only_in_4_factors", len(grid) == 16 and len({json.dumps({k: v for k, v in g.items() if k not in ("index", "id", "family", "width", "depth", "n_layers", "lam")}, sort_keys=True) for g in grid}) == 1 and len({(g["family"], g["width"], g["depth"], g["lam"]) for g in grid}) == 16, "")
+    timing = []
+    for g in grid:
+        torch.cuda.reset_peak_memory_stats()
+        seed_all(1)
+        mdl = sm.build_model(g, dtr.n_dyn, dtr.S).to(dev)
+        opt, sch = build_opt(mdl, g, 1000)
+        gen = torch.Generator(device=dev)
+        gen.manual_seed(1)
+        mdl.train()
+        for _ in range(3):
+            train_step(mdl, dtr, g, gen, opt, sch)
+        torch.cuda.synchronize()
+        t1 = time.time()
+        for _ in range(20):
+            lo = train_step(mdl, dtr, g, gen, opt, sch)
+        torch.cuda.synchronize()
+        sps = (time.time() - t1) / 20
+        t2 = time.time()
+        evaluate(mdl, dv, draws, n=1024)
+        torch.cuda.synchronize()
+        ev = (time.time() - t2) * (g["val_draws"] / 1024.0)
+        steps = g["windows_per_epoch"] // (2 * g["batch_pairs"])
+        ep_s = sps * steps + ev
+        timing.append({"index": g["index"], "family": g["family"], "width": g["width"], "depth": g["depth"], "lam": g["lam"],
+                       "sec_per_step": sps, "est_train_s_per_epoch": sps * steps, "est_val_s_per_epoch": ev, "est_epoch_s": ep_s,
+                       "est_30_epochs_h": ep_s * 30 / 3600.0, "peak_gpu_gb": torch.cuda.max_memory_allocated() / 1e9, "loss_after_23_steps": lo})
+        print("TIMING S%d %s w%d %s lam%d sec/step=%.4f est_epoch_s=%.0f est_30ep_h=%.2f peak_gb=%.1f loss=%.4f" %
+              (g["index"], g["family"], g["width"], g["depth"], g["lam"], sps, ep_s, ep_s * 30 / 3600.0, torch.cuda.max_memory_allocated() / 1e9, lo), flush=True)
+        del mdl, opt
+    json.dump(timing, open(out + "/smoke_timing.json", "w"), indent=1)
+    chk("all_16_configs_run_20_steps_finite_loss", all(np.isfinite(t["loss_after_23_steps"]) for t in timing), "")
+    chk("all_16_configs_fit_in_gpu_memory", max(t["peak_gpu_gb"] for t in timing) < torch.cuda.get_device_properties(0).total_memory / 1e9, "max peak %.1f GB" % max(t["peak_gpu_gb"] for t in timing))
+    print("SMOKE_EPOCH_SECONDS cfg0 (2 epochs of 5000 windows incl. validation): %s" % [round(h[5], 1) for h in hist], flush=True)
+    print("SMOKE_DONE %s fails=%s seconds=%.0f" % ("OK" if not fails else "FAILED", fails, time.time() - t0), flush=True)
+    sys.exit(0 if not fails else 1)
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--config", default="0")
+    ap.add_argument("--out", required=True)
+    ap.add_argument("--epochs", type=int, default=None)
+    ap.add_argument("--windows", type=int, default=None)
+    ap.add_argument("--smoke", action="store_true")
+    ap.add_argument("--blind", action="store_true", help="control C (rules R8)")
+    ap.add_argument("--seed", type=int, default=None, help="seed (default: the config's own, 1)")
+    ap.add_argument("--country", choices=["es", "it"], default=None, help="one-country training (rules R9)")
+    ap.add_argument("--no-climate", dest="no_climate", action="store_true", help="drop the climate one-hot columns (rules R9)")
+    a = ap.parse_args()
+    if a.smoke:
+        smoke(a)
+    else:
+        run_config(a)

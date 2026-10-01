@@ -1,0 +1,442 @@
+{
+ "checks": {
+  "s1": [
+   true,
+   true,
+   true
+  ],
+  "s2": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "s3": [
+   true,
+   true,
+   true,
+   true
+  ],
+  "s4": [
+   true,
+   true,
+   true
+  ],
+  "s5": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true
+  ],
+  "s6": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "s6a": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "s7": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ],
+  "s8": [
+   false
+  ],
+  "s9": [
+   true,
+   true,
+   true
+  ]
+ },
+ "log": [
+  {
+   "d": "2026-09-19",
+   "x": "Decision received: reject and resubmit, 12 months."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Revision plan and step list written in IMP/."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Step 1 done: the submitted PDF matches the drafts; edit submission_Occ_NUsJournal.docx."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Six deep-research prompts written in IMP/deepResearch/; waiting to be run in Gemini."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Gemini reports checked: two fail, three partly hold, one holds. Three new problems found in the paper (P11 to P13)."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Census check done: the official 2021 Quebec household-size table matches our census file. Montreal can be picked out in 2016 and 2021."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Step 3 started: a helper is reading the code and data (Quebec or national, survey weights, sample sizes, which homes were simulated)."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Step 3 done: the paper used national data with no survey weights, so 'nationally representative' must go and the Canada vs Quebec check is needed."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Not found in code or files: the 323-home 2025 cohort, the 100 homes per pairing, and the 2-to-4-person filter. A follow-up search is next."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Manager prompt for future sessions written: 1J_docs_occ/Prompts/1J_manager_prompt_RESUME.md."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Wider search started: a helper is looking through the whole project folder and the rest of this computer for the simulation runs behind the paper."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Runs found. The energy figures come from a 3-home test run, not 100 homes, and the 2010 results are an exact copy of 2005 (the input files were identical). The energy section must be re-run (new problem P15)."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Re-run approved. The cluster is full and another run is using this computer, so nothing starts yet. A helper is preparing the re-run without simulating (time per run, input files, launch command)."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Decided: the re-run goes into the cluster queue and starts by itself when the cluster frees up. It is submitted once the helper's checks are back."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "The helper's checks are back. We found the paper's real 2010 input file; the paper's occupancy hours match these files exactly, so only the energy runs used the wrong copy."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "A draft re-run plan is written: one cluster CPU, one neighbourhood and one draw per job, 20 draws. Nothing is submitted yet."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "At your request, a prompt for Fable to check the plan is ready. The simulations start only after its report is checked."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Fable's report is checked and it holds. It found two more input faults: in 2005 and 2015, weekdays and weekends are swapped, and in 2005 and 2010 a sleeping family counts as one person. Correction: the energy figures came from the 20-draw cluster run, not the 3-home test run."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "The old re-run plan is dropped. The new plan first fixes and checks the input files, then runs a short test, then simulates in blocks of 5 draws on one CPU. Nothing is submitted yet."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "You ruled: count the family members actually at home, and give each year a random household of the same size and home type."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Two helpers started: one maps how each year's input file counts people at home (no changes yet); the other sets up a new folder on the cluster and submits two one-CPU test runs to check it matches the April results."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Handover notes for the next session updated: both helpers and their task files are listed."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Cluster folder is ready and checked. Two one-CPU test runs are running on the cluster. The buildings, weather files and simulation program are the same as in April, so they do not explain the old 4 % gap."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Occupancy map checked. Children under 15 never get a diary in any year, so dividing by full household size would count them as always away; both versions will be built and the author picks one. A helper is now fixing four years of input files on the cluster (2025 waits for the author)."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Input-file fixes checked. The new check was first run on the old April files and caught every known error, so it can be trusted. The 2005 rebuild is running with the weekday/weekend fix in place. 2010, 2015 and 2022 stopped because they looked for input files in the wrong folder; a helper is fixing the paths and restarting them."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Folder paths fixed; 2010 and 2022 are now rebuilding. The 2015 rerun had picked up an old saved file and skipped the weekday/weekend fix, so it was stopped, the old file was set aside (not deleted), and 2015 restarted. All four years are running on the cluster."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Confirmed the weekday/weekend fix now runs for 2015 too: its weekday and weekend groups swapped back to the right way round. All four rebuilds and both test simulations are running."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "You chose option A: occupancy = people at home divided by the people who have a schedule, the same way as the 2J and 3J papers. New Step 6A added to this page for the occupancy fix and the re-run."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "The 2005 rebuild stopped in its last step on a small label-sorting line (old code, not the new fix). The first three steps finished, so only the last step needs re-running. 2010, 2015, 2022 and both test simulations are still running."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "You said yes to fixing 2025 the same way. Its counting code sits inside one of the protected files, so a separate add-on swaps in the fix at run time and the protected file is never edited (checked before and after). A helper is preparing that run."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2015 stopped in its last step with the same small label problem as 2005 (the fix came after it had started). Its last step is now re-running. 2010 and 2022 get the same re-run queued, which starts only if they stop too."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2005 occupancy file rebuilt and checked: weekday and weekend are now the right way round and night presence is normal. 2025: rebuilt from the April household matching (kept, not re-drawn); a first check will compare it with the April file. 2010, 2015 last step, 2022 and the two test simulations still running."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2010 occupancy file rebuilt and checked: all three checks pass. Two of the four census years are now done; 2015 and 2022 are still running."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2025: the cluster was missing one package (TensorFlow) that the protected code needs just to load. A separate copy of the Python tools with the same versions plus TensorFlow is being built (job 1339868); the shared copy is not touched. The 2025 rebuild (job 1339869) starts automatically after it."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2026-09-19: 2025 fix - the separate copy of the Python tools built and passed every check (same versions as the shared copy, shared copy untouched). The 2025 rebuild then stopped at its first step on a folder-path error in the helper script (not in the protected code). Fixed, a new import check added, restarted as job 1339873."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2026-09-19: 2022 inputs rebuilt and checked - weekdays have less daytime presence than weekends, nights are nearly full, every day has 24 hours. Three of four census years done (2005, 2010, 2022); 2015 last step still running. 2025 rebuild passed its import check and is running."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2015 inputs rebuilt and checked: weekday daytime lower than weekend, 93% of people home at night, every day complete. All four census years are now done. Still running: the 2025 rebuild and the two test simulations."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "2025 inputs rebuilt: occupancy matches the April file exactly; one home had two different dwelling types in April and now has one, so the new file is used. Checks pass. All five years' inputs are now ready. Still running: the two test simulations."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Next step started: choosing in advance which households each simulation will use (random, seeded, same dwelling type and size), with six checks. A helper is writing it. Found: the April runs always took the most 'working-like' household in each year, not a random one."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Stage 2 helper returned and was checked: the household-choice checks were seen failing first on small test files, one real bug was found and fixed, and the cluster job that builds the real sample (1339951) is running."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Sent the last open question for measurement: how much the census code for a missing age (now read as 75 and over) changes the result, with the pass mark written down before any number is read."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "The handover notes were rewritten so the next session can run the remaining work step by step, including the rule for when to stop adding simulation runs, written down before any result is seen."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "One test run matched the old April numbers exactly, so the cluster copy of the simulation program is trusted. It crashed afterward for an unrelated reason (a missing folder for a picture it tries to draw); that crash does not matter. The other test run is still going."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "The household-choice check found a big new problem: in every rebuilt year, many thousands of homes are labelled with two different house types instead of one. This is much bigger than the single case found before. All the fairness and repeatability checks passed; the main simulation runs do not start until this is looked at."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "Two more checks started in the background: the missing-age measurement (restarted, the first attempt never actually ran), and recomputing the paper's occupancy numbers from the fixed files. Both are read-only and do not need you."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "The paper's Section 4.1 occupancy numbers are recomputed from the fixed files for all five years. The new numbers are a share of homes present, not hours, so they cannot be compared to the old numbers directly; whoever rewrites that section must say 'share', not 'hours'. Still waiting: the missing-age check and the cluster-matches-April test."
+  },
+  {
+   "d": "2026-09-19",
+   "x": "The missing-age check finished. In two of the four years it changes nothing at all. In the other two the effect is small, under one percent, and the rule agreed in advance for that size of effect is 'ask you', so nothing was fixed or decided. See the waiting note above."
+  },
+  {
+   "d": "2026-09-20",
+   "x": "Still waiting on the one remaining run. Nothing new to report; both open questions from before are still sitting for you."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "The last remaining test run finished. The cluster copy of the simulation program gives the same heating number as the old April run, so the small gap we were chasing came from the April run using an older version of the code, not from anything wrong with the cluster. The two questions waiting on you are unchanged."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "You ruled on the many homes with two different house types: keep them in, and say so in the paper as a known limitation. Nothing is removed from the plan."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "You ruled on the missing-age problem: fix it, but only for the two years it actually affects, 2010 and 2022 (2005 and 2015 already don't have this problem). One small question is left before the fix can be built: what should that missing-age code count as instead of '75 and older'? Once you answer that, the two years can be rebuilt and the main runs can start."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "You answered the missing-age question: people whose age is unknown are left out, but their homes stay in with the other members, and the paper will say so as a limitation. This removes about 4% of people in 2010 and 10% in 2022. The rebuild of those two years, and then of the household sample, has been sent to the cluster."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "All five cluster jobs are now queued: a backup copy is being made first, then the two rebuilds, the missing-age check and the new household sample run one after another. Two outside-literature prompts on the missing-age choice are ready for you to run."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "Missing-age fix finished and checked, then written into the paper as a limitation: leaving these people out (their homes stay) removes 2.8% of the 2010 sample and 5.4% of the 2022 sample, 39 of 119 homes left empty. The earlier 4%/10% figures were on the whole census file and are not used anywhere."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "Started the energy re-run properly: a rule for when to stop the random-choice runs was written down first, before seeing any result — run in batches of five, stop once the average is steady to within 1% for every neighbourhood and year, or after 30 tries, whichever comes first."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "A helper is changing the simulation program so it reads its household choices from the pre-built list instead of picking at random itself, with a check that this reading is exact and that the old random-pick code can no longer run. Once that check passes, the six no-choice baseline runs (one per neighbourhood) are submitted to the cluster and compared to the already-trusted numbers before any random-draw batch starts."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "The change-over was checked and works, but before any runs were submitted a real problem turned up: the corrected household list didn't line up with the older population files still in the simulation folder, so none of the six runs would have worked. Caught before spending any cluster time on it."
+  },
+  {
+   "d": "2026-09-21",
+   "x": "Ruled: swap the older population files for the corrected ones, since the mismatch was one of this revision's own fixes showing up, not a new error. Done and re-checked: all six neighbourhoods now line up. The six baseline runs, and the check comparing them to the trusted April numbers, are now running on the cluster; results not in yet."
+  },
+  {
+   "d": "2026-09-22",
+   "x": "Four of the six baseline runs have finished, and all four give exactly the same heating and cooling numbers as the trusted April runs. The last two (the largest neighbourhoods) are about two-thirds done. A small scheduling snag meant the final check would never have started on its own; it was re-queued and will now run by itself when the last two finish."
+  },
+  {
+   "d": "2026-09-22",
+   "x": "Testing a faster setup for the next stage: one neighbourhood is being re-run twice, once on five processors and once on one, to confirm the faster way gives exactly the same numbers before it is used for the random draws."
+  },
+  {
+   "d": "2026-09-22",
+   "x": "The next stage is planned and its scripts are built and tested: the 30 random draws run in batches of five, using 30 of the 32 processors given to this paper, and a small check after each batch decides whether more draws are needed and stops the rest by itself. To save disk space, each batch checks its own numbers and only then compresses its large raw files. Testing found one disk-space safety check that could never have triggered; it is fixed. The draws start once the last two baseline runs and the speed test pass."
+  },
+  {
+   "d": "2026-09-22",
+   "x": "All six baseline runs are finished and give exactly the April heating and cooling numbers. The faster setup (five processors per run) gives the same numbers as one processor and is about three times faster. The draw scripts passed their last test."
+  },
+  {
+   "d": "2026-09-22",
+   "x": "The random draws have started: six neighbourhood runs at a time, 30 of the 32 processors. After each batch of five draws a check decides whether the averages are precise enough to stop; the first batch should finish in about a day and a half, and all 30 draws, if needed, in about four and a half days."
+  },
+  {
+   "d": "2026-09-23",
+   "x": "The first two random-draw runs (neighbourhoods 1 and 2, first batch) have finished and their results were checked and are good. Six runs are still going, including the two large neighbourhoods, which have been running about 21 hours and each started their draws correctly. Nothing has failed. The first batch is not complete yet, so the check that decides whether more draws are needed has not run."
+  },
+  {
+   "d": "2026-09-23",
+   "x": "More computer power moved to this project: up to eleven random-draw runs can now go at once instead of six, as the other project gives back its share over the next few hours. Neighbourhood 3, first batch, has also finished and its results check out. If all draws are needed, the runs should end around September 26 instead of September 30."
+  },
+  {
+   "d": "2026-09-24",
+   "x": "Six of the 36 random-draw runs have now finished, all without errors (neighbourhoods 1 to 3 and a second batch of neighbourhood 1, plus two of the large-neighbourhood runs). Eleven runs are going at once, which uses all the processors this project was given. The first batch still waits on neighbourhood 4 (19 hours in) and neighbourhood 5 (37 hours in); after that the check on whether more draws are needed runs for the first time."
+  },
+  {
+   "d": "2026-09-24",
+   "x": "The other project on the cluster has finished, so this project now has 64 processors. Twelve random-draw runs now go at once (60 processors), leaving 4 for the checks. Nine of the 36 runs are finished and all check out; the two large-neighbourhood runs that hold up the first batch have also passed their checks and are closing, so the first 'are more draws needed' check should start within the hour."
+  },
+  {
+   "d": "2026-09-24",
+   "x": "The first block of five draws is finished and scored. The first check passed: the repeat run matches the default run. The stopping target is not met yet (29 of 60 results are precise enough), so more draws continue. 13 of 36 simulation tasks are done and 12 are running."
+  },
+  {
+   "d": "2026-09-25",
+   "x": "Batches 2 and 3 are scored: still not precise enough (31, then 32 of 60 results), so draws continue. 24 of 36 runs are done and all check out; 10 are running. The last two runs did not start because the cluster disk is almost full; they will be restarted once space is freed. No data was lost."
+  },
+  {
+   "d": "2026-09-25",
+   "x": "Disk space freed: old caches and outdated backup copies of earlier runs were deleted (about 350 GB, only what the author approved). The two held-back runs are back in the queue, and the batch-6 check now waits for them."
+  },
+  {
+   "d": "2026-09-26",
+   "x": "31 of 36 simulation tasks are done and all passed their checks; round 4 of the accuracy check says keep going (34 of 60 results precise enough); 5 tasks still running, including the two restarted ones, one of which has already passed."
+  },
+  {
+   "d": "2026-09-28",
+   "x": "35 of 36 draw runs done and checked. Last run (neighbourhood 4, batch 5) is 5x slow and has one broken draw; restart proposed."
+  },
+  {
+   "d": "2026-09-28",
+   "x": "Last run restarted on a faster machine (your go-ahead); scoring of batches 5 and 6 now waits for it."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "All 36 simulation runs are done and passed their checks (the restarted last run finished cleanly on a normal machine)."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "Accuracy check finished: 36 of 60 results reached the plus/minus 1% target at the 30-draw maximum (37 of 60 at 25 draws). The draws are done; the paper will report the precision actually reached (1-3.9% for the other 24)."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "Page brought up to date: the deep-research prompts were run on 19 Sept and the whole data audit (national data, no survey weights, sample sizes re-counted) was done then too, so those boxes are now ticked."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "Found and fixed an error in how yearly energy was read from the simulation results: peak power had been added to yearly energy (the same bug fixed in the 2J paper in August). No simulation had to be re-run; all 936 runs were re-read and checked."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "Corrected energy results: compared with the default schedule, the survey schedules raise heating 6-16 % and lower cooling 1-9 % in houses, and change both by under 7 % in apartment buildings. The old code factors (+10 % / -20 %) are dropped."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "Occupancy recomputed from the fixed files: about 16 h at home per weekday before 2022 and 18 h in 2022. Quebec differs from Canada by at most 0.3 h per weekday, so the national data are kept. All four matching-tier shares are now in the paper."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "Revised paper drafted (new title, new Sections 1, 2, 4 and 5, response letter). Still open: the forecast test running on the cluster, the reference check (Gemini prompt for you), abstract and conclusion, then upload."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "While the forecast test runs: abstract, highlights and conclusion written (one sentence each waits for the test); tables and figures renumbered; the building description corrected from the model files (one high-insulation envelope with idealised heating and cooling, not U.S. prototype buildings); the letter now gives the section, table or figure of every change; the script that turns the test results into the table and figure is ready and tested."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "The forecast test's first check stopped when loading the saved 2025 models (they were written by a newer Keras than the cluster has). Converted copies were made and shown to be the same model; the test was restarted with more processors. The eSim conference paper is now cited, a cover letter was written, and three reference titles were filled from the 2J paper."
+  },
+  {
+   "d": "2026-09-29",
+   "x": "Every reference checked against its publisher record: two wrong records corrected (a Canadian time-use paper and a population-synthesis paper), one claim softened. The 2025 forecast barely moves when the model settings or the random seed change (largest shift 0.0044). Forecast scoring runs on the cluster: the two alternative model sizes are done and pass all checks; the five main runs test nine settings each and should finish late tonight."
+  },
+  {
+   "d": "2026-09-30",
+   "x": "The forecast test finished. The 2025 projection method was closer to the real 2021 Census than simply reusing the 2016 census on only 7 of 24 variables, so the rule set in advance was not met. As planned, the paper now drops the claim that the method forecasts better, reports the result in full (new Table 9 and Appendix A), and presents the 2025 households as a scenario close to the 2021 population. The final manuscript, the tracked-changes file and both letters are built. Left for the author: cover-letter date, a final read, and the upload."
+  },
+  {
+   "d": "2026-09-30",
+   "x": "Cover letter dated 30 September 2026. Manuscript folder tidied: only the four upload files at the top, sources in resources/, backups in archive/ (build script checked, rebuilds the same file). Submission link added to this page."
+  },
+  {
+   "d": "2026-09-30",
+   "x": "The journal's upload page asks for two manuscript copies, one with author details and one anonymous. Built the anonymous manuscript (names, affiliation, contributions and funding removed; the two self-citations anonymised) and an anonymous tracked-changes file; both checked for names. The submit box on this page now lists the five files and a line to paste in the response box."
+  },
+  {
+   "d": "2026-09-30",
+   "x": "The upload page allows fewer than 150 words in the abstract; ours had 268. Shortened it to 147 words in the manuscript itself. The AI statement now names the tool versions (Claude Opus 5.5, Gemini 3 Pro Deep Research), as the journal's AI policy asks. Both manuscripts and the anonymous tracked file rebuilt and rechecked. Word count for the page: 10,924."
+  },
+  {
+   "d": "2026-09-30",
+   "x": "SUBMITTED. The revised paper is with the Journal of Building Performance Simulation (confirmation email received, submission 266775447.R1). The anonymous copy was checked for names before upload. Email to Dr. Hachem-Vermette drafted. Now waiting for the editor."
+  },
+  {
+   "d": "2026-09-30",
+   "x": "Dr. Hachem-Vermette informed by email that the revision is submitted. Session closed; next step is the editor's decision."
+  }
+ ],
+ "sim": {
+  "done": 36,
+  "label": "Random-draw runs (6 neighbourhoods x up to 6 batches of 5 draws)",
+  "note": "All 36 runs done and checked. After the energy-reading fix: 31 of 60 heating and cooling results within 1% at the 30-draw maximum, the rest within 1-4.7%, reported as reached. The forecast test finished on 2026-09-30; nothing is left on the cluster.",
+  "total": 36,
+  "updated": "2026-09-30"
+ },
+ "updated_at": "2026-09-30",
+ "waiting": {
+  "s8": "Waiting for the second reviewer's report."
+ }
+}

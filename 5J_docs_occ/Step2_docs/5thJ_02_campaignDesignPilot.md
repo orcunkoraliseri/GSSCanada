@@ -267,3 +267,8 @@ Recommendations are the manager's; D2-1 changes the design and waits on the auth
   scripts; six city-years take about 8 h to 2 days of download. Recommended: Valencia + Seville, Birmingham
   + Manchester, Turin + Milan. Edinburgh, Rome, Palermo dropped (outside the building regions). Next:
   author says yes to the six cities; then the download starts first.
+- 2026-09-30 16:38 EDT (manager): Step 2 CLOSED for Spain + Italy. Multi-zone builder (D2-8), 36-run multi-zone
+  re-pilot, households on Speed (Spain reproduced, Italy 60, average households), campaign design with the
+  distinct-flat fix, all verified by the manager's own Speed jobs. Frozen design
+  `outputs_step2/campaign_design.md` (md5 2594867b0fe6cf24191c00e0c83d91a7): Spain 4,768 + Italy 4,501 runs, about
+  18 CPU-hours. UK waits on the author's UK household script. Next: Step 3.

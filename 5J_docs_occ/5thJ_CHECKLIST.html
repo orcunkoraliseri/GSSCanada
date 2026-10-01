@@ -250,7 +250,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
       <h1>5J Pipeline Board</h1>
       <p class="sub">HETUS diaries (Spain, UK, Italy) &rarr; schedules &rarr; paired EnergyPlus campaign &rarr; learned surrogate, scored on the occupancy effect. Sole author. Work items for steps 0&ndash;8, with the status of each.</p>
     </div>
-    <div class="stamp">Updated 2026&#8209;09&#8209;29 night &mdash; pilot waiting in the cluster queue; session closed</div>
+    <div class="stamp">Updated 2026&#8209;10&#8209;01 06:08 &mdash; one decision for you (UK licence); draft paper written</div>
   </header>
 
   <section class="summary">
@@ -277,7 +277,7 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
   <main id="board"></main>
 
   <section class="standing">
-    <h2>Where things stand &mdash; 2026&#8209;09&#8209;29</h2>
+    <h2>Where things stand &mdash; 2026&#8209;09&#8209;30</h2>
     <ul>
       <li class="ok"><b>The subject is chosen: an occupancy-aware stand-in for EnergyPlus (B4), sole author, European diaries.</b> All earlier ideas are kept in <code>0_New_Ideas/</code>.</li>
       <li class="stop"><b>&#128308; Deadline: Speed GPU access ends about late October 2026.</b> Campaign in week 2, training in week 3, one scoring in week 4; writing afterwards.</li>
@@ -285,10 +285,22 @@ footer{margin-top:48px;padding-top:18px;border-top:1px solid var(--line);color:v
       <li class="ok"><b>Novelty settled (O-2), closed by the author.</b> Nothing read so far feeds household occupancy into a stand-in and scores the occupancy effect. Scoring a stand-in on differences is already published (Park and Park 2023, retrofit), so the paper claims only the occupancy version. One logged search is still owed before the paper says &ldquo;first&rdquo;.</li>
       <li class="ok"><b>Every step now has a written plan and its checks.</b> A handover note lets a new session pick up the work cold.</li>
       <li class="hold"><b>What 4J already built is listed and checked.</b> The 4J buildings model heating only and there is one weather city per country, so Step 2 adds cooling and meters. The UK file check is one line for the author to run.</li>
-      <li class="hold"><b>Weather: six new cities approved by the author (29 Sep), three already ready.</b> Valencia, Birmingham and Turin are converted and pass every file check. Seville is now converted and checked too (July average 29.5 &deg;C, the hot end); Manchester and Milan are still downloading on this PC; the download service has slowed, so they should be done in the afternoon of 30 Sep. Turin is about 4 &deg;C cooler than its station in July, mostly because the 2014 summer was cool (Bologna shows the same), so it is kept.</li>
-      <li class="hold"><b>The building model now gives heating, cooling and appliance electricity every hour.</b> Four Madrid test runs work, and two different households give different results. Heating and cooling per square metre look high; the 50-run pilot checks this.</li>
+      <li class="ok"><b>Weather is done: nine cities, three per country, all converted and checked (30 Sep).</b> Manchester and Milan arrived on 30 Sep and pass every check. Turin's cool summer is the real 2014 year, so it is kept.</li>
+      <li class="stop"><b>&#128308; Buildings are split into floors and flats (your ruling, 30 Sep).</b> Every flat on every floor has its own zone and its own household, and every flat becomes a training row. The new model is built and checked, and its 36-run pilot passed on 30 Sep: every run clean, 4 to 25 seconds each, and the manager's own recount matched.</li>
+      <li class="ok"><b>Campaign design is final for Spain and Italy (30 Sep): 4,768 Spanish and 4,501 Italian runs.</b> That is about 18 CPU-hours, under one hour on 30 CPUs, with 46 TB of disk free. Each household lives in at least three different flats of every apartment building, and runs never mix training and test households. The UK waits for your UK household script.</li>
+      <li class="ok"><b>The Spain and Italy campaign is finished and checked (30 Sep).</b> All 9,269 runs passed every check; repeats of the same run give identical results; the training/validation/test lists are written and locked, and the test lists cannot be opened until the scoring rules are frozen.</li>
+      <li class="ok"><b>The scoring rules are frozen (30 Sep, 20:04).</b> You were asleep and said to go on without you, so I found the ASHRAE Guideline 14 page myself (2002 edition, clause 5.3.2.4 f, page 18: hourly error at most 30 %, bias at most 10 %) and read it word for word. Please check that your 2014 edition says the same; any change is added as a dated note, never by rewriting the rules. The test lists stayed locked until the freeze and open only now.</li>
+      <li class="hold"><b>A first result for the paper (30 Sep).</b> A stand-in that meets the usual hourly accuracy standard can still get the household effect on heating and cooling badly wrong (15 of 16 heating and cooling groups fail). A stand-in with no household effect at all passes the load standard in half of the groups. This is the paper&rsquo;s point, shown on stand-ins; the trained surrogate in Step 5 must do better on heating and cooling.</li>
+      <li class="hold"><b>Outputs: everything useful, per flat and per hour (your ruling, 30 Sep).</b> Heating, cooling, equipment electricity, total electricity (heat pump efficiency 3 for now; your number if you have one), plus heat gains and losses, temperatures and unmet hours. Lighting: nothing in 4J or 5J models it; your call whether to add a simple model.</li>
+      <li class="ok"><b>The first 50 test runs worked (30 Sep) and taught three things.</b> Every run finished cleanly in about 2 seconds; appliance electricity only copied the schedule, which is why total electricity now includes heating and cooling; and the "at home" check must count a home as empty only when nobody is in.</li>
       <li class="hold"><b>UK-file issue: fixed on our side (29 Sep night).</b> The 5J script now reads only your Spain-and-Italy copy and refuses the mixed 4J file; Spain and Italy tests give exactly the same results as before. A second small slip: a helper started a search over the whole project folder and stopped it at once; nothing was shown, but UK-derived 4J files were within its reach. Searches are now limited to named files. Whether anything needs reporting to the UK Data Service stays your call.</li>
       <li class="ok"><b>France stays out.</b> Progedo approved a French data request on 29 Sep, but it does not include the time-use diary, so the 5J design does not change.</li>
+      <li class="hold"><b>3J and 4J setups compared with 5J (your request, 30 Sep evening).</b> A reviewer read the 3J and 4J documents only, no UK data. Main points: most test groups hold one building, so the uncertainty range mostly reflects households (to be stated in the paper); a timing-only check is worth reporting next to the blind control; Step 7 must not compare against the old 4J heating-only buildings. I am checking each point before acting on it. Done so far: the Step 5 and 6 plans said three single-country trainings; the locked rules say two (Spain only, Italy only), and the plans now say so.</li>
+      <li class="hold"><b>One new Spanish apartment block (77 flats) has a building volume in the source data that cannot be right (30 Sep).</b> It does not change any simulation, because EnergyPlus builds the volume from the geometry. It only confused the neural model, which is now protected by the cap. The paper will mention it as a source-data note.</li>
+      <li class="stop"><b>&#128308; Your decision needed (1 Oct, 06:08): the diary days behind every 5J household very probably come from the 4J generator that learned from UK diaries.</b> In 4J each country's generated days were made by a model trained on the other two countries, so the Spanish days come from a model trained on UK and Italian diaries. If the UK licence counts such outputs as UK-derived, the 5J results need UK Data Service permission and possibly new days from a generator trained without UK data. My recommendation: write to the UK Data Service and keep every 5J output private until they answer. Nothing new is generated meanwhile; the draft paper carries markers where this matters.</li>
+      <li class="ok"><b>The main result is in (1 Oct, 04:16): the trained stand-in gets the difference between households right on the sealed tests, but not always the absolute load.</b> Household effect right in 31 of 32, 31 of 32 and 26 of 28 groups; hourly load standard met in only 21, 14 and 14 of 32. The household-blind control never passes. Two honest limits: the same setup with other seeds does much worse, and a country it never saw does not work well. Most of a household's yearly effect comes from its size and appliance level.</li>
+      <li class="hold"><b>What the paper may claim is now fixed in advance (30 Sep, 21:25, before any test result).</b> For each energy use, the model &ldquo;works&rdquo; only if it gets the household effect right in at least 6 of 8 building groups, with both countries doing well; if the household-blind control also passes, the claim is dropped. Heating and cooling on new households in new buildings lead the abstract.</li>
+      <li class="hold"><b>&ldquo;New household&rdquo; has a narrower meaning than it sounds (30 Sep).</b> Each household keeps its real family make-up, but its days are drawn from one shared pool of generated days per country, used by training and test alike. This is not a leak of the answers, but the paper must say the model is tested on new families living the same kinds of days.</li>
       <li class="hold"><b>Lessons from 1J to 4J are in the checklist.</b> The biggest: identical EnergyPlus input gave different heating values in 4J, and the heating occupancy effect was under half a percent, so replicate runs set a noise floor.</li>
     </ul>
   </section>
@@ -309,7 +321,7 @@ const DATA = [
     {t:"Graphical abstract prompt written (method panels now, result panel after scoring)", s:"done"},
     {t:"Graphical abstract draft 2 built (method panels; result panel empty until scoring)", s:"done", note:"Even rows, full arrows, grey cross, all text 8 pt; word, size and clash checks pass. Panel widths 31 / 40 / 30 %."},
     {t:"O-2 nearest work read at source", s:"done", note:"Closed by the author 28 Sep night. He 2015 and Dabirian 2024: no surrogate. Park and Park 2023 already score a surrogate on differences (retrofit savings): cited as the source. Li 2021 accepted from its summary; read in full at Step 8, with one logged search before the paper says \"first\". <code>Prompts/deepResearch/VETTING_RT45.md</code>"},
-    {t:"O-5 Speed CPU share agreed with 1J", s:"todo", note:"28 Sep night: 1J uses 5 CPUs, two small scorers wait. A 4J box run took about 2 s, so the campaign is small; a pilot needs about 8 CPUs."},
+    {t:"O-5 Speed CPU share agreed with 1J", s:"done", note:"Set 30 Sep: 30 CPUs for 5J. Only one small job of yours was on the cluster."},
     {t:"Venue left open (O-6)", s:"todo"}
   ]},
   {n:1, title:"Inventory of what 4J already built", items:[
@@ -321,54 +333,58 @@ const DATA = [
     {t:"Manager re-derives one number per item", s:"done", note:"Five numbers re-read, all equal. The helper opened no UK file (its full log was searched)."}
   ]},
   {n:2, title:"Campaign design and pilot (week 1)", items:[
-    {t:"Climates, building variants, households (DRAFT ~21,600 runs)", s:"prog", note:"Climates approved 29 Sep: nine cities, three per country. Valencia, Birmingham and Turin are ready and checked; Seville is ready and checked too; Manchester and Milan are due in the afternoon of 30 Sep. The design tables are written and checked: 40 building variants per country, 60 households each for Spain and Italy, and the 50-run pilot list. Households are now drawn with the survey weights (checked 29 Sep night)."},
+    {t:"Climates, building variants, households", s:"done", note:"Done 30 Sep for Spain and Italy: nine climates, 40 building variants per country, 60 households each (Spain's schedules rebuilt on Speed match the originals exactly), one average household per country, Italian flat counts, the training/test split and the run tables. A placement flaw (a few households twice in the same flat) was found and fixed. UK households wait for your script."},
     {t:"Same households on every building of a country", s:"done", note:"Done 29 Sep night. The script now runs exactly the chosen households: the 60 Spanish households ran, and the default run gives the same results as before."},
-    {t:"Targets from the right meters; annual = sum of hourly", s:"prog", note:"Built 29 Sep: hourly heating, cooling and appliance electricity. In one test the appliance total equals peak power times the schedule sum. Heating and cooling per m&sup2; look high; checked in the pilot."},
-    {t:"&#128308; Replicate runs for a truth noise floor", s:"todo", risk:true, note:"Identical input gave different heating values in 4J."},
+    {t:"Targets from the right meters; annual = sum of hourly", s:"done", note:"Done 30 Sep: per flat, every hour: heating, cooling, equipment electricity and total electricity (heat pump efficiency 3, for now), plus all other useful outputs. Annual equals the sum of hourly for every pilot run, at building and at flat level."},
+    {t:"&#128308; Replicate runs for a truth noise floor", s:"done", risk:true, note:"Planned 30 Sep: 10 inputs repeated 10 times per country. In the multi-zone pilot, 5 repeats of 2 inputs gave identical results (in 4J identical input once gave different heating values)."},
     {t:"Secondary activity in electricity schedules", s:"done", note:"Done 29 Sep. Laundry-or-ironing as a second activity now switches on the ironing profile, the more common of the two in both Spain and Italy (about 5 to 1 in diary minutes). Old runs are reproduced byte for byte when the rule is off. Stock appliance totals do not change; the timing does."},
-    {t:"Pilot of 50 runs timed on Speed", s:"prog", note:"The run list is written: Madrid, 5 buildings, 10 households, 2 runs repeated 5 times. The 50 run files are built, checked and copied to Speed (all 127 files arrive identical; 43 TB free on scratch). The runs wait in the queue: a slow disk-space check on Speed must finish first, and the cluster is full tonight."},
-    {t:"Campaign size set from the pilot", s:"todo"}
+    {t:"Pilot of 50 runs timed on Speed", s:"done", note:"Done 30 Sep: 50 of 50 runs finished cleanly, about 2 s each. Report accepted as a measurement, but these were one-box buildings, so the pilot is repeated with the new model."},
+    {t:"&#128308; Multi-zone buildings: floors and flats (your ruling, 30 Sep)", s:"done", risk:true, note:"Learned from 3J and 4J: 4J gave each flat its own zone and household, but its builder needs real footprints; 3J put the same household in every flat. The 5J model keeps the TABULA physics and splits the building into floors and flats (flat count from TABULA). Checked 30 Sep: it gives the old answer exactly when collapsed back to one box."},
+    {t:"Multi-zone pilot rerun and timed on Speed", s:"done", note:"Done 30 Sep: 36 Madrid runs, every flat with its own household. All clean, 4 to 25 s each; four planted errors all caught; repeats identical. Cooling per square metre in Madrid looks high: noted for a check before the paper."},
+    {t:"Campaign size set from the pilot", s:"done", note:"Set 30 Sep: about 14,200 runs for nine cities, under one hour on 30 CPUs, about 22 GB. No cut needed. The largest block (77 flats) is being timed now."},
   ]},
   {n:3, title:"Full campaign on Speed, CPU (week 2)", items:[
-    {t:"<code>sbatch</code> arrays submitted, ledger written", s:"todo"},
-    {t:"G5J.1 campaign integrity", s:"todo"},
-    {t:"Resume check seen to drop the plan count", s:"todo"},
-    {t:"Outputs differ between households; one work folder per run", s:"todo"},
-    {t:"Splits written and sealed by checksum", s:"todo", risk:true, note:"Households and buildings never cross splits."}
+    {t:"<code>sbatch</code> arrays submitted, ledger written", s:"done", note:"Done 30 Sep, 16:49 to 18:33: all 9,269 Spain and Italy runs finished in six batches on 30 CPUs, and none failed. The run tool passed all 16 checks of its four-run test first."},
+    {t:"G5J.1 campaign integrity", s:"done", note:"Done 30 Sep: all 9,269 Spain and Italy runs pass (complete, 8,760 hours per flat, not cut short); four planted errors were caught."},
+    {t:"Resume check seen to drop the plan count", s:"done", note:"Done 30 Sep: one batch moved away was counted as missing (9,269 to 9,260), then restored."},
+    {t:"Outputs differ between households; one work folder per run", s:"done", note:"Done 30 Sep: 36,181 flats checked, no two households give the same series."},
+    {t:"Splits written and sealed by checksum", s:"done", risk:true, note:"Done 30 Sep: 12 lists written, read-only, checksums recorded. Households and buildings never cross splits. Test lists stay closed until the rules are frozen."},
   ]},
   {n:4, title:"Freeze the gates", items:[
-    {t:"Thresholds frozen, checksum written", s:"todo"},
-    {t:"Perturbation table", s:"todo"},
-    {t:"&#128308; Each gate seen failing", s:"todo", risk:true},
-    {t:"Exit code and SUMMARY meaning written", s:"todo"},
-    {t:"Noise floor from replicates; per end use and dwelling class", s:"todo"}
+    {t:"Thresholds frozen, checksum written", s:"done", note:"Done 30 Sep, 20:04: the load limit is cited to ASHRAE Guideline 14-2002, clause 5.3.2.4 f, page 18; the checksums of the rules and the scoring program are locked on Speed. Before the lock a test list was refused; after it, the test lists open."},
+    {t:"Perturbation table", s:"done", note:"Done 30 Sep: each planted fault (a missing run, an average-only prediction, no household effect, a 2-hour shift, a control that copies the stand-in) turns the right check from pass to fail."},
+    {t:"&#128308; Each gate seen failing", s:"done", risk:true, note:"Done 30 Sep. The first &ldquo;too few usable pairs&rdquo; test could not fire (it multiplied a zero); redone properly, it now fires in all 32 groups."},
+    {t:"Exit code and SUMMARY meaning written", s:"done", note:"Done 30 Sep: 0 = all scored, 2 = some groups not scoreable, 1 = a section crashed; a planted crash gives 1."},
+    {t:"Noise floor from replicates; per end use and dwelling class", s:"done", note:"Done 30 Sep: repeated runs give identical results, so the floor is zero (the 4J run-to-run noise did not come back)."}
   ]},
   {n:5, title:"Baselines and surrogate, GPU (week 3)", items:[
-    {t:"B0 average-schedule baseline", s:"todo"},
-    {t:"B1 boosted trees (CPU)", s:"todo"},
-    {t:"S sequence model on the A100, chosen on validation only", s:"todo"},
-    {t:"C occupancy-blind control", s:"todo", risk:true, note:"Must fail G5J.3."},
-    {t:"Training logs and GPU hours written", s:"todo"}
+    {t:"B0 average-schedule baseline", s:"done", note:"Done 30 Sep, 20:23: scored and my own recount of one group matched. As expected it gets the household effect wrong everywhere (0 of 32 groups) yet meets the hourly load standard in 18 of 32. Training data built and checked 20:19: 15,096 training flats and 7,617 validation flats; my own spot check of three flats matched the raw files exactly. The validation set mixes new households and new buildings by design, so the leak check now asks that no validation flat repeats a household in the same building (none does); this rule note was added before any model was trained. "},
+    {t:"B1 boosted trees (CPU)", s:"done", note:"Done 1 Oct, 00:25, and checked with my own code (two flats rebuilt from the saved model, one load group and one household-effect group recounted: all equal). It gets the household effect right in 25 of 32 groups and meets the hourly load standard in 22. It sometimes predicted negative heating or cooling; from now on it is cut at zero like the neural model, which makes it a harder bar (26 of 32). This rule was sealed before I saw what it changes."},
+    {t:"S sequence model on the A100, chosen on validation only", s:"done", note:"Done 1 Oct, 00:31: the winner is a convolution model (S3). On validation it gets the household effect right in 30 of 32 groups and clearly beats the tree model in 30 of 32. It meets the hourly load standard in only 19 of 32, worst for heating and cooling in Italian apartment buildings: it gets the differences between households right more often than the absolute load, a result for the paper. Chosen by the frozen rule, re-chosen by my own code (same), unchanged if the tree model is cut at zero; reload check passed and the model is locked. Earlier: 30-times-slow training fixed; a bad building input (one block with an impossible volume) capped before training."},
+    {t:"C occupancy-blind control", s:"done", risk:true, note:"Done 1 Oct, 02:04: with every household's schedule swapped for another run's, the model gets the household effect right in 0 of 32 groups, in all three training repeats. That is what it must do, so the main model's result is not a trick of the setup. Checked with my own code. Retraining the winner's setup with two other seeds gives 22 and 13 of 32 instead of 30: part of the winner's edge is luck of the draw, so the paper reports all three on the test sets."},
+    {t:"Training logs and GPU hours written", s:"done", note:"Done 1 Oct, 02:52: every model, its settings, scores and checks are recorded; Spain-only and Italy-only models trained for the new-country test. Step 5 is closed."}
   ]},
   {n:6, title:"One scoring of the sealed tests (week 4)", items:[
-    {t:"G5J.2 load accuracy", s:"todo"},
-    {t:"G5J.3 occupancy effect, cluster bootstrap", s:"todo"},
-    {t:"G5J.4 blind control fails", s:"todo"},
-    {t:"G5J.5 peaks and thermal-mass lag", s:"todo"},
-    {t:"G5J.6 leave one country out (reported)", s:"todo"},
-    {t:"Manager re-derives every number", s:"todo"}
+    {t:"Scoring rules for the test sets locked first", s:"done", note:"1 Oct, 02:16: the scoring program can now read the test sets, behind a lock, and gives identical results otherwise. The rules for what the paper may claim, and three side analyses (heating timing, mild-climate cooling, household size versus timing), were written and locked before any test prediction. On validation, household size and appliance level explain most (75 to 97 %) of the yearly difference between two households."},
+    {t:"Test predictions for every model", s:"done", note:"Done 1 Oct, 03:59: every model, every test run, checked; no test answer read. My own code rebuilt two test homes' predictions from the locked model: yearly totals equal."},
+    {t:"G5J.2 load accuracy", s:"done", note:"Scored once, 1 Oct 04:13. The model meets the hourly accuracy standard in 21 of 32 groups for new households and 14 of 32 for new buildings and for both new. It is weak on the absolute load of new Spanish buildings and on Italian apartment cooling."},
+    {t:"G5J.3 occupancy effect, cluster bootstrap", s:"done", risk:true, note:"Scored once: the model gets the household effect right in 31 of 32 groups (new households), 31 of 32 (new buildings) and 26 of 28 (both new; 4 groups had no pairs). By the rule written before the test, the claim holds for 11 of 12 energy-use and test-set cases; heating for new households in new buildings holds only partly. The same setup trained with two other seeds passes far fewer groups, so the claim is about this one trained model."},
+    {t:"G5J.4 blind control fails", s:"done", note:"The household-blind control passes no group on any test set, so the result is not a trick of the setup."},
+    {t:"G5J.5 peaks and thermal-mass lag", s:"done", note:"Daily peak hour within 1 hour in 8 of 8 groups on every test set. The model's heating timing after people come home matches EnergyPlus for 78 to 99 % of flats (a like-for-like check, not a building time constant)."},
+    {t:"G5J.6 leave one country out (reported)", s:"done", note:"Trained on Spain only, it fails on Italy (0 to 3 of 16 groups). Trained on Italy only, it partly works on Spain (9 to 10 of 16). A new country needs its own data."},
+    {t:"Manager re-derives every number", s:"done", note:"Done 1 Oct, 04:15: one home's hourly error, one pair's direction and one group's household-effect score recomputed from the raw files with my own code: equal to the scoring program. Full record: Step6_docs/outputs_step6/RESULTS.md."}
   ]},
   {n:7, title:"What the speed buys (week 4)", items:[
-    {t:"One OpenUBEM European district chosen", s:"todo"},
-    {t:"100,000 occupancy draws by surrogate", s:"todo"},
-    {t:"EnergyPlus check on a random subsample", s:"todo"},
-    {t:"G5J.7 time per dwelling-year (reported)", s:"todo"},
-    {t:"&#128308; Checkpoints copied off Speed before GPU access ends", s:"todo", risk:true}
+    {t:"One OpenUBEM European district chosen", s:"done", note:"Done 1 Oct, 04:33: 100 real Madrid buildings drawn from the 1,151 of the city stock (85 apartment blocks, as in the stock), each simulated as its archetype twin with the same 5J model, so the check is like for like. The twins hold 2,034 dwellings where the real buildings hold 1,173 (the archetypes are bigger); 17 twins lie outside what the model was trained on and are reported apart."},
+    {t:"Occupancy draws by surrogate", s:"prog", note:"Started 1 Oct, 05:46. A pool of 560 Spanish households (500 the model never saw); each draw gives every dwelling one household. The number of draws is set from measured time (up to 1,000; the planned 100,000 does not fit). The model predicts a dwelling-year in 0.03 s, EnergyPlus needs 1.6 s."},
+    {t:"EnergyPlus check on a random subsample", s:"prog", note:"20 draws chosen and sealed before any prediction; the first draw (100 buildings) ran cleanly; the other 19 are running."},
+    {t:"G5J.7 time per dwelling-year (reported)", s:"prog", note:"First timing in hand (see above); the final numbers come from all runs."},
+    {t:"&#128308; Checkpoints copied off Speed before GPU access ends", s:"done", risk:true, note:"Done 1 Oct, 04:19: all 24 model files copied and checked (24 of 24 checksums match)."}
   ]},
   {n:8, title:"Writing (after the GPU window)", items:[
-    {t:"Nearest work re-checked at source", s:"todo"},
+    {t:"Nearest work re-checked at source", s:"prog", note:"1 Oct, 04:35: the prompt for one logged outside search is written (Prompts/deepResearch/T46_novelty_logged_search_P1_P4.md). Your action: run it in your outside research tool; I vet the answer. The paper says \"first\" only if that logged search finds nothing closer."},
     {t:"Data plots from frozen data only; image prompts for drawings", s:"todo"},
-    {t:"Manuscript in the 2J AE style", s:"todo"},
+    {t:"Manuscript in the 2J AE style", s:"prog", note:"1 Oct, 06:06: a first full draft (about 8,300 words) written only from the recorded results, every number traced to its file; the district section waits for Step 7; two sentences about the UK wait for your decision above. Your list of open items: writing/AUTHOR_TODO_5J.md."},
     {t:"Venue and sole-author declarations", s:"todo"}
   ]}
 ];

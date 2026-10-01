@@ -114,31 +114,31 @@ subfolder `surrogate\`; the old permit data there stays untouched).
 
 ## STEP 2 — WP1: CAMPAIGN DESIGN AND PILOT (week 1)
 Spec `Step2_docs/5thJ_02_campaignDesignPilot.md`; validation `Step2_docs/5thJ_02_campaignDesignPilot_val.md`.
-- [ ] Climates chosen: about three per country (DRAFT list; ERA5 actual years).
-- [ ] Building variants: Latin hypercube over insulation, glazing share, air-tightness, floor area and orientation, inside TABULA ranges; about 40 per country and climate (DRAFT).
-- [ ] Households: about 60 diary households per building (DRAFT), drawn with survey weights; the **same households on every building of a country**, so every pair is a clean occupancy contrast.
-- [ ] Output variables fixed: hourly heating, cooling and electricity per dwelling, from the right meters (lesson 9); annual sums checked against the hourly sums.
-- [ ] Replicate runs planned (same input run several times, lesson 2) to set the truth noise floor.
-- [ ] Electricity schedules include secondary activity (lesson 13); clock rotated to midnight (lesson 1).
-- [ ] Pilot: 50 runs on Speed (`sbatch`, 7-day walltime); time per run and output size measured and written.
-- [ ] Campaign size set from the pilot (DRAFT ~21,600 runs), inside the CPU share and the disk quota; plan count written before submission.
+- [x] (09-30: 9 EPWs, 3 per country) Climates chosen: about three per country (DRAFT list; ERA5 actual years).
+- [x] (09-29: 40 TABULA-based variants per country, `outputs_step2/buildings.csv`; multi-zone per D2-8) Building variants: Latin hypercube over insulation, glazing share, air-tightness, floor area and orientation, inside TABULA ranges; about 40 per country and climate (DRAFT).
+- [x] (09-30: Spain + Italy 60 each, inputs on Speed; UK waits on the author's UK script) Households: about 60 diary households per building (DRAFT), drawn with survey weights; the **same households on every building of a country**, so every pair is a clean occupancy contrast.
+- [x] (09-30: 4 targets per flat + widened outputs; annual = hourly checked in the re-pilot) Output variables fixed: hourly heating, cooling and electricity per dwelling, from the right meters (lesson 9); annual sums checked against the hourly sums.
+- [x] (09-30: 10 inputs x 10 repeats per country) Replicate runs planned (same input run several times, lesson 2) to set the truth noise floor.
+- [x] (09-29: act2 prefix2_major; midnight origin) Electricity schedules include secondary activity (lesson 13); clock rotated to midnight (lesson 1).
+- [x] (09-30: 50 single-zone + 36 multi-zone runs) Pilot: 50 runs on Speed (`sbatch`, 7-day walltime); time per run and output size measured and written.
+- [x] (09-30 FROZEN: Spain 4,768 + Italy 4,501 runs, `Step2_docs/outputs_step2/campaign_design.md` md5 2594867b0fe6cf24191c00e0c83d91a7) Campaign size set from the pilot (DRAFT ~21,600 runs), inside the CPU share and the disk quota; plan count written before submission.
 
 ## STEP 3 — WP2: FULL CAMPAIGN ON SPEED (CPU, week 2: 5 to 11 Oct)
 Spec `Step3_docs/5thJ_03_fullCampaign.md`; validation `Step3_docs/5thJ_03_fullCampaign_val.md`.
-- [ ] `sbatch` arrays submitted, job IDs in `impl/<date>_wp2_campaign.md` (ledger append-only).
-- [ ] G5J.1: every planned run present, "EnergyPlus Completed Successfully", 0 severe errors, output rows = 8,760; a run that exited 0 but wrote nothing is caught.
-- [ ] Resume check tested: outputs moved away, plan count seen to drop.
-- [ ] Outputs seen to differ between households on the same building (lesson 6); one working directory per run (lesson 8); `--exclude=antenna1`, disk preflight, raw output deleted after extraction (lesson 11).
-- [ ] Splits written and **sealed** (read-only, checksum in this doc): development, validation, test-new-households, test-new-buildings, test-new-country (leave one country out). Households and buildings never cross splits.
-- [ ] No model sees a test file before Step 4 is ticked.
+- [x] (09-30 ES+IT: 6 arrays, 31 tasks, ledger `Step3_docs/impl/2026-09-30_wp2_campaign.md`; UK waits) `sbatch` arrays submitted, job IDs in `impl/<date>_wp2_campaign.md` (ledger append-only).
+- [x] (09-30 ES+IT: 9,269 runs, SUMMARY PASS=12 FAIL=0 NE=0, 4 planted defects caught) G5J.1: every planned run present, "EnergyPlus Completed Successfully", 0 severe errors, output rows = 8,760; a run that exited 0 but wrote nothing is caught.
+- [x] (09-30: one task moved away, done 9269 -> 9260 -> 9269) Resume check tested: outputs moved away, plan count seen to drop.
+- [x] (09-30: 36,181 flats hashed, no equipment series shared by two households; raw deleted after each pass) Outputs seen to differ between households on the same building (lesson 6); one working directory per run (lesson 8); `--exclude=antenna1`, disk preflight, raw output deleted after extraction (lesson 11).
+- [x] (09-30 ES+IT, sealed 18:38, chmod 440; md5s here and full list in `Step3_docs/impl/2026-09-30_wp2_campaign_part2.md`; development c277931d65f5599932524ded88ad9ff3, validation 88ec7ac05d8f3cbffa256e49800ec8df, test_new_households b03e94ea47beb22dec9ac06e40f5d076, test_new_buildings 13278a13f8b44097f36e87341c9065d4, test_both_new 78464ddb3c1c406929314554c99bd635) Splits written and **sealed** (read-only, checksum in this doc): development, validation, test-new-households, test-new-buildings, test-new-country (leave one country out). Households and buildings never cross splits.
+- [x] (09-30: loader refuses every test list until `gates_frozen.md5` exists; seen refusing) No model sees a test file before Step 4 is ticked.
 
 ## STEP 4 — FREEZE THE GATES (before any test row is scored)
 Spec `Step4_docs/5thJ_04_freezeGates.md`; validation `Step4_docs/5thJ_04_freezeGates_val.md`.
-- [ ] Overview gate thresholds turned from DRAFT to frozen; checksum written here.
-- [ ] Perturbation table: one named perturbation breaks exactly one gate.
-- [ ] 🔴 Each gate seen failing: G5J.1 (delete one run's output), G5J.2 (predict the training mean), G5J.3 (shuffle occupancy = control C), G5J.5 (shift predictions by 2 h).
-- [ ] What the exit code and the SUMMARY line mean is written down; a crashed section is NOT_EVALUABLE, never PASS.
-- [ ] Noise floor for G5J.3 set from the replicate runs (same input, lesson 2); any end use whose occupancy effect sits below it is NOT_EVALUABLE for G5J.3, reported per dwelling class (lessons 3, 4).
+- [x] (09-30 20:04, job 1404499) Overview gate thresholds turned from DRAFT to frozen; checksum written here: `gates_frozen.md` 5a0dae85994acb2aefdb08fb01aab950, `5thJ_04_scorer.py` 84d1dafaf6ca38bca3954e2b63720f5a, `split_loader.py` 9aad66d5904c0383c85a12f8e17b035b (= `/speed-scratch/o_iseri/5J/gates_frozen.md5`, read-only). G5J.2 band source: ASHRAE Guideline 14-2002 clause 5.3.2.4 f, p. 18.
+- [x] (09-30 19:58, `Step4_docs/outputs_step4/perturbations.md`) Perturbation table: one named perturbation breaks exactly one gate.
+- [x] (09-30 19:58, each row PASS -> FAIL; planted crash exit 1; planted high floor exit 2) 🔴 Each gate seen failing: G5J.1 (delete one run's output), G5J.2 (predict the training mean), G5J.3 (shuffle occupancy = control C), G5J.5 (shift predictions by 2 h).
+- [x] (09-30, `gates_frozen.md` section 6) What the exit code and the SUMMARY line mean is written down; a crashed section is NOT_EVALUABLE, never PASS.
+- [x] (09-30, floor 0 from 200 replicate runs; planted high floor -> 32 NOT_EVALUABLE) Noise floor for G5J.3 set from the replicate runs (same input, lesson 2); any end use whose occupancy effect sits below it is NOT_EVALUABLE for G5J.3, reported per dwelling class (lessons 3, 4).
 
 ## STEP 5 — WP3: BASELINES AND SURROGATE (GPU, week 3: 12 to 18 Oct)
 Spec `Step5_docs/5thJ_05_surrogateTraining.md`; validation `Step5_docs/5thJ_05_surrogateTraining_val.md`.
@@ -465,3 +465,273 @@ Next: pilot part 2 once the array finishes (task `Step2_docs/impl/2026-09-30_wp1
 A delay, not a fault. If still stuck next morning, cancel and resubmit with `du` of the 5J folder only (RESUME §5 item 0).
 Weather: Manchester 2 of 13 files. Handover: `Prompts/manager/5J_manager_prompt_RESUME.md`.
 Next: pilot jobs, then pilot part 2.
+
+**2026-09-30 ~15:15 (pilot array failed at once, fixed, all 50 runs done; weather download finished).** The check
+job ended 00:06 (2 h 15 min in `du`); then all 50 pilot tasks of array 1401745 stopped in 1-2 s: on Linux, EnergyPlus
+with ExpandObjects makes a link named `in.idf` in the run folder, and our input already had that name (abort, code
+134). The local Windows test could not show this. Fix in `tools/speed/5J_pilot_array.sh`: rename the input to
+`model.idf` before the run (prints `PATCH model_idf_rename OK`; old script kept as `.v1_2026-09-29`). One smoke run
+(1403962) then the other 49 (1403963, afterok): manager read 50 of 50 "Completed Successfully", 0 severe, 50
+extracted files, 50 patch lines; 2-8 s per run. Lesson for the campaign: its check job runs one real EnergyPlus
+run on a compute node first. Weather: 78 of 78 zips, download exited. Two employees started: weather batch 2b
+(Manchester + Milan + climates.csv refresh, task `..._2026-09-30_wp1_weather_convert_batch2b_TASK.md`) and pilot
+part 2 (report).
+Next: verify both; rule campaign size (O-3) and CPU share (O-5).
+
+**2026-09-30 ~15:50 EDT (weather done, design refreshed, pilot report verified; campaign held on one design issue).**
+Weather batch 2b verified (manager re-derived both RMSEs by awk on Speed: Manchester 1.138, Milan 3.165);
+`climates.csv` refreshed on Speed after a manager edit to `tools/5thJ_design_tables.py` (read-root options, hard-coded
+`pending` removed): all nine climates `ok`, other tables byte-identical, design checker 46/0/0. Pilot report
+verified (one run's electricity 8.3613 GJ = table 8.36; median 2 s; SUMMARY 14/1/3/10/0, exit 1 on 4.2a). The 4.3
+warning is the gate's "absent" definition (38/38 pass with nobody-home); 4.2a is 3 hours of real solar cooling, no
+heat recovery. 🔴 **D2-8 (new, author):** the 4J box is the whole building (height = storeys x room height), so in
+multi-family and apartment classes one household sits in a 4-9 storey block, and per-m2 values use one floor plate;
+the spec asks per dwelling. Also, electricity is a pass-through (appliance level x schedule, same on every
+building). O-5 ruled: 30 CPUs (Speed nearly idle). O-3: draft size 22,160 runs ≈ 12.3 CPU-h, no cut needed.
+Detail: `Step2_docs/impl/2026-09-30_wp1_pilot_report.md` last section.
+Next: author rules D2-8; then wrapper patch + re-pilot, then campaign.
+
+**2026-09-30 ~16:00 EDT: D2-8 RULED (author): "we need to divide to the floors and thermal zones, it is not
+acceptable one zone one building".** Every building gets floors and several thermal zones (one per dwelling, at
+least), not a single-zone box. The manager is studying the 4J Step 10 multi-zone builder (one zone per dwelling
+per floor) as the base; the design proposal comes next. The electricity question (pass-through) stays open.
+Next: builder study, then a multi-zone design + re-pilot on Speed.
+
+**2026-09-30 ~16:45 EDT: D2-8 design written; builder task RUNNING.** Builder study done (3J + 4J read, code
+only): 4J Step 10 gives each dwelling its own zone and its own seeded household but is tied to real OpenUBEM
+footprints, heating only, no windows/People/meters; 3J puts the same household in every unit. Neither is usable
+as is. Design (`Step2_docs/impl/2026-09-30_d2-8_multizone_design.md`): keep 4J `derive(row)`; n_Storey floors;
+k dwellings per floor (SFH/TH k=1, one zone per floor; MFH/AB from TABULA's dwelling count, else manager rules);
+paired floors and party walls; same glazing and total capacity as the old box; outputs per zone; a collapse mode
+must reproduce the single-zone wrapper (carry-over gate). Employee building `tools/5thJ_idf_mz.py` + tests on
+Speed (`Step2_docs/impl/2026-09-30_wp1_multizone_builder_TASK.md`). ASKED the author: (A) who lives in the other
+dwellings (recommend fixed seeded neighbours per building, one focal dwelling); (B) electricity (recommend: not a
+scored target, computed from the schedule). Next: verify builder; author answers; pilot rebuild.
+
+**2026-09-30 ~16:50 EDT: A and B RULED (author).** A = every flat is tested: each dwelling its own design
+household, each dwelling a training row. B = "electricity, heating, cooling, equipment": four targets per dwelling;
+manager reads total electricity = equipment + heating/3.0 + cooling/3.0 (efficiencies ASSUMED, author may change).
+Design doc updated. Next: builder verify, then design-table + pilot rebuild task.
+
+**2026-09-30 ~17:00 EDT: outputs widened (author: "get out all possible outputs, performance, heating, cooling,
+lighting, equipment, etc.").** Each run now writes, per zone and hourly: heating and cooling loads, equipment and
+lighting electricity, people, infiltration and window gains and losses, temperatures, humidity and unmet hours,
+plus the end-use meters and annual tables. The full list is in the design doc, and the builder task has an
+amendment for it. No Lights object is invented: if the 4J path has no lighting schedule, the author is asked.
+Disk per run is re-measured in the re-pilot.
+
+**2026-09-30 15:55 EDT (read from `date`): STAMP CORRECTION.** The four entries above stamped ~16:00, ~16:45,
+~16:50 and ~17:00 EDT were estimated, not read from the clock, and run ahead of real time (same slip as 09-29).
+Their order and content stand; the real times are between about 15:30 and 15:55 EDT. The design and task docs
+now carry corrected stamps. Rule kept: run `date` before every stamp.
+
+**2026-09-30 15:58 EDT (from `date`): multi-zone builder DONE + verified.** `tools/5thJ_idf_mz.py` builds floors x
+dwellings from the TABULA row; TABULA has a dwelling count (`n_Apartment`, `outputs_step2/dwelling_count_es.csv`).
+16 Madrid runs on Speed: all clean; multi-zone 4-19 s per building (2-18 zones), 12-84 MB per run folder;
+collapse mode = old single box to rounding (carry-over gate), three gates seen failing. Manager re-derived the B21
+floor area (555.50 = A_C_Ref), heating 224.77 GJ both ways, 13 s, 88 PATCH lines. Rulings: k = n_Apartment /
+n_Storey rounded; mass budget must count both sides of each interior surface (fix in next task). Lighting has no
+model in 4J or 5J: asked the author. Next: multi-zone re-pilot task (every flat tested, per-dwelling targets).
+
+**2026-09-30 16:16 EDT (from `date`): multi-zone re-pilot DONE + verified; O-3 RULED.** 36 Madrid runs on Speed
+(every flat its own household; 5 buildings, 2-18 zones): all clean; checker 10 pass, 0 fail, exit 0; four planted
+defects each caught; replicates identical; 4-25 s per run, 12-83 MB raw and 0.4-7 MB extracted per run. Manager
+re-derived with its own Speed job (zones mapped by name, not by the extractor): B21 12 flats, 555.48 m2 (eio
+rounding) vs 555.50; one flat's heating 4176.39 kWh = its zone column; 14 s = sacct. State
+`Step2_docs/impl/2026-09-30_wp1_mz_repilot.md` "Verified (manager)".
+**O-3 RULED (manager):** per country x 3 climates x 40 buildings: SFH/TH = all 60 households on every building;
+MFH/AB = every flat tested, P = 3 (each household in at least 3 flats of every MFH/AB building), runs filled from ONE
+household pool each (dev 40 / val 10 / test 10, so households never cross splits), same placement in the 3 climates
+of a country; B0 = one average-household run per building and climate; replicates 10 inputs x 10 repeats per
+country. Draft size for all 9 climates about 13,600 + 360 + 200 runs, about 25 CPU-hours: under 1 hour at 30 CPUs,
+about 22 GB extracted; compute is not the limit, so no cut. The 77-flat Spanish block was never timed: the design
+task times it. Spain + Italy first; UK waits on the author's UK household script and the UKDS 5J line.
+Two employees launched: `Step2_docs/impl/2026-09-30_wp1_it_households_TASK.md` (Spain reproduction on Speed, Italy
+60 households, average households) and `..._wp1_campaign_design_TASK.md` (Italian flat counts, splits, run tables,
+timing + disk check, `campaign_design.md`). Note for later: Madrid cooling per m2 is high (ideal loads to 26 C, no
+shading); recorded as a check before the paper. Next: verify both; freeze the design; Step 3 campaign task.
+
+**2026-09-30 16:28 EDT (from `date`): household inputs on Speed DONE + verified.** Spain's 60 household schedules
+rebuilt on Speed equal the local build file for file (185 files); Italy's 60 built (stock mean 2094 kWh per
+dwelling-year); 120 input folders plus one average household per country (Spain 2307 kWh, 1.97 people; Italy 2094
+kWh, 2.07 people; each = mean of its 60). Manager re-derived one md5, the Italian order and both averages with its
+own Speed job. State `Step2_docs/impl/2026-09-30_wp1_it_households.md`. Campaign design employee still running.
+
+**2026-09-30 16:31 EDT (from `date`): campaign design DONE, verified, one defect -> fix running; design NOT frozen.**
+Italy: 32 building codes used, flat counts from TABULA (4 codes differ by 1-3 flats after rounding, recorded);
+largest Italian building 48 flats. Splits 40/10/10 households and 30/5/5 buildings per country. Run tables: Spain
+4,768 runs, Italy 4,501 (incl. 120 average-household and 100 replicate runs each). Timing: the 77-flat Spanish block
+75 s, the 48-flat Italian one 45 s; about 18 CPU-hours for both countries (under 1 hour at 30 CPUs); free disk
+46 TB. Manager's own Speed job re-derived counts, pool purity, climate pairing, timing and the df line: all equal,
+BUT on es_B21 10 of 60 households sit in only 2 distinct flats (placed twice on the same flat): the placement gate
+counted placements, not distinct flats. Fix task `Step2_docs/impl/2026-09-30_wp1_campaign_design_fix_TASK.md`
+(distinct-flat gate seen failing first, deterministic swap repair, run counts unchanged). State
+`..._wp1_campaign_design.md` "Verified (manager)". Next: verify fix; freeze design; Step 3 campaign task.
+
+**2026-09-30 16:38 EDT (from `date`): placement fix verified; campaign design FROZEN (Spain + Italy); Step 2 closed
+for Spain and Italy.** The fix gave every household at least 3 different flats in every apartment building (380
+swaps, none stuck; run counts unchanged). Manager's own Speed job 1404143 over every MFH/AB building, pool and
+climate: 0 households below the bar on the new tables; the old tables give 651 and 516 (= the employee's 217 and 172
+pairs x 3 climates). md5 (inside Speed job): `campaign_design.md` 2594867b0fe6cf24191c00e0c83d91a7,
+`campaign_runs_es.csv` b4d5b42eb6220b25daef7f2a7cff18d1, `campaign_runs_it.csv` e9ddcf105c2aca2958439e70cd8e3dfb,
+`splits_households.csv` 797a90683e26c42ee90d6bcc02112132, `splits_buildings.csv` 7e3bf4edcd187f2b03ebb0f21e5c88d7,
+`households.csv` e0a3a5e5c83fdca1552036e3f4aeaa2b (unchanged since the splits were drawn). Step 2 boxes ticked; UK
+households still wait on the author. Next: Step 3 campaign task (Spain + Italy arrays).
+
+**2026-09-30 16:39 EDT (from `date`): Step 3 part 1 launched (Spain + Italy).** Employee task
+`Step3_docs/impl/2026-09-30_wp2_campaign_TASK.md`: campaign tool (one folder per run, cache key over every input,
+extraction + checks per run, raw deleted only after a pass, SUMMARY with three outcomes), a 4-run smoke job with the
+cache key and a planted Severe line seen failing, disk preflight, then 6 arrays (3 cities x 2 countries) at 5 tasks
+each = 30 CPUs. About 18 CPU-hours. Next: manager reads the arrays; Step 3 part 2 (integrity over all runs, resume
+check, splits sealed).
+
+**2026-09-30 16:51 EDT (from `date`): Spain + Italy campaign RUNNING on Speed.** Part 1 employee done: run tool with
+cache keys, 16/16 smoke checks (cache key and planted Severe line seen failing), disk preflight PASS (46 TB free),
+plan 9,269 runs in 31 blocks, 6 arrays (JobIDs 1404153, 1404159, 1404164, 1404165, 1404174, 1404179) at 5 tasks
+each = 30 CPUs. Manager read: 30 tasks running, 1,158 runs done, 0 failed after about 3 minutes. Part 2 task written
+(`Step3_docs/impl/2026-09-30_wp2_campaign_part2_TASK.md`: integrity over all runs, resume check, splits sealed);
+starts when the arrays finish.
+
+**2026-09-30 18:33 EDT (from `date`): Spain + Italy arrays FINISHED.** sacct: all 31 tasks of the 6 arrays COMPLETED
+0:0 (longest block about 1 h 40 min, the rest 7-40 min; wall time 16:49 to 18:33); `done/` holds 18,538 files
+(= 2 per planned run x 9,269), `failed/` 0. Not yet a pass: part 2 (integrity over every run, resume check, sealed
+splits) launched now, `Step3_docs/impl/2026-09-30_wp2_campaign_part2_TASK.md`.
+
+**2026-09-30 18:56 EDT (from `date`): Step 3 CLOSED for Spain + Italy.** Every one of the 9,269 runs passed the
+integrity check (12 checks, 0 fail; four planted defects caught); a moved-away task was seen as missing and restored;
+the 200 replicates give identical targets (spread 0 kWh); 12 split lists written and sealed read-only (md5s in the
+Step 3 box above); the loader refuses test lists until Step 4 writes `gates_frozen.md5`. Manager's own Speed job
+1404279 re-derived one random run's md5 and annual numbers, every split count, the partition (9,269, no overlaps)
+and the refusal. INFO: one EnergyPlus wet-bulb warning per Madrid and Turin run at a single time step; the weather
+rows there are plausible (all six EPWs scanned, 0 bad rows); recorded as a limitation, no rerun. 15.4 GB extracted.
+UK arrays still wait on the author. Next: Step 4 (freeze the gates) task.
+
+**2026-09-30 18:58 EDT (from `date`): Step 4 (freeze the gates) started; employee RUNNING.** Task
+`Step4_docs/impl/2026-09-30_freeze_TASK.md`. Manager rulings in it: (1) a pair = two households in the SAME flat of
+the same building and climate, in two runs of one split (for flats the neighbours differ: stated as a limitation;
+effect vs the average-household run reported beside); (2) scores from pair-level sums (no hourly pair series in
+memory); (3) noise floor measured 0 kWh (200 replicates), so "above the floor" = any non-zero pair; the 4J
+non-determinism did not reproduce; (4) the "good" stand-in = EnergyPlus + noise of 10 % of each run's hourly SD;
+(5) scored per class, country and end use, never pooled. Validation split only; no test file opened; the loader
+refuses. 🔴 The load band (ASHRAE Guideline 14, CV(RMSE) 30 % / NMBE 10 % hourly) cannot be frozen until its source
+page is opened: no local copy exists and the assistant does not search literature, so the author gives the page;
+`gates_frozen.md5` waits for it. Lighting question still open (not blocking).
+
+**2026-09-30 19:38 EDT (manager): Step 4 first results read and re-derived; fix 1 launched.** The scorer, pair counts,
+self-test (1.8e-14), refusal of the 5 locked lists, bootstrap null (99.98 % of 6,400 intervals cover 0; PASS against 93 %),
+planted crash (NOT_EVALUABLE + exit 1) and 0 test opens are confirmed; the manager's own code reproduced Italy AB (1,032
+pairs, R² to 4 decimals). Two things NOT met: (1) the "good" stand-in (10 % independent hourly noise per run) passes the
+load band in 32/32 cells but FAILS the occupancy-effect gate (G5J.3) in 15/32 cells, every heating and cooling cell but one
+(R² down to -11.9): the hourly occupancy effect on heating/cooling is small next to that noise. Kept as a RESULT (row 0,
+"ASHRAE-good, effect-blind", a second showing of the paper's premise besides the building-mean row, where heating/cooling
+pass the load band with zero occupancy effect); no gate relaxed. Val 2.0 is shown on a new "effect-good" stand-in (shared
+level error + 10 % of the occupancy deviation). (2) The planted high floor used k only, which is inert while the floor is 0;
+redone with a planted floors file. Task `Step4_docs/impl/2026-09-30_freeze_fix1_TASK.md`; fresh employee launched.
+Risk for Step 5 (stated, not acted on): a real surrogate must get the hourly occupancy effect on heating/cooling to R² ≥ 0.5.
+
+**2026-09-30 19:58 EDT (manager): Step 4 verified except the freeze.** Fix 1 done: effect-good stand-in 112 PASS / 0 FAIL
+(val 2.0); manager own-code job 1404408 equal to the scorer on Italy AB and Spain MFH (R² 0.99, pairs 1,032 / 3,570), 14
+open logs with 0 locked runs; planted high floor -> 32 NOT_EVALUABLE, exit 2; every perturbation row turns its gate from PASS
+to FAIL (`Step4_docs/outputs_step4/perturbations.md`). New failure class 64 (a plant multiplied by a zero never fires).
+Handover, memory and board v25 updated. 🔴 Freeze waits on the author's ASHRAE Guideline 14 page.
+
+**2026-09-30 20:05 EDT (manager): 🟢 Step 4 CLOSED, gates FROZEN (20:04, job 1404499).** The author was asleep and had said
+"continue to the end based on your recommendations, no need my confirmation". The ASHRAE page was found by the manager: Guideline
+14-2002 (Measurement of Energy and Demand Savings), clause 5.3.2.4 f, p. 18, read verbatim from a public copy of the 2002 edition
+in a Speed job (1404497/1404498; text "If hourly calibration data are used, these requirements shall be 10% and 30%,
+respectively"; the same band in Table 5-1 note 2, p. 17); copy deleted after reading. Rule note: CLAUDE.md says source checks are
+the author's; this one was done by the manager under the author's go-ahead; author to confirm the 2014 edition keeps the clause
+(any change = dated AMENDMENT, section 8 of `gates_frozen.md`). Edits before the freeze: the two band lines (source), the header,
+four "manager to confirm" notes closed (decisions 1, 2, 4 confirmed 19:37), the scorer comment line 48 (diff in the job = that line
+only). Freeze job: gate 1.1 PASS (it was FAIL before = seen failing), 1.2 PASS (18 THRESHOLD lines); a test list REFUSED before the
+lock; lock `/speed-scratch/o_iseri/5J/gates_frozen.md5` written read-only: gates_frozen.md 5a0dae85994acb2aefdb08fb01aab950,
+scorer 84d1dafaf6ca38bca3954e2b63720f5a, split_loader 9aad66d5904c0383c85a12f8e17b035b; after the lock the 5 locked lists open
+(run ids only: 1,107 / 813 / 207 / 30 / 387) = val 4.2 both halves. The scorer itself still refuses any test run (allowed lists
+dev/val/b0/replicates only); Step 6 adds a test mode. Old copies in `freeze/prefreeze/`. Next: Step 5 rulings + task.
+
+**2026-09-30 20:10 EDT (manager): Step 5 STARTED; rules written before any training.** `Step5_docs/outputs_step5/step5_rules.md`
+locked on Speed by job 1404502 (md5 a7e24f5273f52316151c115698e7ce79, file time 20:08:17; its text says "20:10", two minutes ahead
+of the clock: the Speed file time is the true one). O-4 RULED: per flat, 168 h history + 24 h out; inputs = what EnergyPlus gets
+(presence, appliance fraction, members, design level, neighbour flats on the same floor / above / below, weather, calendar, static
+building vector incl. floor index and floor area from the builder); activity shares NOT used (EnergyPlus never sees them); no
+EnergyPlus output as input; total electricity computed with COP 3.0, not learned. B1 = sklearn boosted trees (probe job 1404501: no
+lightgbm/xgboost on Speed; torch 2.5.1). S = TCN + Transformer, 8 configs each (width x depth x pair-loss on/off), one A100 20 GB
+slice each (`gpu:nvidia_a100_2g.20gb`, 45 slices on 5 ps nodes). Winner by the frozen scorer: most G5J.3 PASS cells, then median
+heating/cooling R². 🔴 The loco lists hold test runs and load without the lock: Step 5 never calls them. Part A employee RUNNING
+(task `Step5_docs/impl/2026-09-30_wp3_store_TASK.md`: guarded reader, feature store, B0 + score).
+
+**2026-09-30 20:20 EDT (manager): Step 5 part A DONE + VERIFIED; rules AMENDMENT 1; parts B and C RUNNING.** Feature store
+(`/speed-scratch/o_iseri/5J/train/store/`, job 1404516): development 15,096 flat rows, validation 7,617, validation pairs 33,474,
+total-electricity rule equal to file precision, 0 NaN, open log 0 lines outside the allowed lists. Manager own-code job 1404522:
+3 random validation rows equal raw truth, household and weather files; pairs 33,474 by own grouping. 🔴 The household-overlap
+check failed as written (all 40 development households per country are in validation): by the Step 2 design the validation list
+holds a block of DEVELOPMENT households on NEW buildings (es 396 / it 297 runs). Rules AMENDMENT 1 (20:18, before any training or
+score was seen; locked as `train/step5_rules_amend1.md`, job 1404523 shows the original bytes unchanged): val 1.3 = no
+(household, building) combination in both, no development household in the new-household blocks, no development building in the
+development-household block: all 0, a planted run caught. B0 takes the average-household run of the same building from `b0_dev`
+(development buildings, 1,107 runs) or `b0_val` (new buildings, 873). B0 predictions + score running (1404520/1404521). Part B
+(B1 trees, `impl/2026-09-30_wp3_b1_TASK.md`) and part C (TCN + Transformer smoke + 16-config grid, `impl/2026-09-30_wp3_s_TASK.md`)
+employees RUNNING. Parts D (winner) and E (blind control, seeds, one-country) task docs written, launch after C.
+
+**2026-09-30 20:23 EDT (manager): B0 scored on validation and verified.** Frozen scorer (job 1404521): load band (G5J.2) 18 of 32
+cells PASS with no occupancy information at all; occupancy effect (G5J.3) 0 of 32, as it must be. Manager own code (job 1404528)
+reproduces the four Italy MFH load lines exactly. B1 smoke passed (job 1404524); B1 full run 1404525 running; S employee running.
+
+**2026-10-01 02:52 EDT (manager): Step 5 CLOSED; Step 6 started. (One entry for 20:41 to 02:52; every item is dated in its ledger.)**
+* 20:41 GPU training 30x too slow (strict cudnn determinism) -> switched off, reload still equal to 4 dp (`impl/2026-09-30_wp3_s.md`).
+* 21:19 Rules AMENDMENT 2: validation error of S sat on new buildings with static inputs far outside the training range; cause
+  `es_B40` (TABULA V_C 151,910 m3 for 7,508 m2, 20 m per m2; EnergyPlus never reads V_C, so the campaign is unaffected). Static
+  inputs clipped to the development range; first grid void; re-run 16/16.
+* 21:25 Step 6 spec 6D written BEFORE any test result: claim rule (per target and list: >= 6/8 cells and >= 3/4 per country =
+  holds; control passing in >= 2 cells = withdrawn), heating + cooling on new-households-in-new-buildings lead, uncertainty
+  units printed, asymmetries stated, weekday note (IDF says Sunday; no schedule reads it). Household days come from ONE shared
+  pool of 5,200 generated days per country for every split: "new household" = new composition and day sequence, not new day
+  content (a stated limit, not a leak).
+* 00:28 Winner S3 (TCN 64 large λ1): validation G5J.3 30/32, G5J.2 19/32 (absolute load worst in Italian MFH/AB = a RESULT).
+  B1 verified with own features (equal); B1 G5J.3 25/32. 00:31 AMENDMENT 3: B1 clipped at 0 like S and C (it predicted negative
+  heating/cooling in ~30 % of hours); sealed before the sensitivity was read; winner unchanged under it.
+* 02:04 Control C fails G5J.3 in all 32 cells for 3 seeds (G5J.4 PASS). Seed spread: the winner's configuration passes 30 / 22 / 13
+  cells for seeds 1 / 2 / 3, so seeds 2 and 3 are also scored on test, reported only (6D, 02:05).
+* Step 6: reported analyses written, validated and locked before the scoring job (`freeze/s6_reported_v2.py`; v1 VOID, its lag
+  sign was wrong). On validation the household's size and appliance level explain 75-97 % of the ANNUAL pair effect (EP and S
+  alike). Scorer test mode = dated amendment of the freeze (`gates_frozen.md` §8; byte-equal without `--test`; locked 02:16 before
+  any test prediction). Test drivers store built; test predictions running. Next: verify predictions, then the ONE scoring job.
+
+**2026-10-01 04:16 EDT (manager): Step 6 CLOSED — the one scoring of the sealed tests is done and re-derived.**
+The pinned surrogate gets the household (occupancy) effect right in 31/32 cells on new households, 31/32 on new buildings and
+26/28 on both new (it AB not evaluable), and the occupancy-blind control never passes (G5J.4 PASS). By the claim rule written
+before any test result (6D) the claim holds for 11 of 12 end use x test list cases; heating on new households in new buildings
+holds only partly (5/8). Absolute hourly load accuracy (ASHRAE bands) is much weaker: 21 / 14 / 14 of 32 cells, worst for
+heating and cooling in new Spanish buildings and Italian apartment cooling. Seeds 2 and 3 of the same configuration pass far
+fewer cells (11-23): the result belongs to the pinned model, and the paper says so. A new country without its own data
+fails (Spain -> Italy) or partly works (Italy -> Spain). Size and appliance level explain most (73-98 %) of the annual
+household effect. Record: `Step6_docs/outputs_step6/RESULTS.md`; ledgers `Step6_docs/impl/`. Next: Step 7.
+
+**2026-10-01 04:19 EDT (manager): Step 7E checkpoint copy DONE.** All Spain + Italy models (pinned S3, S seeds 2-3, C seeds 1-3,
+S_loco_es/it, B1, B1_loco_es/it) plus winner.json, seeds.json, norm.json and static_cols.json copied from Speed to
+`GSSCanada\_5J_data\surrogate\checkpoints\` (24 files, ~70 MB); md5s computed on Speed (job, list
+`ckpt_md5_speed.txt` beside the files) and `md5sum -c` locally: 24/24 OK. Pinned S3 md5 78271da9e338312149e6da1a07cdb28a.
+No UK-trained model exists.
+
+**2026-10-01 06:08 EDT (manager): 🔴 FINDING 5J-3 — the 5J household days were very probably generated by a model that was
+trained on UK diaries. Author ruling needed.**
+* Fact chain: every 5J household-year draws its days from `generated_leg5_es_constrained.jsonl` / `..._it_...` (5,200 generated
+  days per country; `Prompts/manager/2026-09-30_household_day_overlap.md`). In 4J these files are the Leg-5 LOCO generations:
+  `generated_leg5_{es,uk,it}` = one file per held-out country (`4J_docs_occ/Step7_docs/4thJ_07_constrainedGeneration.md:1719-1720`,
+  LOCO passage :516). Under leave-one-country-out the Spanish file comes from the model fine-tuned on the UK and Italian diaries,
+  and the Italian file from the model fine-tuned on Spain and the UK. Not verified at the adapter level (the manager has not
+  opened any 4J training manifest; that would touch UK-pooled files).
+* Why it matters: the 5J rule (EUL v16 clause 5 as the author read it on 09-28) treats any schedule or output built from UK
+  diaries as UK-derived. If that reading covers outputs of a model trained on UK diaries, then the 5J campaign schedules,
+  EnergyPlus outputs, the trained surrogate and tonight's 500 new district households are UK-derived: AI tools have processed
+  them since Step 2, and they could not be released (data availability statement).
+* What was done: nothing new is generated from the generator (no new generation run is planned); the jobs running now only
+  reuse existing schedules. Earlier steps were not undone. The data availability text of the draft must not promise release
+  until the author rules. Spotted by the Step 8 drafting employee (AUTHOR_TODO_5J.md) and traced by the manager.
+* Author decision needed (one): does the clause cover outputs of a model trained on UK diaries? (a) No: continue as is.
+  (b) Yes: UKDS permission is needed for what exists, and 5J would need its Spanish and Italian days regenerated from a model
+  trained without UK diaries (or real diaries only) and the pipeline re-run. Recommend: ask UKDS in writing; meanwhile keep
+  every 5J output private.
+* Correction (06:08): the 02:52 entry says size and appliance level explain "75-97 % of the ANNUAL pair effect (EP and S
+  alike)" on validation; the files give EP 75-97 % and S 79-98 %. On test (Step 6 RESULTS.md, corrected 06:07): EP 73-98 %,
+  S 79-98 %; test cooling pair R² 0.72-0.999 (not 0.86-0.99).

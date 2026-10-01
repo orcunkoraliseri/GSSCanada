@@ -9,7 +9,7 @@ Written 2026-09-28. Week 3 (12 to 18 Oct 2026). 🔴 GPU access ends about 31 Oc
 
 ## STATUS
 
-⬜ NOT STARTED. Needs Step 4 closed (gates frozen by checksum).
+🟢 CLOSED (2026-10-01 02:52 EDT): winner S3 pinned, C fails as required, seeds and one-country trainings done; all manager-verified (Progress Log). Before: 🟡 IN PROGRESS (2026-09-30 20:20): rules `outputs_step5/step5_rules.md` + AMENDMENT 1 (val 1.3 per validation block, B0 source); part A store DONE + verified; parts B (B1) and C (S grid) running; D and E task docs written.
 
 ## AIM
 
@@ -79,6 +79,11 @@ validation split only, pin the winner, and train the occupancy-blind control. No
 Three extra trainings of the pinned winner (and of B1), each on two countries, for G5J.6. Same
 configuration, no re-tuning.
 
+> Manager note 2026-09-30 21:14 EDT (text fix, no rule change): this paragraph predates the ES+IT scope. The locked
+> rules (`outputs_step5/step5_rules.md` R9) bind: TWO extra trainings (S and B1), each on ONE country (train Spain,
+> score Italy; train Italy, score Spain). The pinned configuration was chosen on the ES+IT validation set, so the
+> held-out country's validation data were in view when it was chosen; the paper says so.
+
 ## OUTPUTS
 
 `outputs_step5/models.md` (every trained model: config, hash, seed, checkpoint md5, validation scores),
@@ -86,3 +91,17 @@ configuration, no re-tuning.
 
 ## PROGRESS LOG (append-only)
 - 2026-09-28 (manager): doc written as a plan. Next: Step 4.
+- 2026-09-30 20:10 EDT (manager): Step 4 frozen 20:04. Rules for Step 5 written before training and locked by md5 (job 1404502):
+  `outputs_step5/step5_rules.md` (O-4 ruled; inputs = EnergyPlus inputs only, no activity shares; B1 = sklearn trees; grid 8 + 8;
+  winner rule). Part A (store + B0) employee RUNNING. Status: IN PROGRESS.
+
+**2026-09-30 20:20 EDT (manager):** part A DONE + verified (store rows, pairs 33,474, own-code rows equal raw files; job 1404522).
+Rules AMENDMENT 1 at 20:18 before any training result: val 1.3 is checked per validation block (the frozen validation list holds
+development households on new buildings by the Step 2 design) and B0 uses `b0_dev` for development buildings. Parts B and C
+launched; part D (`impl/2026-09-30_wp3_winner_TASK.md`) and part E (`impl/2026-09-30_wp3_control_TASK.md`) written.
+- 2026-10-01 02:52 EDT (manager): Step 5 CLOSED. Rules: AMENDMENT 2 (21:19, static inputs clipped to the development range after
+  es_B40's impossible TABULA volume made the networks extrapolate; first grid void), AMENDMENT 3 (00:31, B1 clipped at 0 as S and
+  C). Winner S3 (TCN 64 large λ1): validation G5J.3 30/32, G5J.2 19/32, skill over B1 excludes 0 in 30/32. B1: G5J.3 25/32
+  (26/32 clipped). C fails G5J.3 in 32/32 cells (G5J.4 PASS). Seeds 2/3 of the winner's configuration: 22/32 and 13/32 (seed
+  spread reported in Step 6 on test too, spec 6D). One-country S and B1 trained. Every result re-derived by the manager with own
+  code (ledgers `impl/2026-09-30_wp3_*.md`). Next: Step 6.

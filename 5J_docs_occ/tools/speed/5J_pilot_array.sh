@@ -22,12 +22,14 @@ RUN="$PILOT/runs/$RUN_ID"
 rm -rf "$RUN"; mkdir -p "$RUN" "$PILOT/extracted"
 cp "$PILOT/inputs/$IID"/* "$RUN"/            # one working directory per run
 cd "$RUN" || exit 2
+# Linux EnergyPlus -x makes a link named in.idf in the working dir; an input already called in.idf aborts it (rc 134, 2026-09-30 array 1401745).
+mv in.idf model.idf && echo "PATCH model_idf_rename OK" || exit 2
 echo "task=$N run_id=$RUN_ID input=$IID epw=$EPW host=$(hostname) start=$(date -Iseconds)"
 T0=$(date +%s)
 if [ -x /usr/bin/time ] && /usr/bin/time -v true >/dev/null 2>&1; then
-  /usr/bin/time -v -o time.txt "$EP" -w "$EPW" -d "$RUN/eplus_out" -x -r "$RUN/in.idf" > eplus_stdout.txt 2>&1
+  /usr/bin/time -v -o time.txt "$EP" -w "$EPW" -d "$RUN/eplus_out" -x -r "$RUN/model.idf" > eplus_stdout.txt 2>&1
 else
-  "$EP" -w "$EPW" -d "$RUN/eplus_out" -x -r "$RUN/in.idf" > eplus_stdout.txt 2>&1
+  "$EP" -w "$EPW" -d "$RUN/eplus_out" -x -r "$RUN/model.idf" > eplus_stdout.txt 2>&1
 fi
 RC=$?
 T1=$(date +%s)

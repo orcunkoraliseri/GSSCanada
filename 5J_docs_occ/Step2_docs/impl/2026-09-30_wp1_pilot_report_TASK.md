@@ -61,3 +61,29 @@ WHAT I DID NOT VERIFY), write as you go.
 ## What the manager will re-derive
 One run's annual electricity summed from its extracted file; one replicate spread; the median seconds from the
 status files; the checker SUMMARY and exit code.
+
+## 🔴 AMENDMENT 2026-09-30 ~15:25 (manager): ALL COMPUTE ON SPEED, NOTHING ON THE LOCAL CPU
+The author said: "use speed cluster resources", "do not use local cpu resources". This overrides every "Local only"
+and every local-python line above. Rules:
+* Locally you may only: edit/write files, `ssh`/`scp`, `ls`, read small files. **No local python, no local
+  EnergyPlus, no local md5 loops over many files.** Never touch any process you did not start (the author's own
+  python and EnergyPlus jobs run on this machine).
+* Speed: `ssh o_iseri@speed.encs.concordia.ca` (key-based; login shell is tcsh, wrap as `ssh ... "bash -c '...'"`).
+  Login node = `sbatch`, `squeue`, `sacct`, `scancel`, `scp`, `ls`, single-file `cat`/`tail`/`wc -l` only. Every
+  python run goes in an sbatch script: `#SBATCH -p ps`, `-t 7-00:00:00`, `--exclude=antenna1`, `-c 1`,
+  `--mem=4G`, python `/speed-scratch/o_iseri/envs/step4/bin/python -u`. Check it imports what you need inside the
+  job (print versions first); if a package is missing, record verbatim and stop.
+* Stage inputs with `scp` into a task folder under `/speed-scratch/o_iseri/5J/` (named below), md5 one file on each
+  side inside the job to show the copy is equal, copy outputs back with `scp` and write them where this task says.
+* Jobs here take seconds. After `sbatch`, you may check `sacct -j <id> -X` at most 6 times, 30 s apart (one ssh
+  call each: `ssh ... "bash -c 'sleep 30; sacct -j <id> -X --format=JobID,State,ExitCode,Elapsed'"`). If still not
+  finished after that, write the JobID in the state file with "manager to read" and stop.
+* Write every JobID in the Ledger.
+* **Speed folder:** work inside `/speed-scratch/o_iseri/5J/pilot/` (read-only for `runs/`, `extracted/`, `inputs/`);
+  put your script, seen-failing copies and outputs in `/speed-scratch/o_iseri/5J/pilot/report/`. Run
+  `5thJ_pilot_check.py` there via sbatch against the Speed files directly (you need not copy results back first).
+* **Where the stopped employee left it (manager, 15:25):** `_5J_data/surrogate/pilot/speed_results/` holds
+  `extracted/`, `runs/`, `md5_speed.txt`, `md5_summary.txt`, `preflight.txt` copied back (a download, fine; count
+  what is there and record it; finish step 1 with scp if incomplete). No state file yet; create it.
+* Current arrays: 1403962 (task 1) and 1403963 (tasks 2-50); err files at `runs/<run_id>/eplus_out/eplusout.err`;
+  the IDF there is `model.idf`. Floor areas: `Step2_docs/outputs_step2/buildings.csv` (scp it up).
