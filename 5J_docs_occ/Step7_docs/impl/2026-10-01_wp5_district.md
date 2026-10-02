@@ -158,3 +158,37 @@ Nothing of part B has run yet. Only the syntax and the module imports (job 14052
   -18.0049 %, total 20.9860 % / -14.5870 % = `district_check.csv` row; draw-writer file layout read (hourly_all, hourly_inrange,
   annual per dwelling); the writer-vs-hourly check of all 20 check draws is job 1405278 (pending on the draws).
 * Speed ratio re-derived from the clock lines: 1.675 / 0.02752 = 61; 1.675 / 0.1213 = 14; 1.675 / 1.384 = 1.2.
+
+## MANAGER (2026-10-01 08:17 EDT): re-run read; state at session handover
+* 1405341 COMPLETED (exit 0, SUMMARY fails=0, 07:33): heading order now right; numbers as 07:31. Added from the by-building-code
+  table: twins whose TABULA code was NEVER in development do much worse (heating median CV(RMSE) 164.3 %, pooled NMBE +64.0 %;
+  total 66.9 % / +21.7 %) than codes seen in development (heating 25.7 % / -9.8 %; total 21.1 % / -3.6 %). District peak hour:
+  heating peak in the same hour in 20/20 draws, cooling 0/20 (cooling peak-hour level within 3.6 %), total 9/20.
+* At 08:17: draws array 1405277 tasks 1-7 COMPLETED, 8-10 RUNNING, 11-20 PENDING (about 45 min per task, 3 slices: about
+  2.5 h more); writer check 1405278 and spread 1405279 wait on it. Outputs of E and G are in `district/out_step7/`; not yet
+  copied (copy after 1405279).
+* MANAGER 10:21 EDT: own-code check queued for the 1,000-draw spread: `tools/speed/mgr_s7c_check.py` (copy in /speed-scratch/o_iseri/5J/mgr/),
+  job 1405460 afterok:1405279 (syntax job 1405459). Part 1 = check draw 4 rebuilt from its 100 per-dwelling hourly files (gzip+csv,
+  no project module) vs d0004.npz; part 2 = annual from the per-dwelling ANNUAL array + own percentiles vs district_spread.csv
+  (tolerance 2e-5, csv is %.6g); part 3 = settling list for the paper. Two planted faults. Exit 0/1/2. Draws at 10:21: 750 files.
+
+## MANAGER (2026-10-01 13:15 EDT): STEP 7 VERIFIED (writer check + own recount, run on the desktop)
+* Where it ran: the author allowed half the desktop (<=10 CPUs, ~31 GB) because the account CPU cap (64) was held by other
+  projects' arrays and 1405278/1405460/1405373 sat PENDING (AssocGrpCpuLimit) for hours. Spain-only files copied by tar from
+  /speed-scratch/o_iseri/5J (district/code, in, out, out_step7, draws 1,000 files, pred_check/es_madrid_2010 2,000 files; TAR_RC=0)
+  to `_local_runs/5J_s7/`. `district/code_local/` = sed copies with only the path constant changed (diff read: FIVE in
+  s7_common/s5_common, SPLIT_DIR/GATE_FILE in split_loader; s7_draws.py and s7_wcheck.py unchanged). Python 3.13, numpy 2.3.5
+  (Speed 2.2.6), pandas 2.3.3. The three Speed jobs were then CANCELLED (ours, still pending; results in hand).
+* Writer check (s7_wcheck.py b, log `_local_runs/5J_s7/district/logs/s7_bwcheckb_local.out`): READ_FILES 20 draws 2,000 files;
+  WCHECK PASS on all 20 check draws; worst annual rel 4.41e-10, hourly/peak 1.10e-09, dwelling annual 5.82e-09 (tol 1e-6);
+  PLANTED draw 4 CAUGHT=True (annual rel 1.00e-05); SUMMARY fails=0; EXIT 0.
+* Own recount (mgr_s7c_check.py, only D path changed, log `_local_runs/5J_s7/mgr/mgr_s7c_check_local.out`): draw 4 rebuilt from
+  100 per-twin gz files = d0004.npz (annual rel 4.3e-10, hourly 7.5e-10, all and in range); 1,000 draw files read; csv vs own
+  percentiles 112 rows worst rel 4.65e-06 (tol 2e-5); both planted faults caught; SUMMARY fails=0; EXIT 0.
+* 🔴 Recount CHANGES one paper claim: the "first n within 5 %" numbers (50 annual, 500 peak) do NOT stay within 5 % after that
+  n (stays-within False for 13 of 16 series; e.g. heating annual width ratio 1.03 at 50, 0.93 at 100, 0.95 at 200). True
+  statement used in 3.8: medians within 0.1 % of the 1,000-draw value from 100 draws on (equipment peak 0.3 %); width from the
+  first 500 draws within 6 % of the 1,000-draw width for all 8 scope-all series, within 5 % for 5 of 8. Gate 1.4 (first half
+  within 5 %, WARN) = WARN on 3 of 8 scope-all series (cooling peak 0.943, equipment annual 0.946, total annual 0.944) + in-range
+  total annual 0.936: kept as a WARN result, no gate changed.
+* Outputs copied: `Step7_docs/outputs_step7/` (7 files, md5 equal to the run tree; district_spread.csv 62209987...).

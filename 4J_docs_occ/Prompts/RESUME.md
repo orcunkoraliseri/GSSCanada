@@ -1,3 +1,131 @@
+# START HERE — HANDOFF FOR A NEW SESSION (2026-10-02, last+310) — SUPERSEDES last+309 BELOW
+
+**STATE AT SESSION CLOSE (2026-10-02): WAITING. Nothing running, nothing to do until OpenUBEM delivers.**
+- Use ONLY the **10-05** models (`GB-LDN-STDUNSTANS_win_2026-10-05`, `IT-BOL-GALVANI2_win_2026-10-05`). Never 10-03 / 10-04.
+- Not yet delivered (checked 2026-10-02: messages folder has nothing newer than the 2026-10-01 20:31 status note): per-building count CSVs
+  (+ sha256 + module sha256) and map-coordinate side-cars. London not before the afternoon of 2 Oct; Bologna not before the morning of 3 Oct.
+- OpenUBEM replies land in `C:\Users\o_iseri\Desktop\OpenUBEM\docs\docs_ACTIVE\europeanLocations\messages_GSSCanada\` (London content, never to 5J) or arrive as a
+  peer message from `openubem-cc`. I sent them an acknowledgement and asked for a message when each CSV is collected.
+- WHEN IT ARRIVES (in order): (1) read the message + verify CSV sha256 yourself; (2) put the new engine + no-core sha256 into
+  `tools/4thJ_step10_nocore_preflight.py` (ENGINE_DIGEST_PIN, NOCORE_DIGEST_PIN; comment = author approval 2026-10-01, new values only);
+  (3) `powershell -NoProfile -File C:\Users\o_iseri\Desktop\GSSCanada\_local_runs\4J_rerun_20261001\run_rerun.ps1 -Smoke ...`; (4) full run with
+  `-LdnCounts <csv> -BolCounts <csv>` (10 workers, LOCAL); (5) plan Phases 4-9. Plan section 7 = progress log; update it after every step.
+- Bologna IDFs are at a local origin (dx 685000, dy 4928000, EPSG:32632); side-cars come back in map coordinates: check our code does not mix the two.
+- Peer facts (OpenUBEM, 10-01 late): London 196 buildings changed, 6,127 -> 6,465 flats; Bologna 1,070 of 1,179 changed, 15,767 -> 36,095 flats,
+  none < 15 m2, largest building 30090 = 1,247 flats. CSV status column = simulated / undivided_excluded / courtyard. Rule unchanged.
+- UPDATE 2026-10-02 07:10 EDT (peer msg from `openubem-cc`): STILL WAITING. London 1,230 of 1,240 homes done; last 10 re-run with more memory after their Lyon job (~07:50 EDT);
+  then they send London: path + sha256 of `flat_counts_2026-10-05.csv`, sha256 of 10 modules (european_residential, european_nocore, degenerate_surfaces, local_origin,
+  surface_orientation, european_windows, builder, cooking, ground, surfaces) + confirmation that no public signature changed. Bologna package ~01:00 EDT on 3 Oct.
+  CSV status values: simulated, run_failed, undivided_excluded, not_residential, no_model. CORRECTION: there is NO "courtyard" status (supersedes the line above).
+  Later: map-coordinate side-cars (T07). Check our code handles `run_failed` / `no_model` rows.
+- Files touched this session: this file, plan section 7, AUTHOR_TODO_4J.md, memory index line (4J now). Board db not republished (no state change beyond the new date).
+
+(Older block, last+309:)
+
+🔴 **E&B SUBMISSION ON HOLD.** OpenUBEM's neighbourhood setup was wrong; the London + Bologna stock-scale appliance and
+hot-water results must be re-run. Everything is prepared. **The only blocker is OpenUBEM's delivery.** No author input needed.
+
+**Decisions (author, 2026-10-01; do not reopen):**
+- DROP the C2 heating campaign (35,090 cells) and the 410-cell exploratory run from paper + SI.
+- Re-run ONLY London (GB-LDN-STDUNSTANS, fold uk) and Bologna (IT-BOL-GALVANI2, fold it) stock end use.
+- D1 = option A: re-run C2 for both districts, unchanged code, as an INPUT step only (Step 11 reads flats + diaries from C2 cells).
+- D2 = re-pin allowed; present NEW values only, never old values or before/after, anywhere.
+- Run LOCALLY with 10 workers (half of the 20 CPUs, author). Not Speed. The computer stays on.
+
+**UPDATE 2026-10-01 late (OpenUBEM -> 4J, peer message from `openubem-cc`; supersedes every "10-04" below):** the counts come from the
+**10-05** models, NOT 10-04. 🔴 Never use 10-04 or 10-03. London `GB-LDN-STDUNSTANS_win_2026-10-05`: counts identical to 10-04 (196 buildings changed, 6,127 -> 6,465 flats).
+Bologna `IT-BOL-GALVANI2_win_2026-10-05`: 1,070 of 1,179 buildings changed, 15,767 -> 36,095 flats, none under 15 m2, largest = building 30090 (1,247 flats).
+Bologna IDFs moved to a local origin (dx 685000, dy 4928000, EPSG:32632; x/y shift only, areas + counts unchanged); T07 side-cars return in map coordinates.
+Both 10-05 trees passed their model audit and are running on their cluster. Per-building CSV (+ sha256 + module sha256) follows after collection:
+London not before the afternoon of 2 Oct, Bologna not before the morning of 3 Oct (estimates from run speed). Counting rule unchanged from their 22:10 message.
+Status column = simulated / undivided_excluded / courtyard. Our action: re-pin to 10-05 at arrival (plan section 7); nothing started.
+
+**Defects found and handled:** OpenUBEM (1) walls facing inward, (2) no windows, (3) flat geometry: fixed in their
+10-01/10-03 sets; (4) flat counts: fix comes in `_win_2026-10-05`. Ours: old Step 11 summed Case A + Case B, so every
+flat counted twice (7,602 = 2 x 3,801). The new input tool feeds Case B only (plan section 3b).
+
+**Ready on disk:**
+- Plan (phases 0-9, progress log in section 7): `IMP/docs/2026-10-01_rerun-London-Bologna-stock-enduse_plan.md`
+- Launch: `C:\Users\o_iseri\Desktop\GSSCanada\_local_runs\4J_rerun_20261001\run_rerun.ps1` (+ `watchdog.ps1`). Stages:
+  C2 with --resume until done (watchdog; -2 workers per memory stop), make_input, trigger, aggregate, stockboard, gates, selftest.
+- Input tool: `tools/4thJ_step11_make_input.py` (Case B only; CHECK 1 flat keys = observed = zones; CHECK 2 per-building
+  vs OpenUBEM `new_count`; `--plant-case-a` seen failing). Exit 0 pass / 2 check fail / 1 refuse.
+- Text drafts with [BLANKS]: `IMP/docs/2026-10-01_rerun_text_drafts.md` (M1-M5, SI-1 to SI-11). SI-6 already carries
+  OpenUBEM's confirmed count rule. No figure changes (checked).
+- Old outputs MOVED (not deleted): `Step11_docs/outputs_step11/previous/pre_neighbourhood_fix_20261001/`, `_local_runs/previous/`.
+
+**OpenUBEM status (reply 10-01 evening, `C:\Users\o_iseri\Desktop\OpenUBEM\docs\docs_ACTIVE\europeanLocations\messages_GSSCanada\2026-10-01_OpenUBEM_to_4J_flat_counts_status.md`;
+London content, 🔴 never to gsscanada-f2 / 5J):** counts NOT READY. London 10-04 is unaudited, and the zero-area surface fix is still
+going in. Bologna 10-04 is still being built. 🔴 10-03 holds the OLD counts, so never use it. Side-cars are not regenerated. All
+items arrive together after their audit, not before 2 Oct. They will message session gsscanada-9f; a new session finds the
+reply in that folder. Ask peer `openubem-cc` via SendMessage if needed. Rule: SFH/TH = 1; else
+max(1, round(footprint x storeys / (a_c_ref / n_apartment))). CSV columns: building_id,old_count,new_count,dwellings_source,status;
+ids like `way/...` / `relation/...` match our cells.
+
+**TO-DO (in order):**
+1. When the delivery arrives: verify each sha256. Put the new engine + no-core sha256 into `tools/4thJ_step10_nocore_preflight.py`
+   (ENGINE_DIGEST_PIN, NOCORE_DIGEST_PIN; comment = author approval 2026-10-01, new values only). Confirm the runner reads the
+   regenerated side-cars (`OpenUBEM/openubem/outputs/3D/eu_<D>_data/layouts/`, the old ones are dated 09-09).
+2. Delete the leftover `smoke/`, `smoke_runs/`, `logs/` in `_local_runs/4J_rerun_20261001`. Run `powershell -NoProfile -File
+   ...\run_rerun.ps1 -LdnCounts x -BolCounts x -Smoke`. It must pass the pin and stop after the input stage.
+3. Full run (background): `run_rerun.ps1 -LdnCounts <london csv> -BolCounts <bologna csv>`. Progress is in `logs\rerun.log`.
+4. Phase 4: one results table, new values only. Check the claims: stock R² below the 0.85 floor; DHW within 200 L ± 10%.
+   🔴 If a claim flips, STOP and ask the author. Write a closure note in `Step11_docs/docs/`.
+5. Phases 5-6: back up, apply the drafts, fill the blanks from the output JSONs only, run the grep checks (M5, SI-11),
+   then count words with `wc_prose.py`.
+6. Phase 8: rebuild the docx (both PATCH lines), check the numbers, copy to EB_upload (old copy to
+   `previous/EB_upload_pre_20261001/`), check the cover letter.
+7. Phase 9: tell OpenUBEM which digests were used. The author then dates the letter, does a final read and submits.
+After every step: board db (`board/progress`, artifact https://claude.ai/artifact/SJX4RXb7CneNRARitNnHez, now v32; plain-words
+log line; tick r2-r6/r8; clear `banner` when submission-ready), AUTHOR_TODO, memory (`project_4j_hetus_llm.md`), plan section 7, this file.
+
+---
+
+# START HERE — HANDOFF FOR A NEW SESSION (2026-10-01, last+308) — SUPERSEDES last+307 BELOW
+
+🔴 **HOLD THE E&B SUBMISSION.** The author found the OpenUBEM neighbourhood setup is wrong. OpenUBEM (session
+openubem-cc) answered from disk: `C:\Users\o_iseri\Desktop\OpenUBEM\docs\docs_ACTIVE\europeanLocations\messages_GSSCanada\2026-10-01_OpenUBEM_to_4J_neighbourhood_setup_what_to_repeat.md`
+(contains London content: never forward it to the 5J session gsscanada-f2).
+
+Four OpenUBEM defects (every EU vintage since Aug/Sep 2026): (1) outdoor walls face inward (azimuth 180° off),
+fixed in `EU-11/<D>_win_2026-10-03`; (2) no windows, fixed 10-01; (3) flat geometry (overlapping flats, between-flat
+surfaces written as outdoor, inter-storey floors facing out), fixed in 10-01 fleets; (4) **flat counts NOT fixed**:
+London and Bologna had no observed counts, so every block of flats got the TABULA reference count (78 / 40 flats)
+whatever its size. New rule (owner, 10-01): count follows floor area. Weather is fine.
+
+What 4J must repeat:
+1. **Stock-scale appliance + hot-water loads (manuscript lines 129, 237; SI S9, Table row "Stock-scale end use"):
+   YES, London and Bologna**, once the new counts exist (`<D>_win_2026-10-04`, earliest 2026-10-02 after their audit;
+   layout side-cars later, no date). The 7,602 / 29,902 flat totals, R² 0.43 / 0.08 and 202.41 / 200.35 L will change.
+2. C2 heating campaign (35,090 cells, SI S9, unscored): repeat only if it stays in the SI; dropping it is valid.
+   If kept, first check whether 4J's own runner wrote the wall azimuth (if built from OpenUBEM IDFs, it is wrong).
+3. Exploratory 410-cell layout run: same as 2, optional.
+
+AUTHOR DECIDED 2026-10-01: DROP C2 and the 410-cell run from paper + SI; re-run ONLY London + Bologna stock end use.
+PLAN: `IMP/docs/2026-10-01_rerun-London-Bologna-stock-enduse_plan.md` (phases 0-9). 🔴 Traced: Step 11 tools read flats +
+diaries FROM the C2 cells (`flats_from_cells`), so C2 London/Bologna must re-run as an INPUT step (D1 option A, recommended)
+or a new reader is written (option B). Author answers D1 + D2 (re-pin sentence) next.
+
+AUTHOR 2026-10-01: D1 = option A (re-run C2 London+Bologna as input, unchanged code); D2 = re-pin OK, present NEW
+values only (no before/after anywhere). Phase 1.1 (old outputs moved to `Step11_docs/outputs_step11/previous/
+pre_neighbourhood_fix_20261001/` and `_local_runs/previous/`), 1.3 (OpenUBEM answered) and 1.4 (dry run) DONE.
+🔴 NEW DEFECT (plan section 3b): old Step 11 summed Case A AND Case B, so every flat counted twice (7,602 = 2 x 3,801).
+Re-run feeds Case B only.
+
+PREP DONE 2026-10-01 (later): launch script `_local_runs/4J_rerun_20261001/run_rerun.ps1` (10 workers = half the
+20 local CPUs, author; -2 per memory-guard stop), new input tool `tools/4thJ_step11_make_input.py` (Case B only + count
+check vs OpenUBEM CSV; seen failing), text drafts `IMP/docs/2026-10-01_rerun_text_drafts.md`, figures need no change.
+
+FULL ORDERED TO-DO (last+308):
+1. WHEN OpenUBEM sends 10-05 + side-cars + count CSVs: re-pin (plan section 7), smoke, full run, then plan Phases 4-9.
+   (10-01 later) OpenUBEM: counts NOT READY (London unaudited, Bologna building, 10-03 = OLD counts, never use); earliest 2 Oct after their audit. Rule confirmed, SI-6 draft updated; detail in plan section 7.
+2. WAIT for OpenUBEM `_win_2026-10-05` (corrected flat counts; not on disk as of 2026-10-02 session close).
+3. Re-run item 1 (London, Bologna) on Speed (sbatch only, ≤32 CPUs), then update manuscript numbers, SI, docx, EB_upload.
+4. Then: cover-letter date, final read, submit.
+After every step: update board db (board/progress, artifact SJX4RXb7CneNRARitNnHez), AUTHOR_TODO, memory, and this file.
+
+---
+
 # START HERE — HANDOFF FOR A NEW SESSION (2026-09-24, last+307) — SUPERSEDES last+306 BELOW
 
 State:

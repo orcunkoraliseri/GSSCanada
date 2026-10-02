@@ -55,8 +55,10 @@ def main():
         inputs.append(p)
         print("CHECK lag_lines_found %s %s cells=%d expected=8" % ("PASS" if len(lag[L]) == 8 else "FAIL", L, len(lag[L])), flush=True)
 
-    fig, axs = plt.subplots(3, 3, figsize=(fc.W2, 168 * fc.MM))
-    fig.subplots_adjust(left=0.105, right=0.992, top=0.925, bottom=0.115, hspace=0.12, wspace=0.07)
+    # part 1 fix 2026-10-01: the country names (placed 0.62 of the axis height below the bottom row by fc.cell_axis) fell outside the
+    # old 168 mm page (bottom margin 0.115); taller page and larger bottom margin keep them inside. fig_common is unchanged (Figure 2).
+    fig, axs = plt.subplots(3, 3, figsize=(fc.W2, 190 * fc.MM))
+    fig.subplots_adjust(left=0.105, right=0.992, top=0.935, bottom=0.19, hspace=0.12, wspace=0.07)
     drawn = []
     lag_vals = [v for L in fc.LISTS for v in (lag[L][c_k][1] for c_k in fc.CELLS if c_k in lag[L])] + \
                [v for L in fc.LISTS for v in (lag[L][c_k][2] for c_k in fc.CELLS if c_k in lag[L])]
@@ -118,6 +120,22 @@ def main():
     got0 = np.asarray(ln0.get_ydata(), dtype=float).copy()
     got0[0] += 0.5
     print("CHECK_PLANTED drawn_peak_share_changed_by_0.5 %s" % ("FAIL (expected: the comparison fires)" if not np.allclose(got0, want0[np.isfinite(want0)], rtol=0, atol=0) else "PASS (UNEXPECTED: cannot fire)"), flush=True)
+    # check: both country names exist under each bottom-row panel and lie fully inside the page (read back from the drawn figure)
+    fig.canvas.draw()
+    fb = fig.bbox
+    n_lab, n_out = 0, 0
+    for li in range(3):
+        names = {t.get_text(): t for t in axs[2, li].texts}
+        for nm in ("Spain", "Italy"):
+            n_lab += 1
+            t = names.get(nm)
+            if t is None:
+                n_out += 1
+                continue
+            bb = t.get_window_extent()
+            if bb.x0 < fb.x0 or bb.x1 > fb.x1 or bb.y0 < fb.y0 or bb.y1 > fb.y1:
+                n_out += 1
+    print("CHECK country_labels_inside_figure %s labels=%d missing_or_outside=%d" % ("PASS" if n_out == 0 else "FAIL", n_lab, n_out), flush=True)
     extra = ["INFO lag cells read per list: %s" % {L: len(lag[L]) for L in fc.LISTS},
              "INFO a share of dwelling-days outside the figure: none (axis 0 to 100)"]
     png, pdf = fc.save_figure(fig, "Figure_04_peaks_timing", a.out, inputs, extra)

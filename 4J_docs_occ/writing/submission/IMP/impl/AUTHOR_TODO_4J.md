@@ -4,6 +4,14 @@ One list, in order of what unblocks the most. Details live in the files named; n
 
 ## A. Before submission (blocking)
 
+0. **2026-10-01 NEW, BLOCKING: OpenUBEM neighbourhood setup was wrong** (inward walls, no windows, overlapping
+   flats, wrong flats per building). London and Bologna appliance + hot-water runs will be repeated by the manager
+   once OpenUBEM sends corrected flat counts (`_win_2026-10-05`, London not before the afternoon of 2026-10-02, Bologna not before the morning of 2026-10-03). **Author decides:** keep the
+   unscored heating campaign (35,090 cells) and the 410-cell exploratory run in SI S9 (then they must be re-run too)
+   or drop them. Details: `Prompts/RESUME.md` last+308.
+   **2026-10-01 DECIDED: drop both; re-run London + Bologna only.** Next for the author: answer D1 (how the new
+   flat list is made) and D2 (re-pin sentence) in `IMP/docs/2026-10-01_rerun-London-Bologna-stock-enduse_plan.md`.
+
 1. **Open the closest competitor.** Jutras-Dubé et al. (2024), Transportation Research Part C 169, 104830
    (arXiv 2302.09193 is the cheap first look). Answer four questions: does it test transfer to a region not
    in training; is IPF a baseline; is that IPF seeded from the target region or another region; who wins.

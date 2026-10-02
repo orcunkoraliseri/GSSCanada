@@ -9,7 +9,7 @@ Written 2026-09-28. November 2026.
 
 ## STATUS
 
-⬜ NOT STARTED. Needs Steps 6 and 7 closed.
+🟡 IN PROGRESS (2026-10-01 13:15 EDT): Steps 6 and 7 closed; draft `writing/5J_manuscript_draft.md` complete in every section that needs data; Figures 2-5 drawn and checked. State `impl/2026-10-01_wp6_draft.md`, `impl/2026-10-01_wp6_s38.md`, `impl/2026-10-01_wp6_fig5.md`. Left: validation pass (`5thJ_08_writing_val.md`), 8A novelty search, 8C/8D author items. Before: ⬜ NOT STARTED.
 
 ## AIM
 

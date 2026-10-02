@@ -1,0 +1,24 @@
+run_id	reason
+ES-MAD-BERRUGUETE_05e17b2bf818153b_test_1	TEST
+ES-MAD-BERRUGUETE_05e17b2bf818153b_test_2	TEST
+ES-MAD-BERRUGUETE_394922138a6b5928_test_1	TEST
+ES-MAD-BERRUGUETE_394922138a6b5928_test_2	TEST
+ES-MAD-BERRUGUETE_4a1eb42e7c488fc0_b0_0	TEST
+ES-MAD-BERRUGUETE_4a1eb42e7c488fc0_def_0	TEST
+ES-MAD-BERRUGUETE_4a1eb42e7c488fc0_dev_1	TEST
+ES-MAD-BERRUGUETE_4a1eb42e7c488fc0_dev_2	TEST
+ES-MAD-BERRUGUETE_4a1eb42e7c488fc0_test_1	TEST
+ES-MAD-BERRUGUETE_4a1eb42e7c488fc0_test_2	TEST
+ES-MAD-BERRUGUETE_1271cddbf6bd1e8a_b0_0	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_1271cddbf6bd1e8a_def_0	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_1271cddbf6bd1e8a_dev_1	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_1271cddbf6bd1e8a_dev_2	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_1271cddbf6bd1e8a_val_1	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_1271cddbf6bd1e8a_val_2	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_394922138a6b5928_b0_0	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_394922138a6b5928_def_0	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_394922138a6b5928_dev_1	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_394922138a6b5928_dev_2	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_394922138a6b5928_dev_3	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_394922138a6b5928_val_1	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0
+ES-MAD-BERRUGUETE_394922138a6b5928_val_2	STATUS_NOT_CLEAN rc=0 completed=True severe=1 invalid_or_not_found=0

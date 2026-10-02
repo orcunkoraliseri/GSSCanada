@@ -174,6 +174,21 @@ Spec `Step8_docs/5thJ_08_writing.md`; validation `Step8_docs/5thJ_08_writing_val
 
 ---
 
+## STEP 9 — v2 MODEL A: SPAIN + ITALY, MADRID BERRUGUETE + BOLOGNA GALVANI 2 (ruled 2026-10-01; starts now)
+Plan and state: `Prompts/manager/2026-10-01_expansion_v2_plan.md`. Own-country diaries only; frozen gates reused.
+- [ ] 9a Design: district buildings (OpenUBEM `europeanLocations`, 1,187 + 1,215), households from own-country real diary days, new sealed splits, compute plan
+- [ ] 9b Campaign on Speed (paired runs in the district buildings), integrity checks
+- [ ] 9c Training of Model A (GPU), chosen on validation only
+- [ ] 9d One scoring of the new sealed tests (same scorer, same gates)
+- [ ] 9e District spread and speed; writing of the main study (v1 = pilot)
+- [ ] 9f Comparison with the OpenUBEM default-schedule runs of the same districts (`europeanLocations/results/`, `outputs_3D/`; re-run by the author, ready ~2026-10-02)
+
+## STEP 10 — v2 MODEL B: SPAIN + ITALY + UK, ADDS LONDON ST DUNSTAN'S (only with written UKDS permission)
+- [ ] 10a UKDS answer received (email `e-mails/2026-10-01_to_UKDS_SN8128_licence_questions.txt`); 5J project registered for SN 8128
+- [ ] 10b UK households from UK diaries (AI-assisted only if UKDS permits; otherwise run by the author)
+- [ ] 10c London campaign, 10d training of Model B, 10e one scoring with London in the sealed tests
+- If UKDS refuses: Step 10 is dropped and the paper ends with Model A; the UK is named as a limitation.
+
 ## VALIDATION PLAN
 Gates G5J.1 to G5J.7 in the Overview. No test row is scored before Step 4 is ticked. A gate counts
 only after it has been seen failing.
@@ -735,3 +750,231 @@ trained on UK diaries. Author ruling needed.**
 * Correction (06:08): the 02:52 entry says size and appliance level explain "75-97 % of the ANNUAL pair effect (EP and S
   alike)" on validation; the files give EP 75-97 % and S 79-98 %. On test (Step 6 RESULTS.md, corrected 06:07): EP 73-98 %,
   S 79-98 %; test cooling pair R² 0.72-0.999 (not 0.86-0.99).
+
+### 2026-10-01 08:17 EDT (manager): Step 7 comparison done; session handover
+* Step 7 part B: EnergyPlus check (2,000 runs, 20 draws), comparison (40,680 dwelling-years) and speed DONE and verified by the
+  manager (own code equal on one dwelling; speed ratios from the clock lines). Surrogate tracks the draw-to-draw district spread
+  (r 0.97-0.9999); level bias comes from twins outside the training range or with building codes never seen in development.
+  S is 61x faster than EnergyPlus on a GPU slice, 1.2x on one CPU core. Detail: `Step7_docs/impl/2026-10-01_wp5_district.md`.
+* Still running: 1,000-draw array (tasks 11-20 pending), then writer check and spread. Handover prompt rewritten for a new session.
+
+### 2026-10-01 08:29 EDT (manager): Step 8 draft checked; district text merged; Figure 4 fixed
+* Draft read against the 94-row ledger (08:23): every number equal to its source; Milan weather error 3.165 -> 3.17 °C. Note in
+  `Step8_docs/impl/2026-10-01_wp6_draft.md`.
+* Figure 4 country labels fixed and verified (08:25): all read-back checks PASS, both planted changes fired, labels inside the
+  page (seen); Figure 2 redrawn byte-identical. Figure 5 queued after the spread job. State `Step8_docs/impl/2026-10-01_wp6_fig5.md`.
+* District text (Section 3.8 with Table 5, 2.6, 1.3, 4.5, Limitations, Conclusion 7, Abstract at 200 words) written by an
+  employee, numbers re-checked by the manager against the Speed summary and speed files, merged (08:28). Board v36. The twin direction is
+  now stated (2,034 twin dwellings against 1,173 real). Settling rule for the spread fixed before the data (interval width within
+  5 % of its value at 1,000 draws). Only the 1,000-draw spread slots remain. State `Step8_docs/impl/2026-10-01_wp6_s38.md`.
+* Still running on Speed: draws array (9 of 20 done at 08:24), then writer check, spread, Figure 5.
+
+### 2026-10-01 13:15 EDT (manager): 🟢 STEP 7 CLOSED; Figure 5 done; spread slots filled
+* Spread slots in 3.8 filled at 12:25 from the 1,000-draw spread job. The writer check, the manager recount and Figure 5 then sat
+  for hours behind the account CPU cap (other projects' arrays); the author allowed half the desktop, so all three ran there on
+  a Spain-only copy (only path constants changed) and the queued Speed copies were cancelled.
+* Writer check: 20 of 20 check draws equal their hourly files (worst 1e-9), planted fault caught. Manager recount: spread table
+  equals own percentiles (112 rows, worst 5e-6), both planted faults caught.
+* The recount corrected one sentence: the interval width does not settle from 50 draws; medians settle within 0.1 % from 100
+  draws, the width from 500 draws is within 6 % of its 1,000-draw value. Gate 1.4 = WARN on 3 of 8 series, kept as a result.
+* Figure 5: all read-back checks pass; top row was unreadable (shared x axis) and was given its own axis; copied to `figures/`.
+  Outputs `Step7_docs/outputs_step7/`. Next: Step 8 final read of the draft.
+
+### 2026-10-01 13:47 EDT (manager): author's prompts and one-page overview written; draft rule check running
+* Author asked for a one-page explanation: `5J_paper_overview.html` (goal, method, results, limits, what is left; numbers from
+  the draft abstract, RESULTS.md and outputs_step7).
+* Author asked for image and reference prompts: Figure 1 drawing prompt
+  `writing/submission/figures/Prompts_Images/5J_Figure_01_design_prompt.md`; graphical abstract update = section 10 of
+  `Prompts/5thJ_graphical_abstract_prompt.md` (UK removed, 9,269 runs, Panel C from Figure 3 data, finding line, 61x on a GPU);
+  reference prompt `Prompts/deepResearch/T47_reference_support.md` (17 entries field by field, method sources, context
+  sources, data credits, ASHRAE 2014; positive + negative controls). `writing/AUTHOR_TODO_5J.md` items 4, 9, 11 updated.
+* Step 8 rule check: task `Step8_docs/impl/2026-10-01_wp6_valpass_TASK.md`, fresh Sonnet employee running locally (text only).
+  Web lookups removed from the task after launch (CLAUDE.md: citation checks are external = T47).
+
+### 2026-10-01 13:52 EDT (manager): Step 8 rule check DONE + verified; draft fixed
+* Checker `tools/5thJ_valpass.py` ran on the clean and planted drafts; all six plants fired (exit 0); no web request, no UK file.
+  State `Step8_docs/impl/2026-10-01_wp6_valpass.md` (MANAGER section).
+* Clean draft: 0 unmatched numbers of 827; 0 citation orphans either way (28 in-text, 17 entries); no tool names; licence
+  wording for Spain and Italy word for word. Gate 1.1 cannot catch a wrong integer below 100, so the 11 unsourced counts were
+  traced by hand (all found: perturbations.md, winner.md, models.md, district_check_summary.md, draft ledger).
+* Fixed 4 lines (draft md5 09c7bc0d...): two "failed" about Park and Park -> "did not"; one process note at L144 rewritten;
+  L166 now also gives the shortlist counts against B1 clipped at zero (28/30/30/30/20/29, same choice).
+* Left open on the draft: the two UK bracket slots (FINDING 5J-3 ruling), DOI fields (T47, external), Figure 1 (author).
+
+### 2026-10-01 14:03 EDT (manager): UK licence research prompt written (author request)
+* `Prompts/deepResearch/T48_ukds_licence_derived_outputs.md`: licence clauses quoted (definitions, derived and synthetic data,
+  model outputs, AI-tool clause, publication duties, version history), UKDS guidance on synthetic data / AI / trained models,
+  SN 8128 record and looser releases (MTUS, HETUS), precedents (CREST model and others), consequences of both readings, and
+  up to six yes/no questions for a UKDS email. Controls: EUL version and date as printed; fake SN 9999901 must be NOT FOUND.
+* Overview page reworded at the author's request (layout unchanged; Figure 3 caption corrected; rule check shown as done).
+* `writing/AUTHOR_TODO_5J.md` item 0 points to T48. No UK file opened.
+
+### 2026-10-01 14:17 EDT (manager): author's tool returned Figure 1, the graphical abstract and RT47; all three checked
+* Figure 1 (`writing/figures/Figure_01_design.png` md5 ee3a295c5e20a4ea89f18276c137d559, pdf 5445c1c5...; script
+  `figures/scripts/fig01_design.py` by the author's tool): permitted text only, no numbers, palette and layout per prompt. Two
+  fixes written (label crosses a zone divider; Difference arrow does not reach the "compared" bracket): prompt section 9.
+* Graphical abstract (`figures/5J_graphical_abstract.*`): UK removed, 9,269 runs, Panel C from fig3_pairs.parquet (md5
+  3a175dbb..., 6,285 heating pairs = Figure 3 count). Three fixes written in prompt section 10.5; main one: "Scored on ... a new
+  country" was never updated by section 10 (manager miss) and contradicts the results -> "both new".
+* RT47 vetted MIXED (`Prompts/deepResearch/VETTING_RT47.md`): Section A judged the prompt's short list, not the draft
+  (discarded); Part 1 registry fields usable (Crossref calls in the tool log); Part 2 canonical method sources added to the draft;
+  Part 3 read levels contradict each other (lead list only). Draft md5 6ea62229...; rule check re-run exit 0, all plants fired,
+  0 citation orphans (one false "uncited" hit: the checker cannot parse the author key "U.S.").
+* Note for the author: the outside tool listed files by name across the whole GSSCanada folder to find T47 (name filter only;
+  no file content read). The 5J rule asks AI tools to name files in full; worth telling the tool.
+
+### 2026-10-01 14:42 EDT (manager): 🔴 AUTHOR RULING: expand this paper (v2); RT48 vetted; T49 written
+* Author: expand this paper (not a second paper). Districts Madrid Berruguete (Spain households), Bologna Galvani 2 (Italy),
+  London St Dunstan's (UK); Lyon out. Spain + Italy results become a pilot (possibly a chapter). Every country's households from
+  its own diaries only (no UK-trained generator for Spain or Italy). Plan and open items:
+  `Prompts/manager/2026-10-01_expansion_v2_plan.md` (1,187 + 1,215 + 1,240 buildings).
+* UK route still open (licence clause 5: no cloud AI tool with UK data without written UKDS permission). RT48 vetted MIXED
+  (`Prompts/deepResearch/VETTING_RT48.md`); six questions for a UKDS email written there.
+* `Prompts/deepResearch/T49_hetus_country_data_access.md` written (HETUS 2010/2020 countries, access for a Canadian researcher,
+  MTUS route, France). Draft reference Kalkan B. -> S. (author). No UK file opened.
+
+### 2026-10-01 14:46 EDT (manager): UKDS email drafted (author request)
+* `e-mails/2026-10-01_to_UKDS_SN8128_licence_questions.txt` (14:49: plain text, username added; the .md draft moved to the manager scratchpad): six yes/no questions (cloud AI under clause 5, status of simulation
+  outputs, model weights, generated days, aggregate publication, project registration). Not sent; author fills the username.
+
+### 2026-10-01 14:51 EDT (manager): v2 workflow ruled: Model A now, Model B if the UK is allowed
+* Author: "start with Italy and Spain as one model, and second model Italy & Spain & UK, in case there is a rejection from the UK
+  Data Service." Model A = Spain + Italy, Madrid + Bologna, starts now and carries the paper alone if UKDS refuses. Model B =
+  + UK and London, only with written UKDS permission. Steps 9 and 10 added above; plan section 4b.
+* Email signature changed to o_iseri@live.concordia.ca (author); UKDS username in the email (author).
+* 14:52: author: compare occupancy-inserted district runs with the OpenUBEM default-schedule runs (results/, outputs_3D/), being re-run, ready ~2026-10-02 (item 9f).
+
+### 2026-10-01 14:54 EDT (manager): two more country-data research prompts (author request)
+* `Prompts/deepResearch/T50_open_timeuse_microdata_downloads.md`: diary microdata in Europe that are open today, proven by a
+  reached download page, with licence clauses (derived data, AI tools) and the study needs. Controls: Spain, Italy; fake Iceland file.
+* `Prompts/deepResearch/T51_timeuse_application_routes.md`: files that need an application: eligibility for a Canadian
+  researcher, route, time, access mode (file vs on-site), terms on AI tools and weights. Control: France lil-1065; fake Eurostat scheme.
+* T49 (overview), T50 (open now), T51 (applications) can run in parallel in the outside tool; the manager vets each.
+
+### 2026-10-01 15:01 EDT (manager): Step 9 (Model A) design draft; inventory employee running; overview updated
+* `Step9_docs/5thJ_09_modelA.md`: real OpenUBEM geometry (nocore buildings 1,151 Madrid + 1,171 Bologna), own-country real diary
+  days with split-aware day pools (no training day in a test household), paired runs per building, frozen scorer, comparison
+  with default-schedule runs. Open: D9-1 weather, D9-2 scoring cells (Madrid 94% apartment blocks), D9-3 HVAC settings.
+* Note: the pilot Step 7 district used TABULA stand-ins (2,034 twin dwellings vs 1,173 real); Model A uses the real geometry.
+* Inventory task `Step9_docs/impl/2026-10-01_wp9a_inventory_TASK.md`: fresh Sonnet employee RUNNING (read-only, no UK paths).
+* `5J_paper_overview.html` rewritten for the new setup (pilot + Model A + Model B), layout unchanged; previous copy in scratchpad.
+
+**2026-10-01 15:09 EDT (manager): Step 9 inventory verified; run cost far above the draft; timing probe RUNNING**
+* Inventory (`Step9_docs/impl/2026-10-01_wp9a_inventory.md`) items 1-4 VERIFIED: counts equal the OpenUBEM state block; Bologna
+  1,171 buildings / 15,705 dwellings (SFH 20, TH 36, MFH 340, AB 775); default runs use the pilot's weather years (D9-1 settled);
+  default runs are heating only with a constant 3 W/m2 gain (D9-3 recommendation written); 5J extractor needs adapting.
+* Run time re-derived by the manager from the two manifests: median 397 s (Madrid) and 1,029 s (Bologna) per building; one pass
+  about 740 CPU-h; 7 runs per building about 5,200 CPU-h. The draft's 79 s had no source and is withdrawn; D9-4 (compute size) added.
+* Item 5 (households and diary days per split) waits on job 1406847 (PENDING 15:07).
+* Timing probe task `Step9_docs/impl/2026-10-01_wp9b_timing_probe_TASK.md` (12 buildings x 4 variants: as-is, shading every 20 days,
+  sizing off, pilot settings): fresh Sonnet employee RUNNING.
+* Model A inputs will be frozen from the author's re-run (~10-02), since newer OpenUBEM fixes (09-29, 10-01) exist.
+
+**2026-10-01 15:11 EDT (manager): D9-3 RULED (author: "yes go with pilot settings")**
+* Model A occupancy runs use the pilot settings (heating 20 C, cooling 26 C, people + appliances); each building gets one extra
+  default-schedule run under the same settings for the comparison; the OpenUBEM heating-only re-run is a cross-check
+  (`Step9_docs/5thJ_09_modelA.md`, D9-3). Open: D9-4 compute size (after the timing probe), D9-2 scoring cells.
+
+**2026-10-01 15:15 EDT (manager): Model A surrogate training design drafted; OpenUBEM questions sent**
+* Author: focus on the surrogate's GPU training; speed runs checked later. `Step9_docs/5thJ_09_modelA.md` 9E detail (E1-E11):
+  trained from scratch on Model A runs only; household, neighbour, weather inputs and targets as the pilot; new static vector from
+  the OpenUBEM layouts and IDF envelope; same 16-config grid, selection, control, seeds; at most about 64 GPU-h for the grid.
+* Six setup questions sent to the OpenUBEM Claude session (Madrid and Bologna only, no UK content); answers go into 9A/9D.
+* Timing probe job 1406898 submitted (summary job 1406899), pending on the CPU cap; read later.
+
+**2026-10-01 15:17 EDT (manager): OpenUBEM session answered the setup questions**
+* Re-run inputs = `EU-11/<D>_fix_2026-10-01/`; merged results late on 1 Oct; settings unchanged in all 2,392 IDFs; the IDFs have
+  NO windows (D9-5 added, recommend keep as simulated + limitation); neighbour shading dominates run time; edit IDF copies
+  rather than rebuild. Folded into `Step9_docs/5thJ_09_modelA.md` 9A and E5.
+
+**2026-10-01 15:20 EDT (manager): D9-5 RULED (author: "of course insert windows")**
+* Model A IDF copies get windows: TABULA window share per archetype on every exterior wall, TABULA U-value, pilot SHGC (as
+  `tools/5thJ_idf_mz.py`). The comparison uses our own same-settings default run with windows; a new gate checks that our edit
+  chain with windows off reproduces the OpenUBEM heating. Follow-up on window data sent to the OpenUBEM session.
+
+**2026-10-01 15:23 EDT (manager): window data settled; IDF-writer task launched**
+* Window share, U-value and g-value come from the OpenUBEM TABULA library per archetype (paths and one record checked); windows
+  only on rectangular outdoor walls (triangles, small walls and party walls get none); pilot SHGC kept. OpenUBEM ventilation
+  (air changes per hour per zone) and internal mass stay as simulated. Task `Step9_docs/impl/2026-10-01_wp9c_idf_writer_TASK.md`
+  (writer script, window and zone-map tables, 6-building test with planted faults, at most 6 CPUs); employee RUNNING.
+
+**2026-10-01 15:27 EDT (manager): Model A base = OpenUBEM's windowed buildings**
+* OpenUBEM is adding windows to its own models with a method the author ruled there. Model A will start from those windowed
+  building files (not built yet) instead of adding its own windows; the writer task was amended to drop window code.
+
+**2026-10-01 15:35 EDT (manager): windowed results ruled; writer built; research reports back**
+* Author: Model A uses OpenUBEM's windowed building results; the no-window results are not used.
+* Writer script and wall / zone-map tables written (`Step9_docs/impl/2026-10-01_wp9c_idf_writer.md`); 6-building test array
+  1406998 (+ 1406999) submitted. Research reports RT46, RT49, RT50, RT51 returned; two vetting employees RUNNING
+  (`Prompts/deepResearch/VETTING_RT46.md`, `VETTING_RT49_RT51.md`). The outside tool also left `statbel_microdata.txt` (a captcha
+  page) in the research folder; kept.
+* 15:40: RT49-RT51 VETTED (`Prompts/deepResearch/VETTING_RT49_RT51.md`): RT49 MIXED, RT50 MIXED, RT51 FAIL. Manager spot-checked
+  three findings in the reports (RT50 "85%" line 60; RT51 "guaranteed to succeed immediately" for lil-0695; RT50 log lists the
+  Spain zip as opened): all present. Safe now: only Spain, Italy and (after free registration) the German public-use file are
+  open; France lil-0695 is a route for the author to test; UK rule overrides any 'offline AI allowed' line; MTUS/Eurostat files
+  hold UK samples (exclude before any AI tool).
+* 15:43: RT46 VETTED FAIL (`Prompts/deepResearch/VETTING_RT46.md`): control K1 (He et al. 2015) misdescribed. Manager re-checked
+  on our PDF (`Resources/nearest_work/He2015_BS2015_2655.pdf`, text scan): no page mentions monitored or measured data; p. 2105
+  names a brochure and a certificate. 52 of 65 kept papers unopened; Oak Ridge 'People Activity' input and Satre-Meloy 2020
+  may weaken P1 / P4. Search route (28 logged queries) kept. Novelty claim stays 'as far as searched'; the author opens the
+  Oak Ridge report pp. 7-11 and Satre-Meloy 2020 first.
+
+**2026-10-01 15:46 EDT (manager): OpenUBEM windowed buildings built and re-checked**
+* Windowed files exist for both districts; the peer's numbers re-measured from `windows.csv` and equal. The editor test now runs
+  on the windowed files (task AMENDMENT 2, employee RUNNING); the no-window test was cancelled before it started.
+
+**2026-10-01 15:50 EDT (manager): Model A design completed to a freeze-ready draft**
+* Author: "go on with model A design", "continue to the end". Written in `Step9_docs/5thJ_09_modelA.md`: households (whole
+  survey, split by household, days from own split), buildings split, inputs read from the windowed IDFs, scoring cells kept
+  (D9-2 settled), the compute decision frame (D9-4, waits on windowed run times), gates 7-10, and the order to the freeze (9G).
+* Households builder task `Step9_docs/impl/2026-10-01_wp9d_households_TASK.md` launched (employee RUNNING).
+
+**2026-10-01 15:54 EDT (manager): editor ready on the windowed files; test runs queued**
+* Editor changes checked; window area read from every windowed building equals OpenUBEM's table (largest gap 0.002 %), window
+  counts equal. Buildings usable for Model A: Madrid 1,165, Bologna 1,171. No triangle wall got a window (all too small).
+* Test runs (26) queued on Speed, waiting for processors (cap shared with OpenUBEM). Timing probe tasks 36-48 running.
+* 🔴 FINDING 5J-4: the employee ran one line count with a wildcard that matched a London geometry file (counts only, nothing
+  read). Same class as 5J-2; task docs already forbid wildcards; repeated in every new task.
+
+**2026-10-01 16:00 EDT (manager): household builder checked on paper; two more build tasks running**
+* Household builder script read: split per country before any run, days drawn only from the run's own split, purity read
+  back from the written draws, planted cross-split day must be caught. Its test job waits on Speed. Calibration of appliance
+  use on development households only (manager ruling).
+* Building split and the fixed flat/building inputs (read from the windowed files) are being written by two assistants on
+  the desktop.
+
+**2026-10-01 16:01 EDT (manager): buildings split for Model A (checked)**
+* Madrid 816 training / 176 validation / 173 test buildings; Bologna 820 / 176 / 175. My own code gives the same split.
+* The full plan is about 18,900 runs; at the old run times that is above the planned processor budget. The choice waits on
+  the windowed run times.
+
+**2026-10-01 16:10 EDT (manager): flat and building descriptions read; OpenUBEM walls face inward**
+* Fixed descriptions of every flat and building read from the windowed files and checked against OpenUBEM's window table.
+* 🔴 FINDING 5J-5: in OpenUBEM's Madrid and Bologna files almost every outside wall is written facing into the building.
+  EnergyPlus repairs floors and roofs but not walls, so sun on walls and windows very probably comes from the wrong side.
+  OpenUBEM session told. Author decision D9-6: fix at the source (recommended) or in Model A's copies.
+
+**2026-10-01 16:13 EDT (manager): wall direction confirmed by EnergyPlus (OpenUBEM session)**
+* EnergyPlus reports the inward direction for the walls (one wall: 304 degrees, real outward 124). OpenUBEM holds its windowed
+  runs until its author rules on a fix. Model A builds nothing final on the current windowed files; tests of the code go on.
+
+**2026-10-01 16:39 EDT (manager): author ruled the wall fix at the source (D9-6)**
+* OpenUBEM turns the walls round in its own files and rebuilds; Model A waits for the fixed files and re-checks them.
+
+**2026-10-01 16:43 EDT (manager): training-data builder being written**
+* Builder for the training store (extraction + store, as the pilot) being written and tested on the writer test runs, so
+  training can start the day the simulations end.
+
+**2026-10-01 16:45 EDT (manager): author: OpenUBEM simulations will be repeated on the fixed buildings**
+* The comparison with OpenUBEM uses the repeated runs. Model A starts as soon as the fixed files exist.
+
+**2026-10-01 16:48 EDT (manager): 🔴 Speed CPU split ruled: 32 for 5J, 32 for OpenUBEM, at the same time**
+* Author ruling. Model A simulations at 32 CPUs take about five days. OpenUBEM session told.
+
+**2026-10-01 16:57 EDT (manager): zero sky radiation in the weather files does no harm**
+* EnergyPlus treats the zero as missing and computes it from cloud cover (heating identical; values 100 and 400 change it).
+  Pilot and Model A weather stand. The writer test failed on two small faults (schedule folder, window table read); fix running.
+
+**2026-10-01 17:02 EDT (manager): OpenUBEM delivered the fixed buildings**
+* Madrid and Bologna files with walls facing the right way. Manager spot check on four buildings agrees. The full re-check and
+  the rebuild of the Model A tables on the new files are running.

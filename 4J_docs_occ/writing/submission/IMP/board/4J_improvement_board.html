@@ -62,6 +62,9 @@
   .steps-strip i.wait{background:var(--warn); border-color:var(--warn);}
   .hero-caption{margin-top:10px; font-size:13px; color:var(--muted); font-family:"IBM Plex Mono",ui-monospace,monospace;}
 
+  .hold{background:var(--accent-soft); border:1px solid var(--border); border-radius:14px; padding:16px 18px;}
+  .hold h3{font-size:13px; margin:0 0 6px; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-strong);}
+  .hold p{margin:0; font-size:13.5px; line-height:1.45;}
   .you{background:var(--warn-soft); border:1px solid var(--border); border-radius:14px; padding:16px 18px;}
   .you h3{font-size:13px; margin:0 0 8px; letter-spacing:.06em; text-transform:uppercase; color:var(--warn);}
   .you ul{margin:0; padding-left:18px; display:flex; flex-direction:column; gap:4px; font-size:13.5px; line-height:1.45;}
@@ -121,7 +124,7 @@
     <div>
       <div class="eyebrow">Energy and Buildings · improvements before submission</div>
       <h1>4th journal paper — improvement progress</h1>
-      <div class="sub">Can a fine-tuned language model generate time-use diaries for a country without survey data? Applying the lessons from the 2nd paper's review. Tick a task when it is done; the page saves it for everyone.</div>
+      <div class="sub">Can a fine-tuned language model generate time-use diaries for a country without survey data? Steps 1&ndash;8 applied the lessons from the 2nd paper's review. Steps 9&ndash;16 repeat the London and Bologna runs after the OpenUBEM neighbourhood fix. Tick a task when it is done; the page saves it for everyone.</div>
     </div>
     <span class="pill" id="livePill"><span class="dot"></span><span id="liveText">SAVED COPY</span></span>
   </header>
@@ -135,8 +138,13 @@
       <span class="pill">target: Energy and Buildings · about 7,500 words</span>
     </div>
     <div class="bar"><span id="barDone" style="width:0%"></span></div>
-    <div class="steps-strip" id="strip" aria-label="Status of the nine steps"></div>
+    <div class="steps-strip" id="strip" aria-label="Status of the steps"></div>
     <div class="hero-caption" id="heroCaption">0 of 0 tasks</div>
+  </div>
+
+  <div class="hold" id="holdBox" hidden>
+    <h3>On hold</h3>
+    <p id="holdText"></p>
   </div>
 
   <div class="you" id="youBox">
@@ -213,6 +221,49 @@
       {t:"Deposit the frozen pre-registration and its hash on a public registry.", who:"author"},
       "Write the final outside-audit prompt.",
       {t:"Run the audit in Gemini and a second model.", who:"author"}]},
+    {id:"r1", title:"Re-run: decisions and preparation", tasks:[
+      {t:"Decide: drop the heating campaign and the 410-run trial; re-run London and Bologna only.", who:"author"},
+      {t:"Decide: re-run the flat and diary step unchanged; new file checksums allowed, new values only.", who:"author"},
+      "Move the old London and Bologna results aside (moved, not deleted).",
+      "Ask OpenUBEM what changes and when the corrected models come.",
+      "Test our tools on OpenUBEM's current code.",
+      "Fix the double count: a tool that keeps each flat's own diary only, checked against OpenUBEM's flat list.",
+      "Launch script for the local runs, with the memory guard.",
+      "Draft the text changes for the paper and supplement, with blanks for the new numbers."]},
+    {id:"r2", title:"Re-run: corrected models arrive", tasks:[
+      "OpenUBEM sends the corrected London and Bologna models and the flat count per building.",
+      "Record the new file checksums.",
+      "One-building test in each city."]},
+    {id:"r3", title:"Re-run: simulations (this computer)", tasks:[
+      "London: flats and diaries.",
+      "Bologna: flats and diaries.",
+      "Own-diary input built; flat count matches OpenUBEM's list exactly.",
+      "Appliance and hot-water runs, both cities.",
+      "Stock profile and its fit to the UK reference, both cities.",
+      "Checks and the self-test pass."]},
+    {id:"r4", title:"Re-run: results", tasks:[
+      "One table of the new values.",
+      "Check every claim in the text still holds; stop and ask if one does not.",
+      "Closure note with the evidence files."]},
+    {id:"r5", title:"Re-run: manuscript", tasks:[
+      "Methods: new flat and building counts; heating campaign sentence removed.",
+      "Results: new fit values for London and Bologna.",
+      "Say that flat counts follow floor area.",
+      "Search for every other stock number; check abstract, highlights and Conclusion.",
+      "Word count still about 7,500."]},
+    {id:"r6", title:"Re-run: supplement", tasks:[
+      "Runs table: heating and trial rows removed, stock row updated.",
+      "New fit values and hot-water litres.",
+      "Section S9 rewritten; trial paragraph removed.",
+      "Every other mention of the heating campaign removed; cross-references checked."]},
+    {id:"r7", title:"Re-run: figures", tasks:[
+      "Confirm Figures 6 and 7 and Table S4 do not use the stock runs.",
+      {t:"Figure 1: change the stock card wording from the prompt.", who:"author"},
+      "Check the graphical abstract for stock content."]},
+    {id:"r8", title:"Re-run: build and upload", tasks:[
+      "Rebuild the Word files.",
+      "Number check against the new output files.",
+      "Copy to the upload folder; cover letter checked."]},
     {id:"s9", title:"Submit to Energy and Buildings", tasks:[
       {t:"Read the final draft.", who:"author"},
       {t:"Submit.", who:"author"}]}
@@ -303,6 +354,9 @@
     var st = state;
     var total = 0, done = 0, counts = {done:0, prog:0, todo:0, wait:0};
     var strip = document.getElementById("strip"); strip.innerHTML = "";
+    strip.style.gridTemplateColumns = "repeat(" + STEPS.length + ",1fr)";
+    var hb = document.getElementById("holdBox");
+    if(st.banner){ document.getElementById("holdText").textContent = st.banner; hb.hidden = false; } else { hb.hidden = true; }
     var host = document.getElementById("steps"); host.innerHTML = "";
 
     STEPS.forEach(function(s, si){

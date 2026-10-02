@@ -9,7 +9,7 @@ Written 2026-09-28. Week 4, in parallel with Step 6 only once the Step 6 scoring
 
 ## STATUS
 
-🟡 IN PROGRESS (2026-10-01 04:22 EDT): design ruling `impl/2026-10-01_step7_design.md` replaces every DRAFT item (archetype twins of 100 real Madrid buildings, 560-household pool, draws sized by measured time, 20-draw EnergyPlus check with the 5J builder); part A employee launched. Before: ⬜ NOT STARTED. Needs Step 5 closed (winner pinned). Its RQ4 claim is read together with Step 6: if S
+🟢 CLOSED (2026-10-01 13:15 EDT): 1,000 draws, spread, writer check and manager recount all verified (`impl/2026-10-01_wp5_district.md`, last entry); outputs in `outputs_step7/`; gate 1.4 WARN on 3 of 8 series (kept as a result). Before: 🟡 IN PROGRESS (2026-10-01 04:22 EDT): design ruling `impl/2026-10-01_step7_design.md` replaces every DRAFT item (archetype twins of 100 real Madrid buildings, 560-household pool, draws sized by measured time, 20-draw EnergyPlus check with the 5J builder); part A employee launched. Before: ⬜ NOT STARTED. Needs Step 5 closed (winner pinned). Its RQ4 claim is read together with Step 6: if S
 fails G5J.3, the district spread is reported as "what the surrogate says", not as a validated spread.
 
 ## AIM

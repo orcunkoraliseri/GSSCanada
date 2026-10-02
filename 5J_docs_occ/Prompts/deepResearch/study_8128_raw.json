@@ -1,0 +1,76 @@
+{
+  "data": {
+    "getStudyItem": {
+      "FriendlyId": "8128",
+      "Title": "United Kingdom Time Use Survey, 2014-2015",
+      "Abstract": "The <I>United Kingdom Time Use Survey, 2014-2015</I> (UKTUS) is a large-scale household survey that provides data on how people aged 8 years and over in the UK spend their time. At the heart of the survey is a time diary instrument in which respondents record their daily activities. Time diaries record events sequences for prescribed periods, usually a single day. They are an effective means of capturing rich data on how people spend their time, their location throughout the day, and who they spend their time with. The sample was based on households, and household members eight years and over completed time-diaries for one weekday and one weekend day. In addition, those in paid work were asked to complete a weekly work schedule. All individuals who completed a time diary were invited to take part in an interview, and someone in the household was selected to take part in a household interview. These interviews provide additional demographic, economic, and social information about households and individuals. <br />\n<br />\nThe UKTUS 2014-15 was designed to be, as far as possible, compatible both with the previous UK Time Use Survey, conducted by ONS in 2000-2001 (see under SN 4504) and with other European time use studies carried out in since 2008 (not currently held at the UK Data Archive). It followed the Eurostat 2008 guidelines on <a href=\"https://www.h5.scb.se/tus/tus/\" title=\"Harmonised European Time Use Studies (HETUS)\">Harmonised European Time Use Studies (HETUS)</a>, but was tailored to the needs and requirements of UK users. In particular, specific fields for mobile device use and enjoyment of time were added to the UKTUS 2014-2015 diary. In line with the key aims of the study, all data have been deposited with the UK Data Archive, to be made available for analysis by government and academic users.<br />\n<br />\n<i>Citation format</i>:<br />\nThe Principal Investigators have requested that the following format is used when citing this dataset:<br />\n<br />\nGershuny, J., Sullivan, O. (2017). <i>United Kingdom Time Use Survey, 2014-2015</i>. Centre for Time Use Research, University of Oxford. [data collection]. UK Data Service. SN: 8128, http://doi.org/10.5255/UKDA-SN-8128-1\n<br />\n<br />\n\n",
+      "AccessCondition": "<p>The Data Collection is available to UK Data Service registered users subject to the <a href=\"https://ukdataservice.ac.uk/app/uploads/cd137-enduserlicence.pdf\" target=\"_blank\">End User Licence Agreement</a>.</p><p>Commercial use of the data requires approval from the data owner or their nominee. The UK Data Service will contact you.</p>",
+      "AccessPermissions": [
+        {
+          "Title": "Safeguarded UKDA Download",
+          "Uri": "https://beta.ukdataservice.ac.uk/datacatalogue/studies/study?id=8128#!/access-data",
+          "UriText": "Add to account"
+        }
+      ],
+      "AlternativeTitle": "UKTUS; UK Time Diary Study",
+      "Citation": [
+        {
+          "ContentType": "APA",
+          "StudyCitationText": "Sullivan, O., Gershuny, J. (2023). <i>United Kingdom Time Use Survey, 2014-2015</i>. [data collection]. UK Data Service. SN: 8128, <a href=\"http://doi.org/10.5255/UKDA-SN-8128-1\">DOI: http://doi.org/10.5255/UKDA-SN-8128-1</a>"
+        },
+        {
+          "ContentType": "DataCite",
+          "StudyCitationText": "Sullivan, O., Gershuny, J., (2023). <i>United Kingdom Time Use Survey, 2014-2015</i>. UK Data Service. [data collection]. <a href=\"http://doi.org/10.5255/UKDA-SN-8128-1\">DOI: http://doi.org/10.5255/UKDA-SN-8128-1</a>"
+        },
+        {
+          "ContentType": "Harvard",
+          "StudyCitationText": "Sullivan, O., Gershuny, J., 2023, <i>United Kingdom Time Use Survey, 2014-2015</i>, [data collection], UK Data Service, Accessed $accessDate$. SN: 8128, <a href=\"http://doi.org/10.5255/UKDA-SN-8128-1\">DOI: http://doi.org/10.5255/UKDA-SN-8128-1</a>"
+        },
+        {
+          "ContentType": "Vancouver",
+          "StudyCitationText": "Sullivan, O., Gershuny, J. <i>United Kingdom Time Use Survey, 2014-2015</i>. [data collection]. UK Data Service, 2023 [Accessed $accessDate$]. Available from: <a href=\"http://doi.org/10.5255/UKDA-SN-8128-1\">DOI: http://doi.org/10.5255/UKDA-SN-8128-1</a>"
+        },
+        {
+          "ContentType": "CslXml",
+          "StudyCitationText": "<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<xml>\r\n  <info>\r\n    <author>\r\n      <name>Sullivan, O.</name>\r\n      <name>Gershuny, J.</name>\r\n    </author>\r\n    <issued>\r\n      <date>\r\n        <year>2023</year>\r\n      </date>\r\n    </issued>\r\n    <title>United Kingdom Time Use Survey, 2014-2015</title>\r\n    <type>dataset</type>\r\n    <publisher>UK Data Service</publisher>\r\n    <collection-number>SN 8128</collection-number>\r\n    <DOI>10.5255/UKDA-SN-8128-1</DOI>\r\n    <link href=\"http://doi.org/10.5255/UKDA-SN-8128-1\" />\r\n    <accessed>$accessDate$</accessed>\r\n  </info>\r\n</xml>"
+        },
+        {
+          "ContentType": "EndNoteXml",
+          "StudyCitationText": "<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<xml>\r\n  <records>\r\n    <record>\r\n      <ref-type name=\"Dataset\">59</ref-type>\r\n      <contributors>\r\n        <authors>\r\n          <author>Sullivan, O.</author>\r\n          <author>Gershuny, J.</author>\r\n        </authors>\r\n      </contributors>\r\n      <titles>\r\n        <title>United Kingdom Time Use Survey, 2014-2015</title>\r\n      </titles>\r\n      <dates>\r\n        <year>2023</year>\r\n      </dates>\r\n      <publisher>UK Data Service</publisher>\r\n      <accession-num>SN 8128</accession-num>\r\n      <urls>\r\n        <related-urls>\r\n          <url>http://doi.org/10.5255/UKDA-SN-8128-1</url>\r\n        </related-urls>\r\n      </urls>\r\n      <electronic-resource-num>10.5255/UKDA-SN-8128-1</electronic-resource-num>\r\n    </record>\r\n  </records>\r\n</xml>"
+        }
+      ],
+      "EditionNumber": 1,
+      "DOI": "10.5255/UKDA-SN-8128-1",
+      "Creator": {
+        "Organisations": [],
+        "Individuals": [
+          "Sullivan, O., University of Oxford, Department of Sociology, Centre for Time Use Research",
+          "Gershuny, J., Institute of Social and Economic Research"
+        ]
+      },
+      "Depositor": {
+        "Organisations": [],
+        "Individuals": [
+          "Mullan, K., University of Oxford, Department of Sociology, Centre for Time Use Research"
+        ]
+      },
+      "Copyright": "<a href=\"https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/\" target=\"_blank\">\u00a9 Crown copyright</a>. The use of these data is subject to the <a href=\"https://ukdataservice.ac.uk/app/uploads/cd137-enduserlicence.pdf\" target=\"_blank\">UK Data Service End User Licence Agreement</a>. Additional restrictions may also apply.",
+      "Disclaimer": "Although all efforts are made to ensure the quality of the materials, neither the original data creators, depositors or copyright holders, the funders of the data collections, nor the UK Data Archive, nor the UK Data Service bear any responsibility for the accuracy or comprehensiveness of these materials.<br/>",
+      "ChangeLog": [
+        {
+          "ChangeLogChangeDate": "2017-01-16T12:08:31.323",
+          "ChangeLogText": "[high] DOI created",
+          "DoiIdentifierName": "10.5255/UKDA-SN-8128-1",
+          "MinorChangeLog": [
+            "1 August 2023: Minor changes to catalogue record",
+            "31 August 2021: Addition of publication reference",
+            "3 December 2020: Minor changes to catalogue record",
+            "3 December 2020: Minor changes to catalogue record",
+            "3 April 2017: Minor changes to catalogue record"
+          ],
+          "StudyCitationText": "Gershuny, J.I., Sullivan, O. (2017). <i>United Kingdom Time Use Survey, 2014-2015</i>. [data collection]. UK Data Service. SN: 8128, <a href=\"http://doi.org/10.5255/UKDA-SN-8128-1\">DOI: http://doi.org/10.5255/UKDA-SN-8128-1</a>"
+        }
+      ]
+    }
+  }
+}

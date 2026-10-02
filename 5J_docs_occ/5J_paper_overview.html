@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5J Paper Overview</title>
+<style>
+:root{
+  --paper:#F7F7F3; --surface:#FFFFFF; --surface-2:#F1F2ED; --ink:#181A18; --ink-2:#43474A; --muted:#787E80;
+  --line:#DEE0D9; --accent:#0B6E68; --accent-soft:#DDECEA; --good:#2E6F4E; --good-bg:#E2EFE6;
+  --warn:#9A6408; --warn-bg:#F6EAD4; --risk:#A8352A; --risk-bg:#F6E3E0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111311; --surface:#181B19; --surface-2:#1F2320; --ink:#E9EBE6; --ink-2:#B7BDB8; --muted:#858C87;
+    --line:#2B302C; --accent:#4FBBB0; --accent-soft:#16302E; --good:#6FC08E; --good-bg:#173123;
+    --warn:#DFA33E; --warn-bg:#33260F; --risk:#E4776A; --risk-bg:#341C19;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111311; --surface:#181B19; --surface-2:#1F2320; --ink:#E9EBE6; --ink-2:#B7BDB8; --muted:#858C87;
+  --line:#2B302C; --accent:#4FBBB0; --accent-soft:#16302E; --good:#6FC08E; --good-bg:#173123;
+  --warn:#DFA33E; --warn-bg:#33260F; --risk:#E4776A; --risk-bg:#341C19;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:0 auto;padding:40px 16px 80px}
+h1{font-size:clamp(26px,4vw,38px);line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}
+.sub{color:var(--muted);margin:0 0 28px}
+h2{font-size:22px;margin:44px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+h2 .n{color:var(--accent);font-size:14px;letter-spacing:.1em;margin-right:10px}
+h3{font-size:17px;margin:22px 0 6px}
+p{margin:0 0 12px}
+.lead{font-size:18px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:18px 20px}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:16px 0}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.box b{display:block;color:var(--accent);font-size:13px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.box span{font-size:14px;color:var(--ink-2)}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:16px 0}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat .v{font-size:28px;font-weight:700;letter-spacing:-.02em}
+.stat .l{font-size:14px;color:var(--ink-2)}
+.stat.good .v{color:var(--good)} .stat.warn .v{color:var(--warn)}
+ul{padding-left:20px;margin:0 0 12px} li{margin:6px 0}
+.note{background:var(--warn-bg);border-radius:10px;padding:14px 16px;margin:14px 0}
+.stop{background:var(--risk-bg);border-radius:10px;padding:14px 16px;margin:14px 0}
+figure{margin:18px 0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+figure img{width:100%;height:auto;display:block;background:#fff;border-radius:6px}
+figcaption{font-size:14px;color:var(--ink-2);margin-top:8px}
+.steps{list-style:none;padding:0}
+.steps li{display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.pill{font-size:12px;font-weight:600;padding:2px 10px;border-radius:99px;white-space:nowrap;margin-top:3px}
+.pill.done{background:var(--good-bg);color:var(--good)} .pill.todo{background:var(--warn-bg);color:var(--warn)}
+code{background:var(--surface-2);border-radius:4px;padding:1px 5px;font-size:14px}
+footer{margin-top:48px;color:var(--muted);font-size:14px;border-top:1px solid var(--line);padding-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Can a fast surrogate of EnergyPlus reproduce what households do to the load?</h1>
+<p class="sub">The 5J paper on one page: the question, the method, the pilot findings and the expanded study now under way. Updated on 1 October 2026 after the decision to expand the paper.</p>
+
+<p class="lead"><b>In one sentence:</b> a neural surrogate of EnergyPlus, trained on simulations in which only the household changes, reproduced the <i>difference</i> that a household makes to the hourly load far more often than the load itself in a pilot on standard buildings; the paper now tests the same idea in real neighbourhoods, with each country's households built only from that country's own diaries.</p>
+
+<h2><span class="n">01</span>The goal</h2>
+<h3>The problem</h3>
+<p>Stock energy models usually assume one household per dwelling type: the same people, at home at the same hours, in every flat. Real households differ. In the same flat, a retired couple who stay in all day and a family of four who leave at eight in the morning heat, cool and use appliances at different hours and in different amounts. To show this spread, a stock model has to simulate many households in every building, and each household costs one full EnergyPlus run. Across thousands of dwellings the cost is too high, so most studies keep one average schedule and the spread between households is lost.</p>
+<p>A <b>surrogate</b>, a neural network trained to imitate EnergyPlus, answers in a fraction of a second and could remove this cost. Surrogates, however, are judged on how close their predicted load is to the simulated one. A household moves the load of a flat only a little, so a surrogate can predict the load closely while it ignores who lives there. Load accuracy alone cannot show whether a surrogate has learned anything about households.</p>
+<h3>The question</h3>
+<p>If a surrogate is trained on simulations in which <b>only the household changes</b>, does it learn what the household does to hourly heating, cooling and electricity, in real buildings and for households it has never seen? And is it better at this difference than at the load itself?</p>
+
+<h2><span class="n">02</span>How the question is answered</h2>
+<p>The paper has three parts: a <b>pilot</b> on standard buildings (finished), <b>Model A</b> in two real neighbourhoods with Spanish and Italian households (being designed), and <b>Model B</b>, which adds a London neighbourhood with UK households only if the UK Data Service agrees.</p>
+<div class="flow">
+  <div class="box"><b>1 · Diaries</b><span>National time-use surveys give each household its size, its hours at home and its activities. Each country's households use only that country's diaries.</span></div>
+  <div class="box"><b>2 · Neighbourhoods</b><span>Real buildings from OpenUBEM, divided into floors and flats: Madrid Berruguete (about 1,150 buildings) and Bologna Galvani 2 (about 1,170); London St Dunstan's in Model B.</span></div>
+  <div class="box"><b>3 · Pairs</b><span>Each building is simulated several times, each time with different households in its flats, so any change in a flat's load belongs to the household.</span></div>
+  <div class="box"><b>4 · Seal</b><span>Households, their diary days and buildings are split before any training; no diary day used in training appears in a test household.</span></div>
+  <div class="box"><b>5 · Train</b><span>Candidate models are trained on a graphics card and chosen on validation data alone, as in the pilot.</span></div>
+  <div class="box"><b>6 · Score once</b><span>The chosen model is scored once on each sealed test set (new households, new buildings, both new) with the rules frozen in the pilot.</span></div>
+  <div class="box"><b>7 · Compare</b><span>The occupancy runs are set against the default-schedule runs of the same buildings, to show what one average schedule misses.</span></div>
+</div>
+<h3>The two ideas that make the test fair</h3>
+<ul>
+  <li><b>Score the difference, not only the load.</b> For two households in the same flat, the model must predict the hourly difference between their loads. This difference is called the occupancy effect.</li>
+  <li><b>A control that must fail.</b> The same model is trained with the household inputs shuffled, so it cannot know who lives in the flat. If this control passed, the test would measure nothing.</li>
+</ul>
+<p>Each test set is divided into <b>cells</b>: country × building type × use (heating, cooling, appliance electricity and total electricity).</p>
+
+<h2><span class="n">03</span>Pilot findings (standard buildings, Spain and Italy)</h2>
+<div class="big">
+  <div class="stat good"><div class="v">31 / 32</div><div class="l">cells in which the occupancy effect passes for new households (31 of 32 for new buildings, 26 of 28 when both are new)</div></div>
+  <div class="stat good"><div class="v">0</div><div class="l">cells in which the household-blind control passes; the test therefore measures real use of the household</div></div>
+  <div class="stat warn"><div class="v">21, 14, 14 / 32</div><div class="l">cells in which the hourly load itself meets the usual accuracy standard for calibrated models (ASHRAE Guideline 14)</div></div>
+  <div class="stat good"><div class="v">61×</div><div class="l">faster than EnergyPlus on a graphics card; on one ordinary processor core, only 1.2 times faster</div></div>
+</div>
+<h3>The main message of the pilot</h3>
+<p><b>The surrogate was better at the difference between households than at the load itself.</b> A surrogate that meets the usual load standard is therefore not shown to be right about households, and one that misses it can still be right about them. Model A tests whether this holds in real buildings.</p>
+
+<figure>
+  <img src="writing/figures/Figure_03_occupancy_effect.png" alt="Figure 3 of the pilot: yearly difference between two households, surrogate and blind control against EnergyPlus">
+  <figcaption>Pilot Figure 3: the yearly difference between two households in the same flat, predicted against simulated, for heating and cooling. The surrogate's points lie along the diagonal; the blind control's points lie flat around zero.</figcaption>
+</figure>
+
+<h3>Further pilot findings</h3>
+<ul>
+  <li><b>Most of the yearly effect comes from household size and appliances.</b> Household size and appliance level explain 73 to 98 % of the yearly difference between two households. The timing of presence matters more hour by hour than over a whole year.</li>
+  <li><b>Peak hours are well placed.</b> The daily peak hour is predicted within one hour in 8 of 8 groups on every test set.</li>
+  <li><b>On a Madrid district of standard-building stand-ins, the surrogate reproduced the spread, but not always the level.</b> Over 1,000 draws of households for 2,034 dwellings, the district needs 12,728 MWh of heating a year, and 90 % of the draws fall between 12,697 and 12,760 MWh. On 20 draws also run in EnergyPlus, the surrogate followed how the district total moves from one draw to the next (correlation 0.97 to 0.9999), with a heating level 7.6 % below EnergyPlus for buildings similar to its training buildings and 58 % above for buildings unlike them.</li>
+</ul>
+
+<figure>
+  <img src="writing/figures/Figure_05_district_spread.png" alt="Figure 5 of the pilot: district annual totals over 1,000 draws, the 20 EnergyPlus check draws, and the running median">
+  <figcaption>Pilot Figure 5: the Madrid district of stand-in buildings. Top: the spread of the yearly totals over 1,000 draws. Middle: surrogate against EnergyPlus on the 20 check draws, in the same order but at a different level. Bottom: how the median and the 90 % range settle as draws are added.</figcaption>
+</figure>
+
+<h3>What the pilot left open, and how the main study answers it</h3>
+<ul>
+  <li><b>Diary days from another country's data.</b> The pilot's Spanish and Italian households used days made by an earlier generator that learned partly from UK diaries. The main study builds every household from real days of its own country.</li>
+  <li><b>Shared diary days.</b> In the pilot, training and test households could draw the same days. The main study splits the diary days with the households.</li>
+  <li><b>Standard buildings, not real ones.</b> The pilot used typical buildings with one weather year per city. The main study uses the real buildings of two neighbourhoods.</li>
+  <li><b>The result depends on the training run.</b> Two other random seeds passed far fewer validation cells (22 and 13 of 32, against 30). The main study again trains three seeds and reports each.</li>
+  <li><b>A new country needs its own data.</b> Trained on one country, the model transferred poorly to the other (0 to 3 and 9 to 10 of 16 cells). More countries are being sought (research prompts on European diary data).</li>
+  <li><b>The speed depends on a graphics card.</b> On one processor core the surrogate is about as slow as EnergyPlus.</li>
+</ul>
+
+<h2><span class="n">04</span>Where the paper stands</h2>
+<p>The pilot is finished and checked. The main study is being designed. The manuscript will be rewritten around Model A, with the pilot as an earlier chapter.</p>
+<ul class="steps">
+  <li><span class="pill done">Done</span><span>Pilot: standard buildings, 9,269 EnergyPlus runs, sealed tests, training, one scoring and the Madrid stand-in district, every number re-derived with independent code; first draft and Figures 1 to 5.</span></li>
+  <li><span class="pill todo">In progress</span><span>Model A design: the buildings of Madrid Berruguete and Bologna Galvani 2, households from each country's own diaries, new sealed tests. Facts about the neighbourhood files are being collected now.</span></li>
+  <li><span class="pill todo">Waiting</span><span>Default-schedule runs of the neighbourhoods (being re-run by you, expected on 2 October), for the comparison.</span></li>
+  <li><span class="pill todo">Your part</span><span>Three research prompts on European diary data (open files, application routes, overall list), the novelty search, the figure fixes, the journal choice and the declarations.</span></li>
+</ul>
+<div class="stop"><b>One open step (yours): the UK Data Service email.</b> Model B (London with UK households) needs the UK Data Service's written agreement, because the licence forbids AI tools with UK data. The email with six yes or no questions is ready in the e-mails folder. If they refuse, the paper ends with Model A and the UK is named as a limitation.</div>
+
+<footer>Sources: <code>writing/5J_manuscript_draft.md</code> (pilot), <code>Step6_docs/outputs_step6/RESULTS.md</code>, <code>Step7_docs/outputs_step7/</code>, <code>Step9_docs/5thJ_09_modelA.md</code> (Model A design), <code>Prompts/manager/2026-10-01_expansion_v2_plan.md</code>. Day-to-day state: <code>5thJ_00_Occupancy_Surrogate_Pipeline.md</code> (Progress Log).</footer>
+</div>
+</body>
+</html>

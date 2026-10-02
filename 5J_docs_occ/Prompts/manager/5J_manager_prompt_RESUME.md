@@ -3,10 +3,9 @@
 First written 2026-09-28 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6
 and §7 change only when a rule or a design changes. Edit in place; never fork a copy.
-Last updated: **2026-10-01 06:08 EDT: 🔴 FINDING 5J-3 (the generated diary days very probably come from models trained on UK diaries; author ruling needed, recommend writing to UKDS); Step 8 first draft written; Step 7 part B running. Before (05:46): Step 7 part A done + verified (twin district, 560 households, sealed draws; S 60x faster than EnergyPlus per dwelling-year when only predicting), part B running; checkpoints copied off Speed (24/24 md5 OK); novelty-search prompt T46 written for the author. Before (04:17): Step 6 CLOSED (one scoring done + re-derived; occupancy effect right in 31/32, 31/32, 26/28 test cells, load accuracy 21/14/14 of 32, control never passes, claims hold 11/12; seed and new-country limits); next Step 7 design. Before (02:53): Step 5 CLOSED (C fails 32/32 = G5J.4 PASS; seed spread 30/22/13 -> seeds 2-3 also reported on test); Step 6 B0 reported analyses locked (v2), scorer test mode locked, test predictions RUNNING. Before (01:01): Step 5 winner S3 pinned + verified (validation: household effect right in 30/32 groups, load accuracy 19/32); B1 verified; AMENDMENT 3 (B1 clipped at 0; winner unchanged under it); part E (control, seeds, one-country) RUNNING. Before (23:24): grid re-run DONE (16/16; best validation loss 0.110; S0 went 0.465 -> 0.159 with the clip); part D winner chain RUNNING (shortlist S2 S3 S1 S11 S9 S13 = manager list); B1 predicting validation; Step 6 claim rule written before any test result (6D); household days come from one shared generated pool (stated limit, not a leak). Before (21:24): S validation gap explained = network extrapolation on one new building with impossible static inputs (es_B40, TABULA V_C 20 m per m2, z 47); no window bug (own check exact); rules AMENDMENT 2 sealed 21:19 (static z clipped to development range; B1 unchanged); old grid VOID; fix employee DONE, smoke 1404630 all PASS, manager re-derived the clip (equal); grid re-run RUNNING (array 1404631, %4); B1 still tuning; stale "three country-out folds" text fixed in Step 5/6 docs. Before (20:49): slow GPU training fixed (cudnn deterministic off; probe job); new smoke PASS; 16-config grid RUNNING (array 1404570, each config <1 GPU-h); first two configs stop at epoch 1 with validation loss ~10x B1 -> manager diagnostic job 1404577 RUNNING (bug vs real gap); B1 still training; Step 6 part B task written; 3J/4J setup review written (`Prompts/manager/2026-09-30_setup_check_3J_4J.md`). Before (20:21): Step 5 part A DONE + verified (feature store); rules AMENDMENT 1 (val 1.3 checked per validation block; B0 from b0_dev on development buildings); parts B (B1 trees) and C (TCN + Transformer smoke + grid) employees RUNNING; parts D and E task docs written. Before (20:10): Step 4 CLOSED, gates FROZEN 20:04 (ASHRAE page found by the manager under the author's go-ahead: Guideline 14-2002 cl. 5.3.2.4 f, p. 18); Step 5 rules written before training (O-4 ruled); Step 5 part A employee RUNNING (feature store + B0). Before (19:57): Step 4 verified except the freeze: scorer re-derived by the manager (two cells, own code, equal); effect-good stand-in passes every gate; the 10 %-noise stand-in passes the load band but fails the occupancy-effect gate on heating/cooling (kept as a result); planted faults all caught; perturbation table being filled by a fresh employee; freeze waits on the ASHRAE Guideline 14 page. Before (18:58): Step 3 CLOSED for Spain + Italy (verified, splits sealed); Step 4 employee RUNNING; ASHRAE G14 page needed from the author before the freeze. Before (18:33): arrays FINISHED (31/31 COMPLETED, 0 failed files); part 2 employee RUNNING (integrity, resume check, splits). Before (16:51): Spain + Italy campaign RUNNING on Speed (6 arrays, 30 CPUs, 9,269 runs; 1,158 done, 0 failed at 16:51); part 2 task written, launch when arrays finish. Before (16:39): Step 2 CLOSED for Spain + Italy (design FROZEN); Step 3 part 1 employee RUNNING (campaign tool, smoke, preflight, 6 arrays). Before (16:31): households DONE + verified; campaign design DONE + verified with one placement defect; fix employee RUNNING (START HERE item 0). Before (16:16): multi-zone re-pilot DONE + verified; O-3 RULED (P = 3, split-pure household pools, no cut); two Step 2 closure employees RUNNING on Speed (Italy households + averages; campaign design). Before (~16:02): builder DONE + verified (15:58); multi-zone re-pilot employee RUNNING on Speed (task `Step2_docs/impl/2026-09-30_wp1_mz_repilot_TASK.md`); lighting question sent to the author. Before: D2-8 multi-zone RULED and designed; builder employee RUNNING on
-Speed; author ruled A (every flat tested), B (4 targets), and "all possible outputs". Campaign HELD until the
-multi-zone re-pilot. Start at §5 item 0.** (Stamps 16:00-17:00 written earlier today were ahead of the clock;
-corrected in the Progress Log.)
+Last updated: **2026-10-01 23:20 EDT (9p Bologna DONE, A2 waits for the author, see §5 item c0000000). Earlier 22:55 EDT (author asleep; Bologna 10-05 arrived, task 9p running, see §5 item c000000). Earlier 21:58 EDT (smoke running unattended, see §5 item c00000). Earlier 21:32 EDT (9o accepted, A1 written, smoke 1409919 running, see §5 item c0000). Earlier 21:12 EDT (Madrid 10-05 arrived, 9o running, see §5 item c000). Earlier 20:55 EDT (OpenUBEM: next delivery is _win_2026-10-05, see §5 item c00). Earlier 20:48 EDT (9n store builder ACCEPTED, see §5 item d00; array 128 done / 32 running / 0 failed at 20:46). Earlier 20:38 text: EDT (session closed; at 20:33 the array showed 67 done / 32 running / 1 pending, no failures; a FRESH 9n store employee was launched 20:34, so §5 item 0d is "read its state file", not "send an agent"; if the state file has no "state written to" line, the employee died: send another fresh one). Earlier 20:28 text: Step 9 rules SEALED (20:17); full Madrid campaign RUNNING on Speed (array 1409235, 8,616 runs, about 7 days; 45 of 45 finished runs CLEAN at 20:27; check 1409266 afterany). OpenUBEM ACCEPTED (20:21-20:22) to remove degenerate surfaces in `_win_2026-10-04` (no delivery hour); the 72 degenerate Madrid buildings (585 runs) and Bologna wait for it. UK (Model B) waits on UKDS. Start at §5 item 0.** Older "Last updated" history and older §4/§5 detail:
+`Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_0817.md`; the 14:42 version (§5 items v0-v3, 0-old) is
+`Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_1916.md`.
 
 ---
 
@@ -66,6 +65,10 @@ week 2 CPU campaign, week 3 GPU training, week 4 one scoring + district. Writing
   an sbatch job (python `/speed-scratch/o_iseri/envs/step4/bin/python -u`). Locally: edit files, ssh/scp, ls, read
   small files only. The author's own python/EnergyPlus jobs run on the local box; never touch them. Every task doc
   says "Speed, sbatch", never "Local only" (older task docs carry an AMENDMENT section).
+  🟡 **AMENDMENT (author, 2026-10-01 ~13:00): "if it is avaialble use half of the local resources from the desktop".** Up to
+  10 of 20 CPUs and ~31 GB RAM on the desktop (`py -3.13`, numpy 2.3.5) when Speed is blocked (account cap 64 CPUs shared with
+  other projects). Spain/Italy copies only, run tree under `GSSCanada\_local_runs/5J_*`, path constants patched in copies, the
+  Speed tree stays the master (sync results back). Never touch the author's own local jobs.
 * **Speed:** `sbatch` only, `-t 7-00:00:00`, `--exclude=antenna1`, never python or `srun` on the login
   node. Login shell is tcsh: wrap ssh commands as `ssh ... "bash -c '...'"`. Ask CPUs slightly under the agreed share (O-5). Disk: scratch was 9.3 T of 10 T on 2026-09-25;
   every campaign array starts with a disk preflight job.
@@ -89,6 +92,8 @@ week 2 CPU campaign, week 3 GPU training, week 4 one scoring + district. Writing
   per floor; never one zone per building. Check the builder before any building enters a pilot or campaign.
 
 ## §4. State now (rewrite after every step)
+
+**READ THIS FIRST (author passed to a new session 2026-10-02): §4 below is OLDER than §5. The newest state is the §5 items `c0000000` (23:20, Bologna 9p done, A2 waits for the author), `c000000`, `c00000`, `c0000`, `c000`. Where §4 and those items disagree, the §5 items win (e.g. Madrid array ends about 3 Oct, not 8 Oct; Madrid 10-05 and Bologna 10-05 both delivered; amendment A1 sealed). Owed: rewrite §4 and republish the board (live page v80, 20:32).**
 
 * **Step 0:** subject ruled (B4); O-1 licences closed (all three countries stay); O-2 novelty **closed
   2026-09-28** by the author on the Li 2021 abstract (full-text re-check and one logged P1/P4 search owed
@@ -153,121 +158,126 @@ week 2 CPU campaign, week 3 GPU training, week 4 one scoring + district. Writing
   (a RESULT, paper premise); every planted fault caught; null 99.98 %. Table `Step4_docs/outputs_step4/perturbations.md`.
 * 🔴 **FINDING 5J-1** (09-29, trigger read the pooled 4J corpus; FIXED: copy + guard) and **FINDING 5J-2** (09-29,
   stray repo-wide grep; rule in §3). Reporting either to UKDS is the author's call; told once, nothing drafted.
-* **Step 5 STARTED (20:08).** Rules written BEFORE training: `Step5_docs/outputs_step5/step5_rules.md` (md5 by job 1404502 into
-  `/speed-scratch/o_iseri/5J/train/step5_rules.md5`): O-4 RULED (inputs = what EnergyPlus gets: presence, appliance, members, design
-  level, neighbour flats above/below/same floor, weather, calendar, static building vector; no activity shares; 168 h + 24 h window);
-  total electricity computed (COP 3.0), not learned; B1 = sklearn boosted trees (no lightgbm on Speed); S = TCN + Transformer, 8
-  configs each on A100 20 GB slices; winner by the frozen scorer (most G5J.3 PASS cells); never a loco list (holds test runs).
-  Part A DONE + VERIFIED 20:19 (store `/speed-scratch/o_iseri/5J/train/store/`: dev 15,096 flat rows, val 7,617, val pairs 33,474;
-  manager own-code job 1404522: 3 rows equal raw files). Rules AMENDMENT 1 (20:18, before any result; `train/step5_rules_amend1.md`):
-  val 1.3 per validation block (the frozen list holds development households on NEW buildings by design: es 396 / it 297 runs);
-  B0 from `b0_dev` for development buildings. B0 + score RUNNING (1404520/1404521). Part B (B1) and part C (S smoke + grid)
-  employees RUNNING (state `Step5_docs/impl/2026-09-30_wp3_b1.md`, `..._wp3_s.md`).
-* **Step 5 at 21:24 EDT.** Manager diagnostic (CPU job 1404617; GPU one 1404577 cancelled unrun): validation windows in
-  development buildings score like development; the error sits on new buildings out of the static range, above all es_B40
-  (V_C 151,909.56 m3 for 7,507.5 m2; builder never reads V_C, so EnergyPlus loads are fine). Rules AMENDMENT 2 (md5 65e54b5c...,
-  `train/step5_rules_amend2.md`): static z clipped to the development [min, max]; same 16 configs re-run from scratch. Grid
-  1404570 cancelled 21:18, outputs moved to `ckpt/S_void_1404570` (never used). Clip employee DONE (state
-  `Step5_docs/impl/2026-09-30_wp3_s_clip.md`, MANAGER VERIFIED 21:23: smoke 1404630 all PASS, own bounds equal, only es_B40
-  clipped). Grid re-run array 1404631 (0-15 %4) RUNNING since 21:22; expect ~2-3 h. B1 1404525 RUNNING (heating trial 16 at
-  21:12), scorer 1404526 waits. Part E and Step 6 part A task docs carry an AMENDMENT 2 note (clip with the checkpoint's stats;
-  country-out stats from the training country only).
-* **Step 5 at 20:49 EDT (history).** B0 scored + verified (20:23). Part C: smoke 1404529 showed 1.3 s/step; manager probe 1404560 found
-  the cause (cudnn deterministic=True: TCN 30x slower); `s5_train.py` seed_all now deterministic=False, benchmark=True (operational,
-  logged in `..._wp3_s.md`); new smoke 1404569 all CHECK PASS (reload 4 dp equal), 0.31-0.95 GPU-h per config; grid array 1404570
-  RUNNING (0-15 %8). ⚠️ S0 and S1 early-stopped with best epoch 1: val_sum 0.46 / 0.51 while train loss 0.10, i.e. per target
-  ~0.15 standardised MSE vs B1's ~0.016 on heating -> manager diagnostic 1404577 (`/speed-scratch/o_iseri/5J/mgr/mgr_diag_s_<id>.out`:
-  static z ranges dev vs val, per-target MSE dev vs val, per validation block, own-presence check on val rows). Part B (B1,
-  1404525) RUNNING (trial 6 of heating at 20:47), scorer 1404526 waits.
-* **Steps 6 to 8:** specs and validation plans written 2026-09-28. Step 6 part A task (`Step6_docs/impl/2026-09-30_wp4_predict_TASK.md`)
-  and part B task (the ONE scoring job, `..._wp4_scoring_TASK.md`, 20:47) written. 3J/4J setup review (author asked 20:45):
-  `Prompts/manager/2026-09-30_setup_check_3J_4J.md` (Sonnet reviewer, docs only, no UK file): top points = most test cells hold one
-  building so the building bootstrap adds little (frozen; state in the paper); level vs timing not separated (suggest a
-  timing-only control REPORTED in Step 6, not gated); Step 7 must not compare against the heating-only 4J Step 10 builder; Step 5/6
-  docs still say three one-country folds, rules say two (fix wording). Not yet checked by the manager.
-* **Board:** v35 = this update (10-01 06:08 EDT). Live page is the master: read + diff before any republish.
+* **🟢 Step 5 CLOSED (10-01 02:52).** Rules `Step5_docs/outputs_step5/step5_rules.md` + AMENDMENTS 1-3 (md5 5e937d09...; 2 = static
+  inputs clipped to the development range, 3 = tree baseline clipped at 0). Winner **S3** (TCN 64 large), pinned
+  `train/winner/pinned/best.pt` md5 78271da9...; records `winner.md`, `models.md`. Validation: occupancy effect 30/32, load 19/32.
+  Blind control C fails 32/32 (good). Seeds 2/3 much worse (30/22/13). Checkpoints copied off Speed (24/24 md5 OK,
+  `GSSCanada\_5J_data\surrogate\checkpoints\`).
+* **🟢 Step 6 CLOSED (10-01 04:16).** ONE scoring job 1405205; `Step6_docs/outputs_step6/RESULTS.md` (corrected 06:07). Test: occupancy
+  effect right in 31/32, 31/32, 26/28 cells; load accuracy 21/14/14 of 32; control never passes; claims hold 11/12 (heating on
+  both-new = partly); seeds 2/3 much worse (claim = the pinned model); Spain->Italy fails (0-3/16), Italy->Spain partly (9-10/16);
+  size + appliance level explain EP 73-98 % / S 79-98 % of the annual pair effect. Post-scoring rule (spec log 05:04): figure-data
+  jobs may read test truth, log every open, write md5s, no verdict.
+* **🟢 Step 7 CLOSED (10-01 13:15).** Design `Step7_docs/impl/2026-10-01_step7_design.md` (twins of 100 real Madrid buildings:
+  2,034 twin dwellings vs 1,173 real; 560-household pool; N = 1,000 draws). State `Step7_docs/impl/2026-10-01_wp5_district.md`
+  (last entry = VERIFIED). Outputs `Step7_docs/outputs_step7/` (district_spread.csv md5 62209987...). EnergyPlus check 2,000 runs
+  over 20 draws; heating median CV(RMSE) 38.6 %, pooled NMBE +10.2 % (in range 27.1 % / -7.6 %, out of range 165 % / +58 %);
+  district totals r 0.97-0.9999; S 61x EnergyPlus on a GPU slice, 1.2x on one CPU core. Spread: annual heating 12,728 MWh
+  (12,697-12,760). Writer check (20/20 draws) and manager recount (112 rows, worst 5e-6) ran on the DESKTOP (Speed cap held by
+  other projects; author allowed half the desktop); the three queued Speed copies were cancelled. Recount corrected the settling
+  sentence (medians within 0.1 % from 100 draws; width from 500 draws within 6 % of its 1,000-draw value). Gate 1.4 WARN 3/8.
+* **Step 8 (writing) STARTED.** Draft `writing/5J_manuscript_draft.md` (UK sentences are FINDING 5J-3 markers), highlights
+  `writing/5J_highlights.md`, author list `writing/AUTHOR_TODO_5J.md` (item 0 = FINDING 5J-3), number ledger (94 rows)
+  `Step8_docs/impl/2026-10-01_wp6_draft.md`: manager ledger pass DONE 08:23 (all equal to sources; Milan 3.165 -> 3.17).
+  District text MERGED 08:28 (state `Step8_docs/impl/2026-10-01_wp6_s38.md`, manager note; backup
+  `writing/archive/5J_manuscript_draft_pre_s38_merge_2026-10-01.md`): Abstract (200 words), 1.3, 2.6, 3.8 + Table 5, 4.5,
+  Limitations (twin direction 2,034 vs 1,173), Conclusion 7. 3.8 spread numbers FILLED 12:25 and settling sentence corrected
+  13:15 (state `Step8_docs/impl/2026-10-01_wp6_s38.md`). Figures 2-5 drawn (`figures/`, `writing/figures/`); Figure 5 DONE 13:15
+  (all read-back checks pass; top row given its own x axis because the shared axis squeezed the histogram; caption checked;
+  state `Step8_docs/impl/2026-10-01_wp6_fig5.md`). No draft section is waiting on data any more.
+  Rule check DONE + verified 13:52 (`tools/5thJ_valpass.py`, state `Step8_docs/impl/2026-10-01_wp6_valpass.md`): 0 unmatched
+  numbers, 0 citation orphans, no tool names, 11 small counts traced by hand; 4 lines fixed (draft md5 09c7bc0d...). Author prompts
+  written 13:47: Figure 1, graphical abstract section 10, T47 references; overview page `5J_paper_overview.html`.
+* 🔴 **FINDING 5J-3 (10-01 06:08, Progress Log):** the generated-day pools (`generated_leg5_es/it_constrained.jsonl`) are very probably
+  the 4J Leg-5 LOCO generations, made by models fine-tuned on UK diaries (the Spain pool by the UK+Italy model). Author ruling
+  needed; recommend writing to UKDS and keeping every 5J output private. No new generation; no data-release promise in the paper.
+* **Step 9 (Model A) IN PROGRESS** (design + log `Step9_docs/5thJ_09_modelA.md`, read its LAST entries; rules DRAFT
+  `Step9_docs/outputs_step9/step9_rules.md`, not sealed). Base = OpenUBEM windowed IDFs `_win_2026-10-03` (local
+  `C:/Users/o_iseri/Desktop/OpenUBEM/openubem/outputs/eu_evidence/EU-11/<D>_win_2026-10-03/`, Speed
+  `/speed-scratch/o_iseri/fleets/EU11_<D>_win_2026-10-03`; tools switch with `MODELA_VINTAGE=win_2026-10-03`; open only the two
+  district folders by full name, never list `EU-11/`).
+  * Ruled: D9-3 pilot settings (ideal loads 20/26 C, People + appliances from Schedule:File) + one default-schedule run per
+    building; D9-5 windows as delivered; D9-6 fix at source; tiny-flat hold-out (any flat < 15 m2 -> building out; author 17:39);
+    **D9-4 (author 18:55) "follow openUBEM settings for buildings" = NO fast setting** (shading PolygonClipping daily, sizing
+    Yes/Yes/Yes, delivered timestep; fast-setting check G-c7 PASSED but is not adopted); **"keep going handle simulations" =
+    full plan, every building, no sampling** (manager reading, in R10).
+  * Plan after hold-out: 18,021 runs (Madrid 9,201, Bologna 8,820); per building dev 9 / val 6 / test 6 incl. B0 + default;
+    about 5,800-6,800 CPU-h = about 7.6-8.8 days at 32 CPUs; disk about 49 GB (0.229 MB per flat-year).
+  * Splits sealed in R1 (building seed 9102, household seed 9101; md5s in R1). 10-04 rules written BEFORE any run (R1 a-d):
+    Madrid split sealed on 10-03, a changed building keeps its split and its 10-03 runs are void and re-run; Madrid hold-out
+    re-read on 10-04; Bologna split + hold-out derived on 10-04 by dated amendment before any Bologna run; every run stores its
+    source IDF md5 and is reused only if it matches.
+  * Closed checks: 9i writer gates on 10-02 (aggregator 1407560), 9j final-base walls by EnergyPlus (sample 1407674), store code
+    accepted (9g). **Open 9k** (`impl/2026-10-01_wp9k_final_base_check.md`): writer gates on win3 (array 1407876, 22/38 done at
+    19:15), aggregator 1407909 + store re-test 1407961 pending on it; degenerate-surface count (estimate about 75 Madrid / 20
+    Bologna buildings; EnergyPlus counts come from each building's first campaign run; decision deferred).
+  * **9l campaign runner** (`impl/2026-10-01_wp9l_campaign_madrid.md`, manager read 19:10 appended): code in Speed
+    `/speed-scratch/o_iseri/5J/modelA/campaign/root/5J_docs_occ/tools/` (`a9_campaign_task.sh/.py`, check, prep); plan
+    `manifests/plan_ES-MAD-BERRUGUETE.csv` 9,201 rows md5 f627f60d...; B0 = mean of 60 dev households (pilot rule, seed 9106).
+    Smoke 1408110 (36 runs, 5 buildings incl. triangle 1271cddbf6bd1e8a): first 9 runs CLEAN at 19:15 (about 3.5 min each for a
+    2-flat building, default-mode paths work, G-c3 exact, purity 0); check 1408112 -> re-submission 1408134 (expect all SKIP) ->
+    check 2 1408136 queued.
+  * OpenUBEM (peer `openubem-cc`, 18:56 + 19:13, claims): flat count follows floor area; Madrid changes only sliver/shared-record
+    buildings; Bologna almost all; they send 10-04 paths + md5, Madrid changed-stem list, old/new count table; earliest 2 Oct.
+* **Campaign (20:19):** 9k CLOSED (final base passes every writer gate), 9m ACCEPTED (skip key = 4 writer + 7 household code files actually loaded), smoke ACCEPTED (21/36 clean; not clean = triangle + 77-flat 394922138a6b5928, both degenerate), check control fixed (expected clean 4). Seal 1409233: 18/18 md5 OK, control FIRED, 38 files in `/speed-scratch/o_iseri/5J/modelA/step9_rules.md5`. Array 1409235 (index ranges = plan minus degenerate rows; deferred ranges in the 20:18 log entry are recomputable from `wp9k/degenerate_win3.csv` + the plan), check 1409266.
+* **Board:** v80 (10-01 20:32 EDT; session closed, 9n helper to restart; before that v79 20:29; first 45 Madrid runs clean; Madrid campaign running; first 10 smoke runs clean; expect items=66 done=52 prog=5 todo=9). Routine: `Artifact read
+  path=index.html` (or the local file if the manager published last), `diff --strip-trailing-cr`, back up `board_pre_vNN.html`,
+  edit script, `node --check` + `node board_smoke.js board_v16.js`, publish with the url. Live page is the master.
 
 ## §5. Do this next (rewrite after every step)
 
-0. **START HERE (2026-10-01 06:08 EDT).** 🔴 **FINDING 5J-3 waits on the author** (parent Progress Log 06:08;
-   `writing/AUTHOR_TODO_5J.md` item 0): the 5J generated-day pools are very probably the 4J LOCO generations, i.e. made by
-   models fine-tuned on UK diaries. Ask the author whether EUL v16 clauses 4/5 cover such outputs; recommended: write to UKDS,
-   keep all 5J outputs private. Do NOT run any new generation from the 4J generator; do not promise data release in the paper.
-   Step 8 part A DONE (first draft `writing/5J_manuscript_draft.md`, 8,324 words, number ledger in
-   `Step8_docs/impl/2026-10-01_wp6_draft.md`; the two UK sentences are markers; RESULTS.md corrected 06:07: S level share 79-98 %,
-   test cooling R² 0.72-0.999). Manager has NOT yet read the draft against the ledger (do that next). Step 7 part B RUNNING
-   (chain 1405273-1405284; state `Step7_docs/impl/2026-10-01_wp5_district.md` "PART B").
-0-prev6. **(2026-10-01 05:46 EDT.)** Step 7 IN PROGRESS. Design ruling `Step7_docs/impl/2026-10-01_step7_design.md`
-   (archetype twins of 100 real Madrid buildings, 2,034 twin dwellings vs 1,173 real; 560-household pool, UNIFORM draws;
-   20-draw EnergyPlus check with the 5J builder). Part A DONE + VERIFIED (state `Step7_docs/impl/2026-10-01_wp5_district.md`:
-   seals, pool, draws, 17/100 twins out of range = 871 dwellings, mostly AB.06; S 0.027 s per dwelling-year predict-only,
-   EnergyPlus 1.63 s; checkpoint copy 7E DONE 04:19). Part B employee launched 05:46 (`..._wp5_district_B_TASK.md`: writer +
-   N, all draws, 19 more EnergyPlus draws, comparison, spread, speed). When it reports: verify (one dwelling CV(RMSE), one
-   draw district total, speed ratio), close Step 7, then Step 8: figures from frozen data (post-scoring rule in Step 6 log
-   05:04), manuscript draft in 2J AE style, declarations. Author actions waiting: run
-   `Prompts/deepResearch/T46_novelty_logged_search_P1_P4.md` (novelty, owed from O-2); confirm ASHRAE G14 2014 edition;
-   lighting; venue (O-6); UK line.
-0-prev5. **(2026-10-01 04:17 EDT, DONE 05:46.)** 🟢 Step 6 CLOSED 04:16 (ONE scoring job 1405205; results
-   `Step6_docs/outputs_step6/RESULTS.md`; manager re-derived, job 1405218). S: G5J.3 31/32, 31/32, 26/28 (+4 NE); G5J.2 21/14/14
-   of 32; C never passes; 6D claims hold 11/12 (heating on both-new = partly); seeds 2/3 much worse (claim = pinned model);
-   new country Spain->Italy fails, Italy->Spain partly. NEXT = Step 7 (`Step7_docs/5thJ_07_speedDistrict.md`, all items DRAFT):
-   write the Step 7 design ruling first (district = ES-MAD-BERRUGUETE from 4J Step 10; recommended: the 7C EnergyPlus check uses
-   the 5J multi-zone builder `tools/5thJ_idf_mz.py` on each real dwelling mapped to its 5J archetype vector, so surrogate error
-   is not mixed with builder error (3J/4J review issue 4); the 4J real-geometry runs only as a reported side line; household
-   pool = campaign households + a larger built pool, in/out-of-range counted), then employee tasks (mapping, draws, EP check,
-   speed). 🔴 7E: copy Spain+Italy checkpoints off Speed with md5s before ~31 Oct. Then Step 8 (writing).
-0-prev4. **(2026-10-01 02:53 EDT, DONE 04:16.)** 🟢 Step 5 CLOSED (02:52; Progress Log + `Step5_docs/outputs_step5/models.md` +
-   `winner.md`). Step 6 IN PROGRESS:
-   * Part B0 (reported analyses) DONE + VERIFIED: locked `freeze/s6_reported_v2.py` md5 3a0749b1... (v1 `freeze/s6_reported.py`
-     is VOID: wrong lag sign); state `Step6_docs/impl/2026-10-01_wp4_reported.md`.
-   * Part A (state `Step6_docs/impl/2026-09-30_wp4_predict.md`): scorer test mode locked 02:16 (`freeze/5thJ_04_scorer_t.py`
-     md5 4d15df70..., `gates_frozen_amend1.md5`; diff = intended lines only, byte-equal without --test: manager read job
-     1405152); test store built; predictions RUNNING (B0 1405157, B1+B1_loco_es 1405159, B1_loco_it 1405160, GPU array 1405161
-     = S, C, S_seed2, S_seed3, S_loco_es, S_loco_it), final check 1405162. NEXT: read 1405162; verify (one test flat's S
-     prediction recomputed from the pinned checkpoint + test drivers with own code in a GPU/CPU job; open logs: no test truth;
-     counts); then launch part B (`Step6_docs/impl/2026-09-30_wp4_scoring_TASK.md`; it now has 24 scorer calls + 3 calls of
-     s6_reported_v2 --test; the startup script must also check s6_reported_v2.md5 and the S_seed2/3 + all checkpoint md5s
-     against `test/ckpt_md5_snapshot.tsv` and the Step 5 records). After scoring: manager re-derives 3 numbers, claims.txt by
-     6D, Progress Log, then Step 7.
-0-prev3. **(2026-10-01 01:01 EDT, DONE 02:52.)** Step 5 part D DONE + VERIFIED: winner **S3** (TCN 64 large λ1), validation G5J.3
-   30/32, G5J.2 19/32 (load accuracy fails mostly in Italian MFH/AB = RESULT), skill over B1 excludes 0 in 30/32; pinned
-   (`train/winner/pinned/best.pt`, md5 78271da9...); record `Step5_docs/outputs_step5/winner.md`. B1 verified (own code equal).
-   Rules AMENDMENT 3 (sealed 00:31:58, md5 5e937d09...): B1 clipped at 0 from now on (S/C already were); sensitivity: winner
-   unchanged. Part E employee RUNNING (launched 01:00; state `Step5_docs/impl/2026-09-30_wp3_control.md`): C seeds 1-3, S3 seeds
-   2-3, S_loco_es/it, B1_loco_es/it, validation scoring vs `pred/B1_clip0`. When it reports: verify (3 donor rows from the md5
-   rule, C config diff, one G5J.3 cell of C with own code, seed spread), close Step 5 (Progress Log, models.md), then Step 6
-   part A (`Step6_docs/impl/2026-09-30_wp4_predict_TASK.md`, has AMENDMENT 2/3 notes), verify, part B (ONE scoring job).
-0-prev2. **(2026-09-30 23:24 EDT, DONE 01:00.)** Grid 1404631 DONE (16/16 exit 0; manager read the logs; best S11 0.110). Part D
-   chain RUNNING (state `Step5_docs/impl/2026-09-30_wp3_winner.md`): shortlist 1404807 DONE = S2, S3, S1, S11, S9, S13 (equals
-   the manager's own list); predictions 1404808 (GPU) running; scorers 1404809 wait on B and on the B1 scorer 1404526; winner
-   1404810, reload+pin 1404811, cleanup 1404812. B1 1404525 is PREDICTING validation (313/1980 at 23:16, slow; hours). If
-   1404525 or 1404526 fails, cancel 1404809-1404812. When B1 + 1404526 finish: verify B1 (one flat recomputed from the saved
-   model with own code, one G5J.2 cell, the total-electricity rule). When the chain finishes: verify the winner (R7.3 from the
-   6 score files with own code, one G5J.3 cell from predictions + truth, reload loss; STATIC_CLIP lines present), then launch
-   part E (`..._wp3_control_TASK.md`, has an AMENDMENT 2 note), verify, close Step 5, then Step 6 A, B. Step 6 spec now has
-   section 6D (claim rule, written 21:25 before any test result; household-day sharing; weekday note). If S stays worse than
-   B1, that is a RESULT. Items 0a/0b below are history.
-0-prev. **(2026-09-30 21:24 EDT, DONE 23:24.)** Grid re-run 1404631 and B1 1404525 RUNNING; then part D.
-0a. **(2026-09-30 20:49 EDT, DONE 21:23: bug found = static extrapolation, AMENDMENT 2.)** First read diagnostic 1404577. If it shows a BUG (e.g. validation windows or static
-   inputs built wrong, new-building static z far outside the development range): fix in a fresh employee task, re-smoke, cancel
-   and resubmit the grid (no result is final before the winner). If it shows a REAL gap (S worse than B1 on new buildings): the
-   grid stays; record it (a RESULT, not a defect); the rules fix the grid, no new configs. Then read B1 (1404525/1404526) and
-   verify; then part D when the grid has finished; then part E; close Step 5; then Step 6 A, B. Older item 0 (20:21) below.
-0b. **(2026-09-30 20:21 EDT).** Step 5 rules: `Step5_docs/outputs_step5/step5_rules.md` + AMENDMENT 1 (never edit;
-   amendments only, each locked on Speed with a prefix-unchanged check like job 1404523). Part A DONE + verified. RUNNING now:
-   B0 + its score (1404520/1404521: read `train/logs/s5_b0_1404520.out` and `train/score` tag B0; expect G5J.3 FAIL on every cell;
-   re-derive one B0 G5J.2 cell with own code), part B employee (B1, state `Step5_docs/impl/2026-09-30_wp3_b1.md`), part C employee
-   (S smoke + 16-config grid, state `..._wp3_s.md`). When each reports: verify with own code (B1 one flat recomputed from the saved
-   model; S one smoke window rebuilt from raw files, reload loss, 16 configs differ only in the 4 factors). When the grid has
-   finished: launch part D (task `Step5_docs/impl/2026-09-30_wp3_winner_TASK.md`: shortlist 3+3, predict, score, winner by R7,
-   reload check, pin); verify; then part E (task `..._wp3_control_TASK.md`: blind control C, seeds 1-3, one-country trainings);
-   verify; close Step 5; then Step 6 (needs a test mode for the scorer: a dated amendment to the freeze, never an edit). GPU: `-p ps
-   --gres=gpu:nvidia_a100_2g.20gb:1`, at most 30 CPUs for 5J in total. Lighting: still asked (not blocking).
-1. UK arrays wait on the author's UK household script (`tools/5thJ_design_households_uk.py`) and the UKDS 5J line. Author to check
+0. **START HERE (2026-10-01 20:19 EDT): Madrid campaign running.** Run `date` first. Steps a-e of the 19:16 list are DONE
+   (9k read, smoke read, 9m key, seal, submit; see the log entries 19:30-20:18 and the manager reads in the 9k / 9l / 9m state files).
+   a. **Daily:** `sacct -j 1409235 -X -n -o State | sort | uniq -c` (tcsh; no `$()`); read progress from sacct only (no wildcard
+      listing of results/). Failed tasks: head of `campaign/logs/t_1409235_<n>.out`; resubmit only those indices
+      (skip rule reuses the rest). 5J stays at 32 CPUs (`%32`); never raise it while OpenUBEM uses 32.
+   b. **When the array ends:** read `campaign/logs/check_1409266.out`: ROWS done = 8,616, TASK_ERROR 0, PURITY 0, GC3 0, SRC 0,
+      CONTROL planted_faults FIRED, every NOT_CLEAN by name (expected none, since degenerate buildings are deferred; any other
+      not-clean run = new finding). Manager read in the 9l state file, log entry, board.
+   c0000000000. **PEER NOTE 2026-10-02 07:10 EDT (openubem-cc, live message, info only):** their Madrid 10-05 run is finished (1,171 of 1,172 homes; the one failure is a 21 m2 single-zone home whose heat balance diverges, theirs, not re-run). Their Bologna 10-05 run (same 1,179 IDFs we hold, no file changes) is queued on Speed, start about 08:00 EDT, finish about 01:00 EDT 3 Oct; they will send a note when collected. They wrote this before seeing our 07:20 message. Their Bologna jobs share the 64-CPU account cap with our Madrid array.
+   c000000000. **UPDATE 2026-10-02 ~07:20 EDT: author said "of course tell it" -> message WRITTEN (not a reply to anything) at `OpenUBEM/docs/docs_ACTIVE/europeanLocations/messages_GSSCanada/2026-10-02_4J_to_OpenUBEM_bologna_win5_three_differences.md` (12 `_whole` buildings + question, 38 sliver buildings, 6 tiny flats in 3 buildings + question on the zero-floor zone). Bologna only, no UK content. A2 NOT sealed yet: wait for their reply on the 12 `_whole` buildings (the Bologna campaign cannot start before the Madrid array ends, about 3 Oct). If no reply by the time the cap frees, seal A2 as in c0000000 item 1 (12 excluded) and go. Replies land in the same folder; read only files dated 2026-10-02 or later.**
+   c00000000. **UPDATE 2026-10-02 07:05 EDT (new session, morning order of c00000 DONE):** smoke 1409919 = 15/15 CLEAN (0 NOT_CLEAN; 9 rows of 394922138a6b5928, 6 of 1271cddbf6bd1e8a); throttle restored to 32 (job 1410129 COMPLETED, ArrayTaskThrottle=32). Madrid array 1409235 (task index = run row, not building): 2,587 done / 32 running / 1 pending range, 0 failed, about 240 rows/h, check 1409266 pending on it; est. end about 3 Oct. Nothing due until it ends. Still waiting on the author: Bologna A2 decisions (c0000000 items 1-2). Board not republished this step (v80 live).
+   c0000000. **UPDATE 23:20: 9p (Bologna 10-05) DONE; manager read done, A2 NOT yet written on purpose (author decides first). State `Step9_docs/impl/2026-10-01_wp9p_rebase_bologna_win5.md` (its Next item 1 has every md5 for A2). Measured differences from the peer's Bologna message: 12 buildings with one `_whole` zone per floor (cannot run), 38 buildings with 52 slivers at our 0.01 m rule (peer says 0), 6 flats under 15 m2 in 3 buildings (peer says none; one has no floor surface). MORNING DECISIONS for the author: (1) tell OpenUBEM about those three (draft the message, they reply in OpenUBEM docs) or accept them; (2) then seal A2 (lists dev 818 / val 176 / test 173, hold-out 3, 12 excluded, 38 run as delivered, plan 9,435 rows md5 c6de7168...). Staged copy in `/speed-scratch/o_iseri/5J/modelA/campaign_bol5/` never executed: when the 32-CPU cap frees (Madrid array: 736 done / 31 running / 1 pending at 23:18, 768 building tasks, so it ends about 3 Oct, NOT 8 Oct) run helper's line 1 (prep), then the 3-row probe of the largest building for memory, then the array. Madrid 1,458-row resubmission goes first or second: manager decides with the helper's timing (whole queue 2.8-3.3 days at 32 CPUs).**
+   c000000. **UPDATE 22:55: Bologna `_win_2026-10-05` ARRIVED (OpenUBEM peer message; our own md5 of all 1,179 IDFs = their list, 0 differences; 1,070 flat_count rebuilt + all shifted to a local origin; 0 degenerate by their claim). Task 9p (fresh Sonnet, background) re-measures it, copies it to Speed (new fleet folder), rebuilds static, DERIVES the Bologna split + hold-out on the new base (seed 9102), builds a provisional plan and writes the sbatch line; state file `Step9_docs/impl/2026-10-01_wp9p_rebase_bologna_win5.md`. FIRST in the morning: read it; if no 'state written to' line the employee died, send another fresh one. Then the manager read: seal the Bologna lists + hold-out by dated amendment A2 BEFORE any Bologna run; decide the order (Madrid resubmission 1,458 rows vs Bologna rows; the 32-CPU cap is full until about 8 Oct). Bologna has no live runs and no void results. Slip logged: one `ls` of EU-11/ piped to a count (no UK name read).**
+   c00000. **UPDATE 21:58 (author asleep): smoke task 1 (the 77-flat building) came out CLEAN, so the staged code works. 14 smoke rows still run (done about 03:30 EDT). Job 1410129 restores the throttle to 32 by itself after the smoke (check its log `campaign_win5/logs/restore_throttle_1410129.out`; if missing or failed run the `scontrol` line of the next item by hand). Morning order: (1) `date`; sacct of 1409235 and 1409919; (2) read all 15 RESULT lines `grep RESULT campaign_win5/logs/t_1409919_*.out` (expect 15 CLEAN: 9 rows of 394922138a6b5928 and 6 of 1271cddbf6bd1e8a); (3) daily array check, resubmit only failed indices; (4) nothing else is due before the array ends; OpenUBEM Bologna 10-05 not before 2 Oct (their message), handle per items c000/c0000.**
+   c0000. **UPDATE 21:32: 9o DONE and ACCEPTED; amendment A1 is in `outputs_step9/step9_rules.md`. Smoke of the staged `campaign_win5` code = array 1409919 (15 rows, `%1`, the two smoke buildings; live array throttle lowered to 31). FIRST: read `campaign_win5/logs/t_1409919_<n>.out` RESULT lines (expect 0 NOT_CLEAN for both buildings) and fix the staged code if it crashed (zone map / b0 path were untested). WHEN the live array 1409235 ends and its check 1409266 is read: move the void results (`impl/wp9o_win5/void_results_win3.txt`) to `campaign/results_void_win3/`, then submit the item-7 line of the 9o state (rows 16-1458; 1-15 are done by the smoke) and its check; store build later with TWO roots, one ledger (win5 plan, zone_map_win5, `static_win5`; test the two-root build on the desktop first). The throttle was lowered 32 -> 31 for the smoke: restore with `scontrol update JobId=1409235 ArrayTaskThrottle=32` once 1409919 is finished.**
+   c000. **UPDATE 21:12: Madrid `_win_2026-10-05` ARRIVED and was md5-checked by us (171 changed = 113 flat_count + 58 degenerate; 1,001 identical). Task 9o is running (fresh Sonnet; state `Step9_docs/impl/2026-10-01_wp9o_rebase_win5.md`; it reports, never decides). First: read that state file; if it has a 'state written to' line, do the manager read: decide the split-list and hold-out differences (sealed lists never move a building), then after the live array 1409235 ends, move the 171 stems' old results to `results_void_win3/` and submit the new array it names. Bologna 10-05 NOT delivered yet (local-origin shift; not before 2 Oct). The note below that says 'wait for 10-05' now applies to Bologna only.**
+   c00. **UPDATE 20:55: OpenUBEM's next delivery is `_win_2026-10-05` (not 10-04; log 20:55 has their reasons: EnergyPlus's own degenerate rule, sliver triangles kept, Bologna moved to a local origin). Read item c below with 10-05 wherever it says 10-04. Their counts (63 / 12 / 20 homes) are claims: re-derive against our 72-building list.**
+   c. **When OpenUBEM sends 10-04** (asked 20:18 to remove degenerate surfaces too; ACCEPTED 20:21: vertices within 0.01 m merged,
+      a surface with < 3 vertices deleted with its windows and its partner only if the partner is degenerate too; a pair whose
+      partner is whole is left unchanged and listed `partner_not_degenerate`, so such buildings may keep one Severe line and stay
+      not clean by rule R1 e; delivery = `changed_stems.txt` with a reason column (flat_count / degenerate / both),
+      `md5_2026-10-04.txt`, `degenerate_2026-10-04.csv`; they first match our list stem by stem; log 20:21 + 20:22): md5 every Madrid IDF against 10-03 ourselves;
+      changed buildings: void + re-run (R1 a, d): copy 10-04 to a NEW Speed fleet folder and build a 10-04 Madrid plan on it;
+      unchanged buildings then SKIP (same src md5), changed ones re-run; re-read the hold-out; submit the 585 deferred degenerate-building runs
+      (index ranges = plan rows whose stem is in `wp9k/degenerate_win3.csv`); still degenerate -> run as delivered, reported not clean.
+      Then Bologna: split + hold-out by dated AMENDMENT (seed 9102), plan, `it` B0, run.
+   d00. **UPDATE 20:48: 9n is DONE and ACCEPTED (log 20:48; helper line present; counts re-derived 13 stored / 8 refused, heating 10832.012). Skip d0 and d. Remaining for the store: after check 1409266 reads clean, copy the 4 code files and run the one sbatch line in the state file's Next section (no build while the array runs; CPU cap full).**
+   d0. **(old) UPDATE 20:38:** a fresh Sonnet employee was launched 20:34 on the 9n task doc (partial `wp9n/smoke_copy/` kept; no `a9_store_pre9n.py` existed). First: read `Step9_docs/impl/2026-10-01_wp9n_store_campaign.md`; if it has a "state written to" line, do the manager read; if missing or the employee left no line, send a fresh one (see d).
+   d. Store from campaign output: task 9n was dispatched 20:30 but the old session closed at 20:31 before its state file existed, so the helper STOPPED: first check `Step9_docs/impl/2026-10-01_wp9n_store_campaign.md` and the folder `Step9_docs/impl/wp9n/`; if the state file is missing or has no "state written to" line, send a FRESH agent with the same task doc `Step9_docs/impl/2026-10-01_wp9n_store_campaign_TASK.md` (tell it to keep any partial `wp9n/smoke_copy/` and `a9_store_pre9n.py` it finds, and never overwrite `a9_store_pre9n.py` if present), then read its state file. Later: noise floor (10 x 10), store build on Speed after the check (fix the store check `heating_column_unique_by_position` to the
+      exact supply-air label first, 9k read), GPU training (window ends late October).
+   e. After every step: log entry, this §4/§5, memory line, board.
+0-old. **(2026-10-01 13:52 EDT).** Run `date` first. Steps 1-7 are CLOSED; Step 8 is the only open step.
+   a. Draft rule check DONE + verified 13:52 (see §4). The manager has no draft task left that does not wait on the author.
+   a1. 14:17: RT47 vetted MIXED (`Prompts/deepResearch/VETTING_RT47.md`), initials + 7 method sources added (draft md5 6ea62229...,
+       rule check exit 0). Figure 1 (md5 ee3a295c...) and graphical abstract made by the author's tool and checked; fix lists in
+       Figure 1 prompt section 9 and graphical abstract prompt section 10.5. T48 (UK licence research) written 14:03, not yet run.
+   b. When the author answers: FINDING 5J-3 ruling -> fill the two UK bracket slots (draft L64, L400) and the data statement;
+      T47 result (`Prompts/deepResearch/RT47_*`) -> vet with the 7 steps, fix reference fields, add method/context sources;
+      T46 result -> 8A novelty sentences; Figure 1 image -> check against its prompt section 4 + caption, record md5;
+      re-run `py -3.13 tools/5thJ_valpass.py --scratch <scratchpad dir>` after every draft change (gate 1.1 cannot catch a
+      wrong integer below 100: trace new small counts by hand).
+   c. 8C declarations and 8D venue wait on the author (below); 8A novelty waits on the T46 search and Li 2021.
+   d. After each: this §4/§5, memory line, Progress Log, board (back up, read + diff live page, syntax check on Speed: extract the page script, scp to `/speed-scratch/o_iseri/5J/board/`, `sbatch --parsable board_check.sh`, read `check_<id>.out`; republish
+      v38+; routine in memory `feedback_board_live_artifact_is_master.md`).
+   Author items (cannot be done by the manager; keep as ONE decision in replies = FINDING 5J-3): FINDING 5J-3 ruling (UKDS);
+   run `Prompts/deepResearch/T46_novelty_logged_search_P1_P4.md`; Li 2021 full text; ASHRAE G14 2014 edition; lighting; venue
+   (O-6); UK line (Step 1).
+1. UK arrays are ON HOLD (FINDING 5J-3) and wait on the author's UK household script (`tools/5thJ_design_households_uk.py`) and the UKDS 5J line. Author to check
    the ASHRAE 2014 edition clause (amendment only if it differs).
 2. After every step: Progress Log entry, this §4/§5, memory line, board (read + diff live page, syntax check,
    republish). Run `date` before every stamp. The previous version of this file is in
-   `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_0609.md` (older §5 items, for the record).
+   `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_1315.md` (older §4/§5 items, for the record).
 ## §6. Lessons carried (full list in the checklist, 16 items)
 
 Clock origin (4J diaries start 04:00, Spain 06:00: rotate to midnight); same input can give different
@@ -280,6 +290,6 @@ activity; leakage from country-only fields; bootstrap by building and household;
 ## §7. Open decisions (one line each; the full text is in the Overview)
 
 O-3 campaign size RULED 09-30 16:16 + design FROZEN 16:38 (Spain 4,768 + Italy 4,501 runs) · O-4 input window RULED 09-30 20:10 (168 h + 24 h, per flat, EnergyPlus inputs only; `Step5_docs/outputs_step5/step5_rules.md`)
-· O-5 CPU share RULED 09-30: 30 CPUs · O-6 venue (after RQ1 and RQ2) · O-7 how UK aggregate
+· O-5 CPU share RULED 09-30: 30 CPUs; RE-RULED 2026-10-01 16:48: 5J up to 32 Speed CPUs, OpenUBEM up to 32, at the same time (same account), desktop up to 10 if needed · O-6 venue (after RQ1 and RQ2) · O-7 how UK aggregate
 gate results reach the manager (recommend: the author asks UKDS for written permission) · k dwellings per floor
 for MFH/AB (TABULA count, else manager) · COP 3.0 ASSUMED (author may change) · lighting schedule (ask if absent).

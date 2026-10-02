@@ -152,3 +152,60 @@ Leave the right third of the canvas empty for Panel C, which is plotted from dat
 >    items at least 1 pt.
 > After the run, print the smallest font size, the smallest gap and the three divider positions, and confirm the clash
 > check still covers every drawn object type (text, boxes, arrows, strips, curves, house, frame).
+
+## 10. Update after the results (2026-10-01, Steps 6 and 7 closed; copy section 10.3 as one block into the tool that wrote the script)
+
+### 10.1 What changed
+- **The UK is not in the results.** The campaign, training and scoring used Spain and Italy only (UK runs are on hold). Panel A
+  says **Time-use diaries: Spain, Italy**; the UK colour (#332288) and the UK day strip are removed everywhere.
+- **Panel A footer:** **9,269 EnergyPlus runs** (source: `Step3_docs` closure, Progress Log 2026-09-30 18:56: 9,269 runs, 0 failed).
+- **Panel C is now filled from data**, plotted by script, never drawn by an image generator.
+- **Bottom strip:** the finding sentence and the speed line below.
+
+### 10.2 Values (no value may be altered, rounded differently or added)
+
+| Label | Value | Source |
+|---|---|---|
+| Panel A footer | 9,269 EnergyPlus runs | Progress Log 2026-09-30 18:56 (Step 3 closed) |
+| Panel C, surrogate label | right in 31 of 32 groups | `Step6_docs/outputs_step6/RESULTS.md`, G5J.3, new households |
+| Panel C, control label | right in 0 groups | RESULTS.md, G5J.4 (control passes no cell on any test list) |
+| Panel C data | annual heating difference per pair, test list "new households", EnergyPlus (x) vs model (y), surrogate S and control C | `/speed-scratch/o_iseri/5J/figures/data/fig3_pairs.parquet` (Figure 3 data; md5 in its `.md5.txt`) |
+| Bottom strip, finding | The surrogate gets the household effect right far more often than the load itself. | Conclusion item 3; load bands met in 21, 14 and 14 of 32 groups vs effect right in 31, 31 and 26 |
+| Bottom strip, speed | 61 times faster than EnergyPlus on a GPU | `Step7_docs/outputs_step7/speed.md` (1.675 s vs 0.0275 s per dwelling-year; 1.2 times on one CPU core, so "on a GPU" must stay) |
+
+### 10.3 Fix list (copy as one block)
+
+> Edit `5J_docs_occ/figures/scripts/generate_5J_graphical_abstract.py` only, then re-run it once. It writes
+> `5J_docs_occ/figures/5J_graphical_abstract.{pdf,png,tiff}`. Keep every rule of sections 1 to 6 and section 9.
+> 1. Remove the UK: the diary label becomes "Time-use diaries: Spain, Italy" (both places, lines ~70 and ~138), delete the UK
+>    strip and `COLOR_UK`, and keep five strips by alternating Spain and Italy colours. Remove "UK" from the permitted-text list.
+> 2. Panel A footer: "9,269 EnergyPlus runs".
+> 3. Panel C: read `fig3_pairs.parquet` (Figure 3 data, copied from Speed `/speed-scratch/o_iseri/5J/figures/data/`; check
+>    its md5 against the `.md5.txt` and print both). Keep the rows of test list new households and target heating. Scatter
+>    x = EnergyPlus annual difference, y = model annual difference, kWh per year; navy dots for the surrogate, mid-grey dots for
+>    the control, one diagonal line, same axis range for both clouds. Labels near each cloud: "surrogate: right in 31 of 32
+>    groups" and "control: right in 0 groups". Print the number of pairs drawn per cloud and check it equals the Figure 3 count
+>    for that list and target.
+> 4. Bottom strip: centred bold "The surrogate gets the household effect right far more often than the load itself.";
+>    right-aligned small "61 times faster than EnergyPlus on a GPU".
+> 5. Read-back check: read the drawn x and y arrays back from the figure and compare them with the parquet rows (equal); plant
+>    one changed point and show the check fires. Print the smallest font size, smallest gap and the clash check result.
+> Add the new strings to the permitted-text list in the script; no other new word may appear.
+
+### 10.4 Permitted text added
+9,269 EnergyPlus runs · Time-use diaries: Spain, Italy · surrogate: right in 31 of 32 groups · control: right in 0 groups ·
+The surrogate gets the household effect right far more often than the load itself. · 61 times faster than EnergyPlus on a GPU
+
+### 10.5 Hold
+The UK licence question (FINDING 5J-3, about the generated diary days) is open. The graphical abstract may be made now, but is
+not submitted until the author has ruled.
+
+### 10.5 Fixes after the first update (2026-10-01 14:17, manager check of `figures/5J_graphical_abstract.png`)
+Panel C data check passed (fig3_pairs.parquet md5 3a175dbb..., 6,285 heating pairs = the Figure 3 count). Three fixes (copy as
+one block into the tool that wrote the script):
+> 1. Middle panel line: replace "Scored on new households, new buildings and a new country" with "Scored on new households,
+>    new buildings, and both new" (the paper's test sets; the new-country result is a limitation, not a claim). Update the
+>    permitted-text list. (Section 3 of this prompt still carried the old line; this replaces it.)
+> 2. Panel C title: "Difference between two households in the same flat" (pairs are in the same flat, not only the same building).
+> 3. The label "surrogate: right in 31 of 32 groups" overlaps the dots; move it into the empty upper-left corner of the frame and
+>    add the scatter points to the clash check. Re-run, print the clash result and the new md5.
