@@ -3,7 +3,7 @@
 First written 2026-09-28 by the outgoing manager session. **Kept current: after every step the manager
 rewrites §4 ("State now") and §5 ("Do this next"), and updates the "Last updated" line.** §1, §2, §3, §6
 and §7 change only when a rule or a design changes. Edit in place; never fork a copy.
-Last updated: **2026-10-02 12:25 EDT (OpenUBEM replied: about 158 Bologna models will be rebuilt as `_win_2026-10-06`, do NOT freeze the Bologna split or seal A2 on 10-05; 12 `_whole` buildings stay excluded; see §5 item PEER-REPLY-1002. Madrid array 4,004 of 8,616 done at 13:20 EDT, 0 failed, 32 running, expected end about 09:00-10:00 EDT 3 Oct (author asked for this estimate; the check job 1409266 follows). Author closed the session at 13:25 EDT; nothing is pending from the author. Start at §5 item START-HERE-1002 and read PEER-REPLY-1002 first.)** Older "Last updated" history (23:20 and earlier stamps): `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-02_pre_newsession.md`. Older §4/§5 detail: `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_0817.md`; the 14:42 version (§5 items v0-v3, 0-old) is `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_1916.md`.
+Last updated: **2026-10-02 12:25 EDT (OpenUBEM replied: about 158 Bologna models will be rebuilt as `_win_2026-10-06`, do NOT freeze the Bologna split or seal A2 on 10-05; 12 `_whole` buildings stay excluded; see §5 item PEER-REPLY-1002. Madrid array 3,536 done at 11:15, no failures. Start at §5 item START-HERE-1002 and read PEER-REPLY-1002 first.)** Older "Last updated" history (23:20 and earlier stamps): `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-02_pre_newsession.md`. Older §4/§5 detail: `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_0817.md`; the 14:42 version (§5 items v0-v3, 0-old) is `Prompts/manager/archive/5J_manager_prompt_RESUME_2026-10-01_1916.md`.
 
 ---
 
@@ -92,7 +92,6 @@ week 2 CPU campaign, week 3 GPU training, week 4 one scoring + district. Writing
 ## §4. State now (rewrite after every step)
 
 **CURRENT STATE (2026-10-02 11:15 EDT; this block is newer than the Step bullets below; the §5 START-HERE item is the order of work).**
-- **Update 2026-10-02 13:25 EDT:** Madrid array 1409235 at 4,004 of 8,616 COMPLETED, 32 RUNNING, 0 failed (about 230 rows/h, so end about 09:00-10:00 EDT 3 Oct). Check job 1409266 PENDING (afterany). OpenUBEM's own Bologna run (job openubem_t08, array 1410474) is queued on the same 64-CPU cap and should end about 01:00 EDT 3 Oct. Still waiting on their `_win_2026-10-06` folder. Madrid floor-area check (113 flat_count stems, win3 vs win5) still NOT run; do it before the 1,458-row resubmission.
 
   * Steps 1-7 CLOSED; Step 8 (writing) is a draft waiting on author items; Step 9 (Model A, EnergyPlus campaign on OpenUBEM windowed IDFs) is the live work.
   * Madrid: base is `_win_2026-10-05` (delivered 10-01 21:12; our md5 check clean). The running array 1409235 still runs the OLD `_win_2026-10-03` base (8,616 rows planned, throttle 32); 3,536 tasks done at 11:15, 0 failed, about 230 rows/h, estimated end 3 Oct morning. Check 1409266 waits on it. Afterwards: void the 171 changed stems' old results and re-run 1,458 rows on win5 (smoke 1409919 of the staged code was 15/15 clean). Amendment A1 (sealed) covers this.

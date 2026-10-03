@@ -1,7 +1,7 @@
 # START HERE — HANDOFF FOR A NEW SESSION (2026-10-02, last+310) — SUPERSEDES last+309 BELOW
 
 **STATE AT SESSION CLOSE (2026-10-02): WAITING. Nothing running, nothing to do until OpenUBEM delivers.**
-- Use ONLY the **10-05** models (`GB-LDN-STDUNSTANS_win_2026-10-05`, `IT-BOL-GALVANI2_win_2026-10-05`). Never 10-03 / 10-04.
+- Use ONLY the **10-05** models + the `_win_2026-10-06` fix for affected homes (see UPDATE 2026-10-02 later) (`GB-LDN-STDUNSTANS_win_2026-10-05`, `IT-BOL-GALVANI2_win_2026-10-05`). Never 10-03 / 10-04.
 - Not yet delivered (checked 2026-10-02: messages folder has nothing newer than the 2026-10-01 20:31 status note): per-building count CSVs
   (+ sha256 + module sha256) and map-coordinate side-cars. London not before the afternoon of 2 Oct; Bologna not before the morning of 3 Oct.
 - OpenUBEM replies land in `C:\Users\o_iseri\Desktop\OpenUBEM\docs\docs_ACTIVE\europeanLocations\messages_GSSCanada\` (London content, never to 5J) or arrive as a
@@ -18,6 +18,12 @@
   surface_orientation, european_windows, builder, cooking, ground, surfaces) + confirmation that no public signature changed. Bologna package ~01:00 EDT on 3 Oct.
   CSV status values: simulated, run_failed, undivided_excluded, not_residential, no_model. CORRECTION: there is NO "courtyard" status (supersedes the line above).
   Later: map-coordinate side-cars (T07). Check our code handles `run_failed` / `no_model` rows.
+- UPDATE 2026-10-02 (later; peer msg from `openubem-cc`): 🔴 PACKAGE ON HOLD, OpenUBEM defect (their FINDING 289). London 10-05 RAN and was collected: 1,240 homes, 0 failures;
+  `flat_counts_2026-10-05.csv` exists (simulated 1,240, run_failed 0, undivided_excluded 0, not_residential 109, no_model 2; no courtyard status). The 10-04 flat-count rebuild merged
+  the storeys of one flat into one tall single-floor zone, changing modelled floor area: London 11 homes lose > 2 % area, Bologna ~158 homes. They rebuild ONLY those homes into
+  `<D>_win_2026-10-06`, re-run, then send ONE package (CSV path + sha256, module sha256 list, signature confirmation). Module digests WILL change with the fix.
+  => DO NOT pin ENGINE_DIGEST_PIN / NOCORE_DIGEST_PIN from 10-05 code. Do not use the 10-05 CSV yet. Final models may be a MIX (10-05 + `_win_2026-10-06` for the fixed homes):
+  take model paths + CSV exactly as OpenUBEM names them in the package. Nothing needed from us. Still WAITING; no timing given.
 - Files touched this session: this file, plan section 7, AUTHOR_TODO_4J.md, memory index line (4J now). Board db not republished (no state change beyond the new date).
 
 (Older block, last+309:)
